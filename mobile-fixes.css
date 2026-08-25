@@ -1,0 +1,180 @@
+/* Mobile hardening layer. Loaded after the main visual styles. */
+html,body{max-width:100%;overflow-x:hidden}
+img,video,canvas,svg{max-width:100%}
+
+@media(max-width:820px){
+  body{min-width:0}
+  .app-shell,.main,.content,.panel,.panel-body,.calendar-card,.resident-main{min-width:0!important;max-width:100%!important}
+
+  /* Keep navigation usable without occupying the whole screen. */
+  .sidebar{
+    position:sticky!important;
+    top:0!important;
+    z-index:60!important;
+    width:100%!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+  }
+  .sidebar .brand{padding-bottom:8px!important}
+  .sidebar .nav,
+  .resident-sidebar .resident-nav{
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-inline:contain;
+    scrollbar-width:none!important;
+    scroll-snap-type:x proximity;
+  }
+  .sidebar .nav::-webkit-scrollbar,
+  .resident-sidebar .resident-nav::-webkit-scrollbar{display:none}
+  .sidebar .nav a,
+  .resident-sidebar .resident-nav a{scroll-snap-align:start;white-space:nowrap!important}
+
+  .main{width:100%!important;padding:14px 12px 34px!important;overflow:hidden!important}
+  .resident-main{width:100%!important;padding:14px 12px 34px!important;overflow:hidden!important}
+
+  /* Headers and action buttons stop fighting for horizontal space. */
+  .topbar,.resident-top,.page-head{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:10px!important;
+  }
+  .topbar>div:first-child,.resident-top>div:first-child,.page-head>div:first-child{min-width:0!important}
+  .top-actions,
+  .page-head>div:last-child{
+    width:100%!important;
+    display:flex!important;
+    flex-wrap:wrap!important;
+    justify-content:flex-start!important;
+    gap:8px!important;
+  }
+  .top-actions>.btn,
+  .page-head>div:last-child>.btn{flex:1 1 150px!important}
+  .top-actions>.icon-btn,.top-actions>.avatar{flex:0 0 38px!important}
+
+  /* Cards */
+  .metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .grid-2,.condo-grid,.resident-grid,.recommend-columns,.cards-grid{grid-template-columns:1fr!important}
+  .file-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .workspace-hero{flex-direction:column!important;align-items:stretch!important;gap:14px!important}
+  .workspace-hero .btn{width:100%!important;text-align:center}
+  .panel-head{flex-wrap:wrap!important}
+  .panel-head>*{min-width:0}
+  .transition-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .transition-kpi{min-width:0!important}
+  .transition-warning{flex-direction:column!important;align-items:stretch!important}
+  .transition-warning-actions{width:100%!important;display:flex!important;flex-wrap:wrap!important}
+  .transition-warning-actions .btn{flex:1 1 140px!important;text-align:center}
+
+  /* Tables remain readable and are explicitly swipeable instead of overflowing the page. */
+  .table-wrap{
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior-inline:contain;
+    touch-action:pan-x pan-y;
+  }
+  .table{min-width:680px!important;width:max-content!important;max-width:none!important}
+  .table th,.table td{white-space:normal;vertical-align:top}
+  .table .row-actions{min-width:115px}
+  .panel-body>.table-wrap{margin-left:0!important;margin-right:0!important}
+
+  /* Older module tables */
+  .table-wrap>table:not(.calendar):not(.table){min-width:600px!important;width:max-content!important}
+
+  /* Calendar deliberately scrolls horizontally on phones. */
+  .calendar-card{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior-inline:contain}
+  .calendar{min-width:650px!important;width:650px!important}
+  .calendar-toolbar{position:sticky;left:0;min-width:min(650px,calc(100vw - 28px));background:var(--surface);z-index:2;padding-bottom:4px}
+
+  /* Horizontal KPI rows are swipeable. */
+  .kpi-strip,.breadcrumbs{
+    max-width:100%!important;
+    overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-inline:contain;
+    scroll-snap-type:x proximity;
+  }
+  .kpi-pill{scroll-snap-align:start;flex:0 0 auto}
+
+  /* Forms and modals */
+  .form-grid{grid-template-columns:1fr!important}
+  .field.full{grid-column:auto!important}
+  .field input,.field select,.field textarea{width:100%!important;max-width:100%!important;font-size:16px!important}
+  .modal{padding:8px!important;align-items:end!important}
+  .modal-card{
+    width:100%!important;
+    max-width:100%!important;
+    max-height:calc(100dvh - 16px)!important;
+    border-radius:18px 18px 10px 10px!important;
+    padding:20px 15px max(18px,env(safe-area-inset-bottom))!important;
+  }
+  .modal-close{position:sticky!important;float:right!important;top:0!important;z-index:3!important;background:#fff!important;border-radius:999px!important}
+
+  /* Base de arquivos and helper blocks. */
+  .database-explainer,.creation-hint,.inline-create-hint{max-width:100%!important}
+  .file-card{min-width:0!important}
+  .file-card strong,.file-card span{overflow:hidden;text-overflow:ellipsis}
+
+  /* Resident portal */
+  .resident-app{width:100%!important;max-width:100%!important;overflow:hidden!important}
+  .resident-sidebar{position:sticky!important;top:0!important;z-index:60!important;max-width:100%!important;overflow:hidden!important}
+  .resident-top .avatar{align-self:flex-start!important}
+  .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+
+  /* Prevent text blocks and buttons from forcing viewport width. */
+  .card,.condo-card,.alert-card,.transition-banner,.workspace-hero,.database-explainer{overflow-wrap:anywhere}
+  .btn{max-width:100%;white-space:normal}
+}
+
+@media(max-width:560px){
+  .sidebar{padding:8px 9px 9px!important}
+  .sidebar .brand strong{font-size:11px!important}
+  .sidebar .brand span{font-size:8px!important}
+  .sidebar .nav a{padding:6px 8px!important}
+  .main,.resident-main{padding:12px 9px 30px!important}
+
+  .metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .metric{min-width:0!important;min-height:96px!important;padding:11px!important}
+  .metric strong{font-size:19px!important}
+  .metric span{font-size:8px!important}
+
+  .topbar h1,.resident-top h1{font-size:19px!important}
+  .top-actions>.btn,.page-head>div:last-child>.btn{flex:1 1 100%!important}
+
+  .panel-head{flex-direction:column!important;align-items:stretch!important}
+  .panel-head>.btn,.panel-head>a.btn{width:100%!important;text-align:center}
+  .panel-body{padding-left:12px!important;padding-right:12px!important}
+
+  .transition-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .transition-kpi{padding:11px!important}
+  .transition-kpi strong{font-size:18px!important}
+
+  .file-grid{grid-template-columns:1fr!important}
+  .workspace-hero{padding:15px!important}
+  .workspace-hero h2{font-size:16px!important}
+
+  .row-actions{display:flex!important;flex-direction:column!important;gap:5px!important}
+  .row-actions .btn{width:100%!important}
+
+  .recommend-card{grid-template-columns:auto minmax(0,1fr)!important}
+  .recommend-date{grid-column:2!important;width:100%!important}
+  .onboarding-actions{flex-direction:column-reverse!important}
+  .onboarding-actions .btn{width:100%!important}
+
+  .stats-grid{grid-template-columns:1fr!important}
+  .auth-card{width:100%!important}
+
+  /* PWA install prompt stays above device safe areas. */
+  .pwa-install-button{left:10px!important;right:10px!important;bottom:max(10px,env(safe-area-inset-bottom))!important;width:auto!important}
+}
+
+@media(max-width:380px){
+  .metrics,.transition-kpis{grid-template-columns:1fr!important}
+  .brand-mark{flex:0 0 auto}
+}
