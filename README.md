@@ -1,69 +1,84 @@
-# Gestão Condominial - GitHub Pages V2
+# Gestão Condominial
 
-Protótipo frontend responsivo para síndico profissional administrar múltiplos condomínios.
+Sistema web para gestão profissional de múltiplos condomínios, com área administrativa e Portal do Morador.
 
-## Fluxo inicial
+## Arquitetura atual
 
-No primeiro acesso o sistema executa um onboarding:
+```text
+GitHub Pages (frontend público)
+        ↓
+Supabase Auth
+        ↓
+Postgres + Row Level Security (RLS)
+        ↓
+Supabase Storage privado + Edge Functions
+        ↓
+Integrações externas controladas
+```
 
-1. Pergunta o nome do síndico.
-2. Solicita o cadastro do primeiro condomínio.
-3. Mostra recomendações de manutenções e tarefas recorrentes.
-4. Permite alterar a primeira data e escolher quais recomendações adicionar.
-5. Deixa explícito que novas manutenções e tarefas podem ser criadas manualmente depois.
-6. Permite cadastrar outros condomínios antes de entrar no painel.
+O frontend utiliza apenas a URL pública do projeto Supabase e uma `publishable key`. Nenhuma `service_role`, secret key, webhook do Discord ou token da ponte de integrações deve ser versionado neste repositório.
+
+A autorização real dos dados é feita no Supabase através de Auth + RLS. Não é baseada em esconder o código JavaScript.
+
+## Acessos
+
+- Gestores/síndicos precisam ser autorizados pelo sistema.
+- Uma conta comum não pode se promover a gestor apenas pelo navegador.
+- Moradores entram por convite do síndico e ficam vinculados ao condomínio e, quando aplicável, à própria unidade.
+- Cada operação do banco é filtrada por condomínio e papel do usuário.
 
 ## Funcionalidades principais
 
 - Dashboard geral
 - Múltiplos condomínios
-- Workspace individual por condomínio
-- Calendário
+- Workspace por condomínio
+- Calendário central
 - Manutenções recorrentes
-- Alertas de 7 dias, 2 dias, 1 dia e vencidos
-- Tarefas recorrentes
-- Chamados
-- Documentos com vencimento
+- Tarefas
+- Chamados com fluxo de status
+- Documentos e vencimentos
+- Assembleias
+- Comunicados
 - Histórico da gestão
+- Moradores e unidades
+- Portal do Morador
+- Notificações internas
+- Base de arquivos em nuvem
 
-## Base de Dados / Arquivos por condomínio
+## Arquivos
 
-Cada Workspace possui a aba **Base de dados**.
+Os arquivos são armazenados no bucket privado `condo-files` do Supabase Storage.
 
-É possível:
-
-- Criar pastas
-- Criar subpastas
-- Enviar múltiplos arquivos
-- Guardar fotos, vídeos, PDFs, Word, planilhas e outros formatos
-- Abrir arquivos salvos
-- Excluir arquivos
-- Criar automaticamente um registro de manutenção com subpastas `Documentos`, `Fotos` e `Vídeos`
+A Base de Dados permite criar pastas e subpastas, enviar fotos, vídeos e documentos e definir visibilidade para gestão ou moradores. Downloads são protegidos por RLS e, quando necessário, usam URLs assinadas temporárias.
 
 Exemplo:
 
-```
+```text
 Manutenção dos Elevadores - 20/05/2026/
 ├── Documentos/
 ├── Fotos/
 └── Vídeos/
 ```
 
-### Como os arquivos são armazenados nesta versão
+## Integração de alertas
 
-Como o projeto roda somente no GitHub Pages e não possui backend, os arquivos são armazenados localmente no navegador utilizando **IndexedDB**.
+Os eventos do sistema ficam no Supabase. Uma Edge Function prepara alertas com deduplicação e uma automação externa consulta essa ponte em horários definidos para entregar notificações no Discord.
 
-Isso significa que eles permanecem naquele navegador/dispositivo, mas ainda não são compartilhados entre usuários ou computadores.
+Credenciais privadas dessa integração não ficam neste repositório.
 
-Para a versão de produção, a evolução recomendada é utilizar Supabase Storage ou outro armazenamento em nuvem.
+## Segurança
 
-## Publicar no GitHub Pages
+Princípios atuais:
 
-1. Extraia o ZIP.
-2. Envie `index.html`, `styles.css`, `app.js`, `favicon.svg` e `README.md` para a raiz do repositório.
-3. No GitHub abra `Settings > Pages`.
-4. Em `Build and deployment`, selecione `Deploy from a branch`.
-5. Escolha a branch `main` e `/ (root)`.
-6. Salve.
+- RLS habilitado nas tabelas de aplicação.
+- Dados administrativos separados por `condominium_id`.
+- Moradores não recebem acesso administrativo.
+- Storage privado com policies próprias.
+- `integration_deliveries` é backend-only.
+- Edge Function de convite exige JWT válido e confirma que o chamador é síndico do condomínio.
+- Funções `SECURITY DEFINER` usam `search_path` restrito.
+- Chaves administrativas do Supabase nunca devem ser usadas no frontend.
 
-Não é necessário Node.js ou npm.
+## Publicação
+
+O frontend é estático e pode ser servido pelo GitHub Pages. O fato de o repositório ser público não deve ser tratado como mecanismo de segurança: qualquer dado sensível precisa continuar protegido no backend por Auth, RLS e secrets fora do GitHub.
