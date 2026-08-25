@@ -41,31 +41,31 @@
     if(error)throw error;
     if(data?.error){const err=new Error(data.error);err.code=data.error;throw err}
     if(!data?.ok)throw new Error('bootstrap_failed');
-
     const {error:refreshError}=await sb.auth.refreshSession();
     if(refreshError)throw refreshError;
   }
 
   async function boot() {
-    const {data:{session}}=await sb.auth.getSession();
+    let {data:{session}}=await sb.auth.getSession();
     if(!session)return loginView();
 
-    try {
-      const who=await invoke('whoami');
-      await dashboard(who.user);
-      return;
-    } catch(err) {
-      const forbidden=String(err.message||'').includes('forbidden')||err.code==='forbidden';
-      if(!forbidden) return loginView('Não foi possível validar o acesso administrativo.');
+    if(session.user?.app_metadata?.system_role !== 'superadmin') {
+      try {
+        await bootstrapFirstSuperadmin();
+        const refreshed=await sb.auth.getSession();
+        session=refreshed.data.session;
+      } catch(err) {
+        await sb.auth.signOut();
+        return loginView('Esta conta não possui permissão de superadministrador.');
+      }
     }
 
     try {
-      await bootstrapFirstSuperadmin();
       const who=await invoke('whoami');
       await dashboard(who.user);
     } catch(err) {
       await sb.auth.signOut();
-      loginView('Esta conta não possui permissão de superadministrador.');
+      loginView('Não foi possível validar o acesso administrativo.');
     }
   }
 
