@@ -36,18 +36,36 @@
     return data;
   }
 
+  async function bootstrapFirstSuperadmin() {
+    const {data,error}=await sb.functions.invoke('bootstrap-superadmin',{body:{action:'bootstrap'}});
+    if(error)throw error;
+    if(data?.error){const err=new Error(data.error);err.code=data.error;throw err}
+    if(!data?.ok)throw new Error('bootstrap_failed');
+
+    const {error:refreshError}=await sb.auth.refreshSession();
+    if(refreshError)throw refreshError;
+  }
+
   async function boot() {
     const {data:{session}}=await sb.auth.getSession();
     if(!session)return loginView();
+
     try {
       const who=await invoke('whoami');
       await dashboard(who.user);
+      return;
     } catch(err) {
-      if(String(err.message||'').includes('forbidden')||err.code==='forbidden'){
-        await sb.auth.signOut();
-        return loginView('Esta conta não possui permissão de superadministrador.');
-      }
-      loginView('Não foi possível validar o acesso administrativo.');
+      const forbidden=String(err.message||'').includes('forbidden')||err.code==='forbidden';
+      if(!forbidden) return loginView('Não foi possível validar o acesso administrativo.');
+    }
+
+    try {
+      await bootstrapFirstSuperadmin();
+      const who=await invoke('whoami');
+      await dashboard(who.user);
+    } catch(err) {
+      await sb.auth.signOut();
+      loginView('Esta conta não possui permissão de superadministrador.');
     }
   }
 
