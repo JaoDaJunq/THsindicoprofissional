@@ -1,4 +1,4 @@
-const CACHE_NAME='gestao-condominial-shell-v1';
+const CACHE_NAME='gestao-condominial-shell-v2';
 const APP_SHELL=[
   './',
   './index.html',
@@ -35,4 +35,32 @@ self.addEventListener('fetch',event=>{
       return response;
     }).catch(()=>caches.match(req).then(cached=>cached||caches.match('./index.html')))
   );
+});
+
+self.addEventListener('push',event=>{
+  let data={title:'Gestão Condominial',body:'Você tem um novo alerta.',url:'#/notificacoes',tag:'gestao-condominial'};
+  try{if(event.data)data={...data,...event.data.json()}}catch(_){try{data.body=event.data?.text()||data.body}catch(_){}}
+  event.waitUntil(self.registration.showNotification(data.title||'Gestão Condominial',{
+    body:data.body||'',
+    icon:'./favicon.svg',
+    badge:'./favicon.svg',
+    tag:data.tag||'gestao-condominial',
+    data:{url:data.url||'#/notificacoes'},
+    renotify:true
+  }));
+});
+
+self.addEventListener('notificationclick',event=>{
+  event.notification.close();
+  const target=event.notification?.data?.url||'#/notificacoes';
+  event.waitUntil((async()=>{
+    const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    for(const client of windows){
+      if('focus' in client){
+        try{await client.focus();client.postMessage({type:'OPEN_ROUTE',url:target});return}catch(_){}
+      }
+    }
+    const base=new URL('./',self.registration.scope).href;
+    return self.clients.openWindow(base+target);
+  })());
 });
