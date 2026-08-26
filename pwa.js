@@ -40,6 +40,13 @@
     removeButton();
   });
 
+  navigator.serviceWorker.addEventListener('message',event=>{
+    if(event.data?.type==='OPEN_ROUTE' && event.data?.url){
+      const route=String(event.data.url);
+      if(route.startsWith('#/')) location.hash=route;
+    }
+  });
+
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(err=>console.warn('PWA service worker',err));
   });
