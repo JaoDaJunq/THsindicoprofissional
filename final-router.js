@@ -9,6 +9,13 @@
   route = function(){
     const p = path();
 
+    if (p[0] === 'integracoes' && typeof window.integrationsPage === 'function') {
+      return window.integrationsPage();
+    }
+    if (p[0] === 'notificacoes' && typeof window.notificationsPage === 'function') {
+      return window.notificationsPage();
+    }
+
     if (p[0] === 'condominio') {
       const cid = p[1];
       const sub = p[2];
@@ -40,7 +47,6 @@
   }
   window.addEventListener('hashchange', route);
 
-  // Corrige a rota atual depois que todos os módulos foram carregados.
   setTimeout(() => {
     try { route(); } catch (err) { console.error('Final router', err); }
   }, 0);
