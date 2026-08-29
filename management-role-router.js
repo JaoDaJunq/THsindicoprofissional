@@ -47,6 +47,7 @@
     let handled = true;
 
     if (!p.length) result = typeof window.managementDashboard==='function' ? window.managementDashboard() : dashboard();
+    else if (p[0] === 'auditoria' && typeof window.auditPage === 'function') result = window.auditPage();
     else if (p[0] === 'relatorios' && typeof window.managementReportsPage === 'function') result = window.managementReportsPage(null,rp.start,rp.end);
     else if (p[0] === 'condominios') result = access.canCreateCondo() ? condosPage() : (typeof window.managementDashboard==='function'?window.managementDashboard():dashboard());
     else if (p[0] === 'calendario') result = calendarPage();
@@ -57,6 +58,7 @@
     else if (p[0] === 'condominio') {
       const sub = p[2];
       if (!sub) result = typeof window.condoManagementDashboard==='function' ? window.condoManagementDashboard(cid) : condoOverview(cid);
+      else if (sub === 'auditoria' && typeof window.auditPage === 'function') result = window.auditPage(cid);
       else if (sub === 'relatorios' && typeof window.managementReportsPage === 'function') result = window.managementReportsPage(cid,rp.start,rp.end);
       else if (sub === 'calendario') result = calendarPage(cid);
       else if (sub === 'manutencoes') result = maintenancesPage(cid);
@@ -107,7 +109,7 @@
 
   window.addEventListener('condo-access-ready', () => {
     const p = parts();
-    if (window.CondoAccess?.hasAnyManagementRole() && (p.length === 0 || p[0] === 'condominio' || p[0] === 'relatorios')) {
+    if (window.CondoAccess?.hasAnyManagementRole() && (p.length === 0 || p[0] === 'condominio' || p[0] === 'relatorios' || p[0] === 'auditoria')) {
       setTimeout(() => applyRestrictions(p[0] === 'condominio' ? p[1] : null), 0);
     }
   });
