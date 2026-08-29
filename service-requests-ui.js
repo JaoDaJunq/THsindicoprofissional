@@ -104,18 +104,8 @@
         $('#save-request-workflow').onclick = async () => {
           const nextStatus = $('#request-status').value;
           const nextAssignee = assignee.value || null;
-          const oldStatus = request.status;
-          const oldAssignee = request.assigned_to;
           const { error: updateError } = await client.from('service_requests').update({ status: nextStatus, assigned_to: nextAssignee, updated_at: new Date().toISOString() }).eq('id', id).eq('condominium_id', cid);
           if (updateError) return flash(updateError.message || 'Não foi possível atualizar o chamado.');
-
-          const entries = [];
-          if (nextStatus !== oldStatus) entries.push({ service_request_id: id, condominium_id: cid, created_by: user.id, update_type: 'status_change', from_status: oldStatus, to_status: nextStatus });
-          if (nextAssignee !== oldAssignee) entries.push({ service_request_id: id, condominium_id: cid, created_by: user.id, update_type: 'assignment', body: nextAssignee ? 'Responsável definido para o chamado.' : 'Chamado voltou para a fila sem responsável.' });
-          if (entries.length) {
-            const { error: historyError } = await client.from('service_request_updates').insert(entries);
-            if (historyError) console.warn(historyError);
-          }
           closeModal();
           flash('Chamado atualizado.');
           callsPage(cid);
