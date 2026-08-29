@@ -42,6 +42,8 @@
     document.body.classList.remove('auth-body', 'onboarding-body');
 
     let result;
+    let handled = true;
+
     if (!p.length) result = dashboard();
     else if (p[0] === 'condominios') result = access.canCreateCondo() ? condosPage() : dashboard();
     else if (p[0] === 'calendario') result = calendarPage();
@@ -63,8 +65,12 @@
       else if (sub === 'gas' && typeof window.gasPage === 'function') result = window.gasPage(cid);
       else if (sub === 'comunicados' && typeof window.adminAnnouncementsPage === 'function') result = window.adminAnnouncementsPage(cid);
       else if (sub === 'assembleias' && typeof window.assembliesPage === 'function') result = window.assembliesPage(cid);
-      else result = condoOverview(cid);
-    } else result = dashboard();
+      else handled = false;
+    } else {
+      handled = false;
+    }
+
+    if (!handled) return previousRoute();
 
     Promise.resolve(result).finally(() => setTimeout(() => applyRestrictions(cid), 0));
     return result;
