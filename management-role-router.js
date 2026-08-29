@@ -5,7 +5,8 @@
   const previousRoute = route;
   let routeToken = 0;
 
-  const parts = () => (location.hash || '#/').replace(/^#\//, '').split('/').filter(Boolean);
+  const parts = () => (location.hash || '#/').replace(/^#\//, '').split('?')[0].split('/').filter(Boolean);
+  const reportParams = () => { const raw=(location.hash||'').split('?')[1]||''; const p=new URLSearchParams(raw); return {start:p.get('start')||undefined,end:p.get('end')||undefined}; };
 
   function applyRestrictions(cid = null) {
     const access = window.CondoAccess;
@@ -35,6 +36,7 @@
     const p = parts();
     const cid = p[0] === 'condominio' ? p[1] : null;
     const access = window.CondoAccess;
+    const rp=reportParams();
 
     if (!access?.hasAnyManagementRole()) return previousRoute();
     if (cid && !access.canAccessCondo(cid)) return previousRoute();
@@ -44,8 +46,9 @@
     let result;
     let handled = true;
 
-    if (!p.length) result = dashboard();
-    else if (p[0] === 'condominios') result = access.canCreateCondo() ? condosPage() : dashboard();
+    if (!p.length) result = typeof window.managementDashboard==='function' ? window.managementDashboard() : dashboard();
+    else if (p[0] === 'relatorios' && typeof window.managementReportsPage === 'function') result = window.managementReportsPage(null,rp.start,rp.end);
+    else if (p[0] === 'condominios') result = access.canCreateCondo() ? condosPage() : (typeof window.managementDashboard==='function'?window.managementDashboard():dashboard());
     else if (p[0] === 'calendario') result = calendarPage();
     else if (p[0] === 'manutencoes') result = maintenancesPage();
     else if (p[0] === 'tarefas') result = tasksPage();
@@ -53,7 +56,8 @@
     else if (p[0] === 'financeiro' && typeof window.financeConsolidatedPage === 'function') result = window.financeConsolidatedPage();
     else if (p[0] === 'condominio') {
       const sub = p[2];
-      if (!sub) result = condoOverview(cid);
+      if (!sub) result = typeof window.condoManagementDashboard==='function' ? window.condoManagementDashboard(cid) : condoOverview(cid);
+      else if (sub === 'relatorios' && typeof window.managementReportsPage === 'function') result = window.managementReportsPage(cid,rp.start,rp.end);
       else if (sub === 'calendario') result = calendarPage(cid);
       else if (sub === 'manutencoes') result = maintenancesPage(cid);
       else if (sub === 'tarefas') result = tasksPage(cid);
@@ -103,7 +107,7 @@
 
   window.addEventListener('condo-access-ready', () => {
     const p = parts();
-    if (window.CondoAccess?.hasAnyManagementRole() && (p.length === 0 || p[0] === 'condominio')) {
+    if (window.CondoAccess?.hasAnyManagementRole() && (p.length === 0 || p[0] === 'condominio' || p[0] === 'relatorios')) {
       setTimeout(() => applyRestrictions(p[0] === 'condominio' ? p[1] : null), 0);
     }
   });
