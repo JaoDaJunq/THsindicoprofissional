@@ -11,21 +11,32 @@
   const nullable = v => String(v ?? '').trim() || null;
   const canManage = cid => Boolean(window.CondoAccess?.can('condo.manage', cid));
 
+  function currentOverviewId() {
+    const parts = (location.hash || '#/').replace(/^#\//, '').split('/').filter(Boolean);
+    return parts[0] === 'condominio' && parts[1] && !parts[2] ? parts[1] : null;
+  }
+
+  function addSettingsAction(cid) {
+    if (!cid || !canManage(cid)) return;
+    const actions = document.querySelector('.topbar .top-actions');
+    if (!actions || actions.querySelector('[data-condo-settings]')) return;
+    const button = document.createElement('button');
+    button.className = 'btn btn-soft';
+    button.dataset.condoSettings = 'true';
+    button.textContent = '⚙ Configurações';
+    button.onclick = () => window.openCondoSettings(cid);
+    actions.insertBefore(button, actions.firstChild);
+  }
+
   condoOverview = function(cid) {
     const result = originalOverview(cid);
-    Promise.resolve().then(() => {
-      if (!canManage(cid)) return;
-      const actions = document.querySelector('.topbar .top-actions');
-      if (!actions || actions.querySelector('[data-condo-settings]')) return;
-      const button = document.createElement('button');
-      button.className = 'btn btn-soft';
-      button.dataset.condoSettings = 'true';
-      button.textContent = '⚙ Configurações';
-      button.onclick = () => window.openCondoSettings(cid);
-      actions.insertBefore(button, actions.firstChild);
-    });
+    Promise.resolve().then(() => addSettingsAction(cid));
     return result;
   };
+
+  window.addEventListener('condo-access-ready', () => {
+    Promise.resolve().then(() => addSettingsAction(currentOverviewId()));
+  });
 
   window.openCondoSettings = async function(cid) {
     await window.CondoAccess?.refresh();
