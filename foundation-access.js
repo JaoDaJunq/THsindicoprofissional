@@ -17,9 +17,11 @@
   };
 
   const ACTIVE_ROLES = new Set(['syndic', 'resident', 'staff', 'council']);
+  const MANAGEMENT_ROLES = Object.freeze(['syndic', 'staff', 'council']);
   const CAPABILITIES = Object.freeze({
     'condo.view': ['syndic', 'resident', 'staff', 'council'],
     'condo.manage': ['syndic'],
+    'team.manage': ['syndic'],
     'units.manage': ['syndic', 'staff'],
     'residents.manage': ['syndic'],
     'operations.manage': ['syndic', 'staff'],
@@ -78,6 +80,20 @@
     return membershipsFor(condominiumId).some(row => allowed.has(row.role));
   }
 
+  function hasAnyManagementRole(condominiumId = null) {
+    if (condominiumId) return hasAnyRole(condominiumId, MANAGEMENT_ROLES);
+    return snapshot.memberships.some(row => MANAGEMENT_ROLES.includes(row.role));
+  }
+
+  function isResidentOnly() {
+    return snapshot.memberships.length > 0 && !hasAnyManagementRole();
+  }
+
+  function canCreateCondo() {
+    const systemRole = snapshot.user?.app_metadata?.system_role;
+    return systemRole === 'manager' || systemRole === 'superadmin';
+  }
+
   function can(capability, condominiumId) {
     const roles = CAPABILITIES[capability];
     if (!roles) return false;
@@ -133,11 +149,15 @@
     canManageCondo,
     canOperateCondo,
     canReviewCondo,
+    canCreateCondo,
+    hasAnyManagementRole,
+    isResidentOnly,
     hasAnyRole,
     can,
     assertCondoAccess,
     assertCapability,
-    capabilities: CAPABILITIES
+    capabilities: CAPABILITIES,
+    managementRoles: MANAGEMENT_ROLES
   });
 
   client.auth.onAuthStateChange(() => {
