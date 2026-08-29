@@ -17,6 +17,19 @@
   };
 
   const ACTIVE_ROLES = new Set(['syndic', 'resident', 'staff', 'council']);
+  const CAPABILITIES = Object.freeze({
+    'condo.view': ['syndic', 'resident', 'staff', 'council'],
+    'condo.manage': ['syndic'],
+    'units.manage': ['syndic', 'staff'],
+    'residents.manage': ['syndic'],
+    'operations.manage': ['syndic', 'staff'],
+    'operations.review': ['syndic', 'staff', 'council'],
+    'documents.manage': ['syndic', 'staff'],
+    'assemblies.manage': ['syndic', 'staff'],
+    'communications.manage': ['syndic', 'staff'],
+    'finance.manage': ['syndic'],
+    'finance.review': ['syndic', 'council']
+  });
 
   async function refresh() {
     const { data: sessionData, error: sessionError } = await client.auth.getSession();
@@ -25,8 +38,8 @@
     const user = sessionData?.session?.user || null;
     if (!user) {
       snapshot = { user: null, memberships: [], loadedAt: new Date().toISOString() };
-      window.dispatchEvent(new CustomEvent('condo-access-ready', { detail: snapshot }));
-      return snapshot;
+      window.dispatchEvent(new CustomEvent('condo-access-ready', { detail: getSnapshot() }));
+      return getSnapshot();
     }
 
     const { data: memberships, error } = await client
@@ -43,8 +56,8 @@
       loadedAt: new Date().toISOString()
     };
 
-    window.dispatchEvent(new CustomEvent('condo-access-ready', { detail: snapshot }));
-    return snapshot;
+    window.dispatchEvent(new CustomEvent('condo-access-ready', { detail: getSnapshot() }));
+    return getSnapshot();
   }
 
   function membershipsFor(condominiumId) {
@@ -65,16 +78,22 @@
     return membershipsFor(condominiumId).some(row => allowed.has(row.role));
   }
 
+  function can(capability, condominiumId) {
+    const roles = CAPABILITIES[capability];
+    if (!roles) return false;
+    return hasAnyRole(condominiumId, roles);
+  }
+
   function canManageCondo(condominiumId) {
-    return hasAnyRole(condominiumId, ['syndic']);
+    return can('condo.manage', condominiumId);
   }
 
   function canOperateCondo(condominiumId) {
-    return hasAnyRole(condominiumId, ['syndic', 'staff']);
+    return can('operations.manage', condominiumId);
   }
 
   function canReviewCondo(condominiumId) {
-    return hasAnyRole(condominiumId, ['syndic', 'council']);
+    return can('operations.review', condominiumId);
   }
 
   function assertCondoAccess(condominiumId, roles = null) {
@@ -82,6 +101,16 @@
     if (!allowed) {
       const error = new Error('Você não tem permissão para acessar este condomínio.');
       error.code = 'CONDO_ACCESS_DENIED';
+      throw error;
+    }
+    return true;
+  }
+
+  function assertCapability(capability, condominiumId) {
+    if (!can(capability, condominiumId)) {
+      const error = new Error('Você não tem permissão para realizar esta ação neste condomínio.');
+      error.code = 'CONDO_CAPABILITY_DENIED';
+      error.capability = capability;
       throw error;
     }
     return true;
@@ -105,7 +134,10 @@
     canOperateCondo,
     canReviewCondo,
     hasAnyRole,
-    assertCondoAccess
+    can,
+    assertCondoAccess,
+    assertCapability,
+    capabilities: CAPABILITIES
   });
 
   client.auth.onAuthStateChange(() => {
