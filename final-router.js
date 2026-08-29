@@ -32,6 +32,9 @@
       if (sub === 'moradores' && typeof window.residentsPage === 'function') {
         return window.residentsPage(cid);
       }
+      if (sub === 'financeiro' && typeof window.financePage === 'function') {
+        return window.financePage(cid);
+      }
     }
 
     if (p[0] === 'morador' && typeof window.renderResidentPortal === 'function') {
