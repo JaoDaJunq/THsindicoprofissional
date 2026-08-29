@@ -50,6 +50,7 @@
     else if (p[0] === 'manutencoes') result = maintenancesPage();
     else if (p[0] === 'tarefas') result = tasksPage();
     else if (p[0] === 'chamados') result = callsPage();
+    else if (p[0] === 'financeiro' && typeof window.financeConsolidatedPage === 'function') result = window.financeConsolidatedPage();
     else if (p[0] === 'condominio') {
       const sub = p[2];
       if (!sub) result = condoOverview(cid);
@@ -64,6 +65,9 @@
       else if (sub === 'equipe' && typeof window.teamPage === 'function') result = window.teamPage(cid);
       else if (sub === 'gas' && typeof window.gasPage === 'function') result = window.gasPage(cid);
       else if (sub === 'comunicados' && typeof window.adminAnnouncementsPage === 'function') result = window.adminAnnouncementsPage(cid);
+      else if (sub === 'financeiro' && typeof window.financePage === 'function') result = window.financePage(cid);
+      else if (sub === 'assembleias' && p[3] && typeof window.assemblyVotingWorkspace === 'function') result = window.assemblyVotingWorkspace(p[3], cid);
+      else if (sub === 'assembleias' && typeof window.assemblyVotingPage === 'function') result = window.assemblyVotingPage(cid);
       else if (sub === 'assembleias' && typeof window.assembliesPage === 'function') result = window.assembliesPage(cid);
       else handled = false;
     } else {
