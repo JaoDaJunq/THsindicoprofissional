@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
-import { AccountCard, initialsOf } from '@/components/layout/account/card'
+import { AccountCard } from '@/components/layout/account/card'
+import { initialsOf } from '@/components/user-avatar'
 import { buildUser } from '@/tests/support/build-user'
 
 vi.mock('next-auth/react', () => ({ signOut: vi.fn() }))

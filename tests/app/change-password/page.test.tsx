@@ -5,8 +5,12 @@ import ChangePasswordPage from '@/app/change-password/page'
 const replace = vi.fn()
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace }) }))
 
+const signOut = vi.fn()
+vi.mock('next-auth/react', () => ({ signOut: (...args: unknown[]) => signOut(...args) }))
+
 beforeEach(() => {
   replace.mockReset()
+  signOut.mockReset()
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }))
 })
 
@@ -29,6 +33,14 @@ describe('ChangePasswordPage', () => {
     render(<ChangePasswordPage />)
 
     expect(screen.getByText(/primeiro acesso/i)).toBeInTheDocument()
+  })
+
+  it('offers a way back to the sign-in screen', async () => {
+    render(<ChangePasswordPage />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Voltar' }))
+
+    expect(signOut).toHaveBeenCalledWith({ callbackUrl: '/signin' })
   })
 
   it('sends both passwords to the API', async () => {

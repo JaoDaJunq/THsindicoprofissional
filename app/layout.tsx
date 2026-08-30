@@ -11,7 +11,16 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }): ReactElement {
   return (
     <html lang="pt-BR">
-      <body className="bg-default-50 text-foreground">
+      <head>
+        {/* applies the saved mode before the first paint, so the page never flashes */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch{}",
+          }}
+        />
+      </head>
+      <body className="bg-background text-foreground">
         <Providers>{children}</Providers>
       </body>
     </html>

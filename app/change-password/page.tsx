@@ -1,6 +1,7 @@
 'use client'
 
 import { Button, Card, CardContent, Input, Label, TextField } from '@heroui/react'
+import { signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { FormEvent, ReactElement } from 'react'
@@ -72,6 +73,15 @@ export default function ChangePasswordPage(): ReactElement {
 
             <Button type="submit" variant="primary" isPending={isSubmitting} className="w-full">
               Trocar a senha
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full"
+              onPress={() => void signOut({ callbackUrl: '/signin' })}
+            >
+              Voltar
             </Button>
           </form>
         </CardContent>

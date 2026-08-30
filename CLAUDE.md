@@ -21,6 +21,11 @@ O padrão de camadas está em `docs/architecture.md` — leia antes de criar arq
 - **Testes ficam em `tests/`**, espelhando a árvore do código. Nunca ao lado do fonte.
 - **Sem componentes server-side para dados.** Tela é `'use client'` e busca de `/api/*`.
 - **Sempre UUID** como identificador, com tipo nativo `@db.Uuid`.
+- **Botão de voltar ou cancelar é `variant="ghost"`**: sem borda, sem cor, sem peso.
+  A ação principal é a única com cor.
+- **No telefone, botão nunca fica ao lado de botão**: um por linha. Lado a lado só
+  a partir de `sm:`, e empilhado cada um ocupa a largura toda. Exceção: as ações dentro do painel do acordeão, que cabem
+  as três na mesma linha.
 - **O mínimo que resolve.** Sem abstração especulativa, sem dependência para o que cabe
   em poucas linhas.
 

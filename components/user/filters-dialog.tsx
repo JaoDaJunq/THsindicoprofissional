@@ -40,11 +40,11 @@ export function UserFiltersDialog({
       onOpenChange={onOpenChange}
       title="Filtros"
       footer={
-        <div className="flex w-full gap-2">
-          <Button variant="outline" className="flex-1" onPress={clear}>
+        <div className="flex w-full flex-col-reverse gap-2 sm:flex-row">
+          <Button variant="outline" className="w-full sm:flex-1" onPress={clear}>
             Limpar
           </Button>
-          <Button variant="primary" className="flex-1" onPress={apply}>
+          <Button variant="primary" className="w-full sm:flex-1" onPress={apply}>
             Aplicar
           </Button>
         </div>

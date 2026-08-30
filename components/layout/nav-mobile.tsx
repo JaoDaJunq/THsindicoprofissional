@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import type { ReactElement } from 'react'
 import { AccountMenu } from './account'
+import { ThemeToggle } from './theme-toggle'
 import { NAV_ITEMS } from './nav-items'
 import type { User } from '@/shared/types'
 
@@ -29,11 +30,14 @@ export function NavMobile({ account }: { account: User }): ReactElement {
         data-testid="nav-mobile"
         className="fixed inset-x-4 bottom-6 z-50"
       >
-        <Surface className="border-default-200 flex items-center justify-between rounded-full border px-3 py-2 shadow-lg">
-          <AccountMenu account={account} />
+        <Surface className="border-default-200 grid grid-cols-3 items-center rounded-full border px-3 py-2 shadow-lg">
+          <ThemeToggle />
 
-          <span className="text-sm font-medium">Gestão Condominial</span>
+          <div className="flex justify-center">
+            <AccountMenu account={account} />
+          </div>
 
+          <div className="flex justify-end">
           <Button
             variant="ghost"
             isIconOnly
@@ -42,6 +46,7 @@ export function NavMobile({ account }: { account: User }): ReactElement {
           >
             <MenuIcon />
           </Button>
+          </div>
         </Surface>
       </nav>
 

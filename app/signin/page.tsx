@@ -55,7 +55,7 @@ function SignInCard(): ReactElement {
 
 export default function SignInPage(): ReactElement {
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
+    <main className="bg-background flex min-h-screen items-center justify-center p-6">
       <Suspense>
         <SignInCard />
       </Suspense>

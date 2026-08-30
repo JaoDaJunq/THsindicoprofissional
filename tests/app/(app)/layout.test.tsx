@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import AppLayout from '@/app/(app)/layout'
 import { buildUser } from '@/tests/support/build-user'
 import { setScreen } from '@/tests/support/match-media'
@@ -42,6 +43,29 @@ describe('AppLayout', () => {
     expect(screen.getByText('conteúdo da tela')).toBeInTheDocument()
   })
 
+  it('closes the rail from the button on the top left', async () => {
+    renderLayout()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Fechar o menu lateral' }))
+
+    expect(screen.getByTestId('nav-desktop').parentElement).toHaveAttribute('inert')
+  })
+
+  it('opens the rail again', async () => {
+    renderLayout()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Fechar o menu lateral' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir o menu lateral' }))
+
+    expect(screen.getByTestId('nav-desktop').parentElement).not.toHaveAttribute('inert')
+  })
+
+  it('offers the light and dark switch on the desktop header too', () => {
+    renderLayout()
+
+    expect(screen.getAllByRole('button', { name: /Usar o modo/ }).length).toBeGreaterThan(1)
+  })
+
   it('shows the admin navigation', () => {
     renderLayout()
 
@@ -68,7 +92,7 @@ describe('AppLayout', () => {
 
   it('holds the screen back until the first password is replaced', async () => {
     useAccount.mockReturnValue({
-      account: buildUser({ mustChangePassword: true }),
+      account: buildUser({ mustChangePassword: true, username: 'ana' }),
       isLoading: false,
       isGone: false,
     })
@@ -78,6 +102,19 @@ describe('AppLayout', () => {
     await waitFor(() => expect(replace).toHaveBeenCalledWith('/change-password'))
     expect(screen.queryByText('conteúdo da tela')).not.toBeInTheDocument()
   })
+  it('never asks for a password from someone who signs in with Google', async () => {
+    useAccount.mockReturnValue({
+      account: buildUser({ mustChangePassword: true, username: null }),
+      isLoading: false,
+      isGone: false,
+    })
+
+    renderLayout()
+
+    await waitFor(() => expect(screen.getByText('conteúdo da tela')).toBeInTheDocument())
+    expect(replace).not.toHaveBeenCalledWith('/change-password')
+  })
+
   it('signs out a session whose person no longer exists, instead of a blank screen', async () => {
     useAccount.mockReturnValue({ account: null, isLoading: false, isGone: true })
 

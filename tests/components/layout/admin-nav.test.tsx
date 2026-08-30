@@ -64,6 +64,37 @@ describe('AdminNav', () => {
     )
   })
 
+  it('shows the role of the person on the rail', () => {
+    renderNav({ isManager: true })
+
+    expect(screen.getByText('Síndico')).toBeInTheDocument()
+  })
+
+  it('calls a person who is not a manager a resident', () => {
+    renderNav({ isManager: false })
+
+    expect(screen.getByText('Morador')).toBeInTheDocument()
+  })
+
+  it('puts the closed rail out of reach, without touching the pill', () => {
+    render(<AdminNav account={buildUser()} isRailOpen={false} />)
+
+    expect(screen.getByTestId('nav-desktop').parentElement).toHaveAttribute('inert')
+    expect(screen.getByTestId('nav-mobile')).toBeInTheDocument()
+  })
+
+  it('slides the rail instead of making it blink away', () => {
+    render(<AdminNav account={buildUser()} isRailOpen={false} />)
+
+    expect(screen.getByTestId('nav-desktop').parentElement).toHaveClass('transition-[width]')
+  })
+
+  it('keeps the open rail reachable', () => {
+    render(<AdminNav account={buildUser()} isRailOpen />)
+
+    expect(screen.getByTestId('nav-desktop').parentElement).not.toHaveAttribute('inert')
+  })
+
   it('shows who is signed in on the rail', () => {
     renderNav({ name: 'Ana Souza' })
 
@@ -91,7 +122,7 @@ describe('AdminNav', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Abrir a conta' }))
 
-    expect(screen.getAllByTestId('account-card').length).toBeGreaterThan(1)
+    expect(screen.getByTestId('account-card')).toBeInTheDocument()
   })
   it('closes the menu drawer after choosing a screen', async () => {
     renderNav()
