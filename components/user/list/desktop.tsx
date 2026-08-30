@@ -3,7 +3,7 @@
 import { Table } from '@heroui/react'
 import { useState } from 'react'
 import type { MouseEvent, ReactElement } from 'react'
-import { StatusChip } from '../status-chip'
+import { StatusChip } from '@/components/status-chip'
 import { UserAvatar } from '@/components/user-avatar'
 import { UserRowMenu } from '../row-menu'
 import type { UserMenuTarget } from '../row-menu'
@@ -61,7 +61,7 @@ export function UserListDesktop({
                 <Table.Cell>{row.user.email}</Table.Cell>
                 <Table.Cell>{row.user.isManager ? 'Sim' : 'Não'}</Table.Cell>
                 <Table.Cell>
-                  <StatusChip user={row.user} />
+                  <StatusChip deletedAt={row.user.deletedAt} />
                 </Table.Cell>
               </Table.Row>
             )}

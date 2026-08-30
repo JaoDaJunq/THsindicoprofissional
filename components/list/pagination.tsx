@@ -3,7 +3,7 @@
 import { Pagination } from '@heroui/react'
 import type { ReactElement } from 'react'
 
-export interface UsersPaginationProps {
+export interface ListPaginationProps {
   page: number
   pageCount: number
   onPageChange: (page: number) => void
@@ -14,11 +14,11 @@ export function pageNumbers(pageCount: number): number[] {
   return Array.from({ length: pageCount }, (_, index) => index + 1)
 }
 
-export function UsersPagination({
+export function ListPagination({
   page,
   pageCount,
   onPageChange,
-}: UsersPaginationProps): ReactElement {
+}: ListPaginationProps): ReactElement {
   return (
     <Pagination>
       <Pagination.Content>

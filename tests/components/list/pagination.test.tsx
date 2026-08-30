@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { UsersPagination, pageNumbers } from '@/components/user/list/pagination'
+import { ListPagination, pageNumbers } from '@/components/list/pagination'
 
 const onPageChange = vi.fn()
 beforeEach(() => onPageChange.mockReset())
@@ -11,15 +11,15 @@ describe('pageNumbers', () => {
   })
 })
 
-describe('UsersPagination', () => {
+describe('ListPagination', () => {
   it('shows one link per page', () => {
-    render(<UsersPagination page={1} pageCount={3} onPageChange={onPageChange} />)
+    render(<ListPagination page={1} pageCount={3} onPageChange={onPageChange} />)
 
     expect(screen.getByRole('button', { name: 'Página 2' })).toBeInTheDocument()
   })
 
   it('moves to the chosen page', async () => {
-    render(<UsersPagination page={1} pageCount={3} onPageChange={onPageChange} />)
+    render(<ListPagination page={1} pageCount={3} onPageChange={onPageChange} />)
 
     await userEvent.click(screen.getByRole('button', { name: 'Página 3' }))
 
@@ -27,18 +27,18 @@ describe('UsersPagination', () => {
   })
 
   it('cannot go back from the first page', () => {
-    render(<UsersPagination page={1} pageCount={3} onPageChange={onPageChange} />)
+    render(<ListPagination page={1} pageCount={3} onPageChange={onPageChange} />)
 
     expect(screen.getByRole('button', { name: 'Página anterior' })).toBeDisabled()
   })
 
   it('cannot go forward from the last page', () => {
-    render(<UsersPagination page={3} pageCount={3} onPageChange={onPageChange} />)
+    render(<ListPagination page={3} pageCount={3} onPageChange={onPageChange} />)
 
     expect(screen.getByRole('button', { name: 'Próxima página' })).toBeDisabled()
   })
   it('goes back one page', async () => {
-    render(<UsersPagination page={2} pageCount={3} onPageChange={onPageChange} />)
+    render(<ListPagination page={2} pageCount={3} onPageChange={onPageChange} />)
 
     await userEvent.click(screen.getByRole('button', { name: 'Página anterior' }))
 
@@ -46,7 +46,7 @@ describe('UsersPagination', () => {
   })
 
   it('goes forward one page', async () => {
-    render(<UsersPagination page={2} pageCount={3} onPageChange={onPageChange} />)
+    render(<ListPagination page={2} pageCount={3} onPageChange={onPageChange} />)
 
     await userEvent.click(screen.getByRole('button', { name: 'Próxima página' }))
 

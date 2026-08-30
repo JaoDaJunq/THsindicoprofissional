@@ -2,7 +2,7 @@
 
 import { Accordion, Button } from '@heroui/react'
 import type { ReactElement } from 'react'
-import { StatusChip } from '../status-chip'
+import { StatusChip } from '@/components/status-chip'
 import { UserAvatar } from '@/components/user-avatar'
 import type { User } from '@/shared/types'
 
@@ -62,7 +62,7 @@ export function UserListMobile({
                 <Field label="E-mail">{user.email}</Field>
                 <Field label="Perfil">{user.isManager ? 'Síndico' : 'Morador'}</Field>
                 <Field label="Status">
-                  <StatusChip user={user} />
+                  <StatusChip deletedAt={user.deletedAt} />
                 </Field>
               </dl>
 

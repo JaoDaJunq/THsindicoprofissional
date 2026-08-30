@@ -1,41 +1,16 @@
 'use client'
 
-import { Button, SearchField, Tooltip } from '@heroui/react'
+import { SearchField } from '@heroui/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { ReactElement } from 'react'
 import { DeactivateUserDialog } from '@/components/user/deactivate-dialog'
 import { UserFiltersDialog } from '@/components/user/filters-dialog'
-import { UsersPagination } from '@/components/user/list/pagination'
+import { FilterButton } from '@/components/list/filter-button'
+import { ListPagination } from '@/components/list/pagination'
 import { UserList } from '@/components/user/list'
 import { useUsers } from '@/hooks/use-users'
 import type { User, UserFilters } from '@/shared/types'
-
-function FilterIcon(): ReactElement {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="size-4">
-      <path
-        d="M3 5h18M6 12h12M10 19h4"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-function FilterButton({ onPress }: { onPress: () => void }): ReactElement {
-  return (
-    <Tooltip>
-      <Tooltip.Trigger>
-        <Button aria-label="Filtros" isIconOnly variant="primary" onPress={onPress}>
-          <FilterIcon />
-        </Button>
-      </Tooltip.Trigger>
-      <Tooltip.Content>Filtros</Tooltip.Content>
-    </Tooltip>
-  )
-}
 
 export default function UsersPage(): ReactElement {
   const router = useRouter()
@@ -99,7 +74,7 @@ export default function UsersPage(): ReactElement {
       )}
 
       {result && result.pageCount > 1 && (
-        <UsersPagination
+        <ListPagination
           page={result.page}
           pageCount={result.pageCount}
           onPageChange={setPage}

@@ -25,6 +25,16 @@ describe('UserList', () => {
     expect(screen.getAllByRole('button', { name: /Ana Souza/ }).length).toBeGreaterThan(0)
   })
 
+  it('does not wrap the list in a rounded frame of its own', () => {
+    const container = renderList()
+
+    // Table and Accordion already draw a 32px-radius card; a tighter frame
+    // around them clips their corners.
+    expect(container.firstElementChild?.className ?? '').not.toMatch(
+      /rounded|overflow-hidden|border/,
+    )
+  })
+
   it('hides the table on phone widths', () => {
     const container = renderList()
 

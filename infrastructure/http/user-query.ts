@@ -1,5 +1,6 @@
 import type { PageRequest, UserFilters, UserStatus } from '@/shared/types'
 import { DEFAULT_PAGE_SIZE } from '@/shared/types'
+import { readNumber } from './query-params'
 
 export interface UserQuery {
   filters: UserFilters
@@ -10,11 +11,6 @@ function readFlag(raw: string | null): boolean | undefined {
   if (raw === 'true') return true
   if (raw === 'false') return false
   return undefined
-}
-
-function readNumber(raw: string | null, fallback: number): number {
-  const parsed = Number(raw)
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback
 }
 
 /** Query string is user input: anything unrecognised is dropped, never guessed. */
