@@ -14,6 +14,7 @@ async function repositoryWithAdmin(): Promise<InMemoryUserRepository> {
   await repository.setCredentials(user.id, {
     username: 'admin',
     passwordHash: await hasher.hash('admin'),
+    mustChangePassword: true,
   })
   return repository
 }

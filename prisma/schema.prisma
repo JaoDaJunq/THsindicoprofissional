@@ -16,8 +16,8 @@ model User {
   emailVerified DateTime?
   username           String?
   passwordHash       String?
-  /** Forces the password change on first sign-in. */
-  mustChangePassword Boolean @default(true)
+  /** True only while the person still uses a password someone else set for them. */
+  mustChangePassword Boolean @default(false)
   isManager Boolean  @default(false)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())

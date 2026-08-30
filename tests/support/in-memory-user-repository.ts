@@ -47,7 +47,7 @@ export class InMemoryUserRepository implements UserRepository {
       name: input.name,
       image: input.image,
       username: null,
-      mustChangePassword: true,
+      mustChangePassword: false,
       passwordHash: null,
       isManager: false,
       isActive: true,

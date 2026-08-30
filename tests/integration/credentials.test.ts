@@ -31,6 +31,16 @@ afterAll(async () => {
 })
 
 describe('credentials against the real database', () => {
+  it('does not force a password change on someone who was never handed one', async () => {
+    const user = await repository.create({
+      email: 'morador@example.com',
+      name: 'Morador',
+      image: null,
+    })
+
+    expect(user.mustChangePassword).toBe(false)
+  })
+
   it('signs the default admin in', async () => {
     await seedAdmin()
 
