@@ -9,6 +9,8 @@ import { CondominiumFormDialog } from '@/components/condominium/form-dialog'
 import { CondominiumList } from '@/components/condominium/list'
 import { FilterButton } from '@/components/list/filter-button'
 import { ListPagination } from '@/components/list/pagination'
+import { isAdmin } from '@/domain/authorization'
+import { useAccount } from '@/hooks/use-account'
 import { useCondominiums } from '@/hooks/use-condominiums'
 import type { Condominium, CondominiumFilters } from '@/shared/types'
 
@@ -23,6 +25,8 @@ export default function CondominiumsPage(): ReactElement {
   const [toDeactivate, setToDeactivate] = useState<Condominium | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
   const { page: result, isLoading, error } = useCondominiums(filters, page, reloadToken)
+  const { account } = useAccount(true)
+  const canCreate = account !== null && isAdmin(account)
 
   function reload(): void {
     setReloadToken((token) => token + 1)
@@ -59,9 +63,15 @@ export default function CondominiumsPage(): ReactElement {
         <FilterButton onPress={() => setIsFilterOpen(true)} />
       </div>
 
-      <Button variant="primary" className="w-full sm:w-auto sm:self-start" onPress={() => setForm('new')}>
-        Novo condomínio
-      </Button>
+      {canCreate && (
+        <Button
+          variant="primary"
+          className="w-full sm:w-auto sm:self-start"
+          onPress={() => setForm('new')}
+        >
+          Novo condomínio
+        </Button>
+      )}
 
       {error && (
         <p role="alert" className="text-danger text-sm">

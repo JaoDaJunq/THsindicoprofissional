@@ -55,7 +55,7 @@ describe('UserListMobile', () => {
   })
 
   it('calls the person a building manager when they are one', async () => {
-    renderList([buildUser({ isManager: true })])
+    renderList([buildUser({ role: 'MANAGER' })])
 
     await expand()
 

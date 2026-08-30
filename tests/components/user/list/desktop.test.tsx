@@ -33,10 +33,10 @@ describe('UserListDesktop', () => {
     expect(screen.getByText('—')).toBeInTheDocument()
   })
 
-  it('says whether the person is a building manager', () => {
-    renderTable([{ ...base, isManager: true }])
+  it('mostra o papel da pessoa', () => {
+    renderTable([{ ...base, role: 'MANAGER' }])
 
-    expect(screen.getByText('Sim')).toBeInTheDocument()
+    expect(screen.getByText('Síndico')).toBeInTheDocument()
   })
 
   it('shows the status as a label', () => {

@@ -32,15 +32,21 @@ describe('AccountCard', () => {
   })
 
   it('says when the person is a building manager', () => {
-    render(<AccountCard account={buildUser({ isManager: true })} />)
+    render(<AccountCard account={buildUser({ role: 'MANAGER' })} />)
 
     expect(screen.getByText('Síndico')).toBeInTheDocument()
   })
 
-  it('says nothing about the role for a resident', () => {
-    render(<AccountCard account={buildUser({ isManager: false })} />)
+  it('names the system administrator', () => {
+    render(<AccountCard account={buildUser({ role: 'ADMIN' })} />)
 
-    expect(screen.queryByText('Síndico')).not.toBeInTheDocument()
+    expect(screen.getByText('Administrador')).toBeInTheDocument()
+  })
+
+  it('names the resident', () => {
+    render(<AccountCard account={buildUser({ role: 'RESIDENT' })} />)
+
+    expect(screen.getByText('Morador')).toBeInTheDocument()
   })
 
   it('shows the photo when there is one', () => {

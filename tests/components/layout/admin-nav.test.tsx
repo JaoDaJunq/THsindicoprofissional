@@ -65,13 +65,13 @@ describe('AdminNav', () => {
   })
 
   it('shows the role of the person on the rail', () => {
-    renderNav({ isManager: true })
+    renderNav({ role: 'MANAGER' })
 
     expect(screen.getByText('Síndico')).toBeInTheDocument()
   })
 
   it('calls a person who is not a manager a resident', () => {
-    renderNav({ isManager: false })
+    renderNav({ role: 'RESIDENT' })
 
     expect(screen.getByText('Morador')).toBeInTheDocument()
   })

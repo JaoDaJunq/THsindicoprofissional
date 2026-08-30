@@ -48,7 +48,7 @@ export class InMemoryUserRepository implements UserRepository {
       username: null,
       mustChangePassword: false,
       passwordHash: null,
-      isManager: false,
+      role: 'RESIDENT',
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
@@ -66,7 +66,7 @@ export class InMemoryUserRepository implements UserRepository {
       name: input.name === undefined ? current.name : input.name,
       email: input.email ?? current.email,
       image: input.image === undefined ? current.image : input.image,
-      isManager: input.isManager ?? current.isManager,
+      role: input.role ?? current.role,
       updatedAt: new Date(),
     }
     this.users.set(id, updated)
@@ -119,7 +119,7 @@ export class InMemoryUserRepository implements UserRepository {
           : this.active()
 
     const matching = pool.filter((user) => {
-      if (filters.isManager !== undefined && user.isManager !== filters.isManager) return false
+      if (filters.role && user.role !== filters.role) return false
       if (filters.id && user.id !== filters.id) return false
       if (filters.name && !(user.name ?? '').toLowerCase().includes(filters.name.toLowerCase()))
         return false

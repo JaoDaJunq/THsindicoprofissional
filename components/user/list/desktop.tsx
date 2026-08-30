@@ -5,6 +5,7 @@ import { useState } from 'react'
 import type { MouseEvent, ReactElement } from 'react'
 import { StatusChip } from '@/components/status-chip'
 import { UserAvatar } from '@/components/user-avatar'
+import { RoleChip } from '../role-chip'
 import { UserRowMenu } from '../row-menu'
 import type { UserMenuTarget } from '../row-menu'
 import type { User } from '@/shared/types'
@@ -46,7 +47,7 @@ export function UserListDesktop({
           <Table.Column>Foto</Table.Column>
           <Table.Column>Nome</Table.Column>
           <Table.Column>E-mail</Table.Column>
-          <Table.Column>Síndico</Table.Column>
+          <Table.Column>Papel</Table.Column>
           <Table.Column>Status</Table.Column>
         </Table.Header>
         <Table.Body>
@@ -59,7 +60,9 @@ export function UserListDesktop({
                 </Table.Cell>
                 <Table.Cell>{row.user.name ?? '—'}</Table.Cell>
                 <Table.Cell>{row.user.email}</Table.Cell>
-                <Table.Cell>{row.user.isManager ? 'Sim' : 'Não'}</Table.Cell>
+                <Table.Cell>
+                  <RoleChip role={row.user.role} />
+                </Table.Cell>
                 <Table.Cell>
                   <StatusChip deletedAt={row.user.deletedAt} />
                 </Table.Cell>

@@ -9,7 +9,7 @@ describe('buildUsersQuery', () => {
     const query = buildUsersQuery({}, 1)
 
     expect(query).not.toContain('search')
-    expect(query).not.toContain('isManager')
+    expect(query).not.toContain('role')
     expect(query).not.toContain('status')
   })
 
@@ -17,8 +17,8 @@ describe('buildUsersQuery', () => {
     expect(buildUsersQuery({ search: 'ana' }, 1)).toContain('search=ana')
   })
 
-  it('sends false flags, which are a real filter and not an absent one', () => {
-    expect(buildUsersQuery({ isManager: false }, 1)).toContain('isManager=false')
+  it('sends the role that was chosen', () => {
+    expect(buildUsersQuery({ role: 'MANAGER' }, 1)).toContain('role=MANAGER')
   })
 
   it('sends the status, the code, the name and the e-mail', () => {

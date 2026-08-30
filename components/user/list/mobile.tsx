@@ -2,6 +2,7 @@
 
 import { Accordion, Button } from '@heroui/react'
 import type { ReactElement } from 'react'
+import { RoleChip } from '../role-chip'
 import { StatusChip } from '@/components/status-chip'
 import { UserAvatar } from '@/components/user-avatar'
 import type { User } from '@/shared/types'
@@ -60,7 +61,9 @@ export function UserListMobile({
               <dl className="flex flex-col gap-2 text-sm">
                 <Field label="#">{String(firstIndex + index + 1)}</Field>
                 <Field label="E-mail">{user.email}</Field>
-                <Field label="Perfil">{user.isManager ? 'Síndico' : 'Morador'}</Field>
+                <Field label="Perfil">
+                  <RoleChip role={user.role} />
+                </Field>
                 <Field label="Status">
                   <StatusChip deletedAt={user.deletedAt} />
                 </Field>

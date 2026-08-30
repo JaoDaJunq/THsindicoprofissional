@@ -19,6 +19,7 @@ export type {
   UpdateUserInput,
   SetCredentialsInput,
   UserFilters,
+  UserRole,
   UserStatus,
 } from './user'
 export type { Page, PageRequest } from './pagination'

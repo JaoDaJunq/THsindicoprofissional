@@ -128,10 +128,10 @@ describe('UsersPage', () => {
 
     render(<UsersPage />)
     await userEvent.click(screen.getByRole('button', { name: 'Filtros' }))
-    await userEvent.click(screen.getByRole('switch', { name: 'Apenas síndicos' }))
+    await userEvent.click(screen.getByRole('radio', { name: 'Síndico' }))
     await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
 
-    expect(useUsers).toHaveBeenLastCalledWith({ isManager: true, status: 'all' }, 1, 0)
+    expect(useUsers).toHaveBeenLastCalledWith({ role: 'MANAGER', status: 'all' }, 1, 0)
   })
 
   it('brings an inactive person back from the row menu', async () => {

@@ -35,7 +35,7 @@ describe('UserFiltersDialog', () => {
     expect(screen.getByLabelText('Código')).toBeInTheDocument()
     expect(screen.getByLabelText('Nome')).toBeInTheDocument()
     expect(screen.getByLabelText('E-mail')).toBeInTheDocument()
-    expect(screen.getByText('Apenas síndicos')).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'Síndico' })).toBeInTheDocument()
   })
 
   it('offers the three states a person can be in', () => {
@@ -77,19 +77,19 @@ describe('UserFiltersDialog', () => {
   it('applies the manager filter', async () => {
     renderDialog()
 
-    await userEvent.click(screen.getByRole('switch', { name: 'Apenas síndicos' }))
+    await userEvent.click(screen.getByRole('radio', { name: 'Síndico' }))
     await apply()
 
-    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ isManager: true }))
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ role: 'MANAGER' }))
   })
 
-  it('unchecking a filter removes it instead of sending false', async () => {
-    renderDialog({ isManager: true })
+  it('filtra por qualquer papel quando a escolha é Todos', async () => {
+    renderDialog({ role: 'MANAGER' })
 
-    await userEvent.click(screen.getByRole('switch', { name: 'Apenas síndicos' }))
+    await userEvent.click(screen.getByRole('radio', { name: 'Qualquer papel' }))
     await apply()
 
-    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ isManager: undefined }))
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ role: undefined }))
   })
 
   it('leaves an empty text field out of the filters', async () => {
@@ -109,7 +109,7 @@ describe('UserFiltersDialog', () => {
   })
 
   it('clears the filters but keeps the search term', async () => {
-    renderDialog({ search: 'ana', isManager: true })
+    renderDialog({ search: 'ana', role: 'MANAGER' })
 
     await userEvent.click(screen.getByRole('button', { name: 'Limpar' }))
 
@@ -117,7 +117,7 @@ describe('UserFiltersDialog', () => {
   })
 
   it('clears to nothing when there was no search term', async () => {
-    renderDialog({ isManager: true })
+    renderDialog({ role: 'MANAGER' })
 
     await userEvent.click(screen.getByRole('button', { name: 'Limpar' }))
 

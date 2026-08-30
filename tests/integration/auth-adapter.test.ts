@@ -38,7 +38,7 @@ describe('auth adapter against the real database', () => {
     const created = await adapter.createUser?.({ id: '', ...person })
     const stored = await prisma.user.findFirstOrThrow({ where: { id: created?.id } })
 
-    expect(stored.isManager).toBe(false)
+    expect(stored.role).toBe('RESIDENT')
     expect(stored.deletedAt).toBeNull()
   })
 

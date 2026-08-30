@@ -1,12 +1,15 @@
 'use client'
 
-import { Button, Input, Label, Surface, Switch, TextField } from '@heroui/react'
+import { Button, Input, Label, Radio, RadioGroup, Surface, TextField } from '@heroui/react'
 import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { ReactElement, ReactNode } from 'react'
 import { MembershipEditor } from '@/components/membership-editor'
+import { ROLE_LABEL } from '@/components/user/role-chip'
+import { isAdmin } from '@/domain/authorization'
+import { useAccount } from '@/hooks/use-account'
 import { useUser } from '@/hooks/use-user'
-import type { User } from '@/shared/types'
+import type { User, UserRole } from '@/shared/types'
 
 const MESSAGES: Record<string, string> = {
   'invalid-name': 'O nome não pode ficar vazio.',
@@ -23,7 +26,7 @@ const GENERIC = 'Não foi possível salvar. Tente de novo.'
 interface Draft {
   name: string
   email: string
-  isManager: boolean
+  role: UserRole
   username: string
   password: string
 }
@@ -32,7 +35,7 @@ function draftOf(user: User): Draft {
   return {
     name: user.name ?? '',
     email: user.email,
-    isManager: user.isManager,
+    role: user.role,
     username: user.username ?? '',
     password: '',
   }
@@ -70,6 +73,8 @@ export default function UserDetailPage(): ReactElement {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const { user, isLoading, error } = useUser(id)
+  const { account } = useAccount(true)
+  const canEditRole = account !== null && isAdmin(account)
   const [draft, setDraft] = useState<Draft | null>(null)
   const [failure, setFailure] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -111,7 +116,7 @@ export default function UserDetailPage(): ReactElement {
     const saved = await send(`/api/users/${id}`, 'PATCH', {
       name: form.name,
       email: form.email,
-      isManager: form.isManager,
+      role: form.role,
     })
 
     const withAccess =
@@ -136,15 +141,30 @@ export default function UserDetailPage(): ReactElement {
       </Section>
 
       <Section title="Permissões">
-        <Switch
-          isSelected={form.isManager}
-          onChange={(isManager: boolean) => set({ isManager })}
+        {/* only an administrator hands out power — a manager cannot promote anyone */}
+        <RadioGroup
+          variant="secondary"
+          value={form.role}
+          isDisabled={!canEditRole}
+          onChange={(role: string) => set({ role: role as UserRole })}
         >
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
-          <Switch.Content>Síndico</Switch.Content>
-        </Switch>
+          <Label>Papel</Label>
+          <div className="flex flex-wrap gap-4">
+            {(['ADMIN', 'MANAGER', 'RESIDENT'] as const).map((role) => (
+              <Radio key={role} value={role}>
+                <Radio.Control>
+                  <Radio.Indicator />
+                </Radio.Control>
+                <Radio.Content>{ROLE_LABEL[role]}</Radio.Content>
+              </Radio>
+            ))}
+          </div>
+        </RadioGroup>
+        {!canEditRole && (
+          <p className="text-default-500 text-sm">
+            Só um administrador do sistema muda o papel de uma pessoa.
+          </p>
+        )}
       </Section>
 
       <Section title="Acesso">

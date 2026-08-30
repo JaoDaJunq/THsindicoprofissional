@@ -27,13 +27,16 @@ describe('parseUserQuery', () => {
     expect(parse('?search=%20%20').filters.search).toBeUndefined()
   })
 
-  it('reads the manager flag as a boolean', () => {
-    expect(parse('?isManager=true').filters.isManager).toBe(true)
-    expect(parse('?isManager=false').filters.isManager).toBe(false)
+  it('reads the role that was asked for', () => {
+    expect(parse('?role=MANAGER').filters.role).toBe('MANAGER')
   })
 
-  it('leaves the flag unset when it is absent, so nothing is filtered', () => {
-    expect(parse('').filters.isManager).toBeUndefined()
+  it('drops a role it does not know', () => {
+    expect(parse('?role=CHEFE').filters.role).toBeUndefined()
+  })
+
+  it('leaves the role unset when it is absent, so nothing is filtered', () => {
+    expect(parse('').filters.role).toBeUndefined()
   })
 
   it('ignores a status it does not know', () => {

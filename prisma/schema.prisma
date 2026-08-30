@@ -7,6 +7,13 @@ datasource db {
   provider = "postgresql"
 }
 
+/** What the person can do system-wide. Where they do it comes from the membership. */
+enum UserRole {
+  ADMIN
+  MANAGER
+  RESIDENT
+}
+
 model User {
   id        String   @id @default(uuid()) @db.Uuid
   email     String
@@ -18,7 +25,7 @@ model User {
   passwordHash       String?
   /** True only while the person still uses a password someone else set for them. */
   mustChangePassword Boolean @default(false)
-  isManager Boolean  @default(false)
+  role      UserRole @default(RESIDENT)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   /** Null means active. Filled means excluded, with the date. */

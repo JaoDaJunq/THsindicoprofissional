@@ -5,6 +5,7 @@ import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { ROLE_LABEL } from '@/components/user/role-chip'
 import type { ReactElement } from 'react'
 import { NAV_ITEMS } from './nav-items'
 import { UserAvatar } from '@/components/user-avatar'
@@ -25,7 +26,7 @@ export function NavDesktop({ account }: { account: User }): ReactElement {
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{account.name ?? account.email}</p>
           <p className="text-default-500 truncate text-xs">
-            {account.isManager ? 'Síndico' : 'Morador'}
+            {ROLE_LABEL[account.role]}
           </p>
         </div>
       </div>

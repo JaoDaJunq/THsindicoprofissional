@@ -1,10 +1,11 @@
 'use client'
 
-import { Button, Input, Label, Radio, RadioGroup, Switch, TextField } from '@heroui/react'
+import { Button, Input, Label, Radio, RadioGroup, TextField } from '@heroui/react'
 import { useState } from 'react'
 import type { ReactElement } from 'react'
 import { ResponsiveDialog } from '@/components/responsive-dialog'
-import type { UserFilters, UserStatus } from '@/shared/types'
+import { ROLE_LABEL } from './role-chip'
+import type { UserFilters, UserRole, UserStatus } from '@/shared/types'
 
 export interface UserFiltersDialogProps {
   isOpen: boolean
@@ -12,6 +13,14 @@ export interface UserFiltersDialogProps {
   filters: UserFilters
   onApply: (filters: UserFilters) => void
 }
+
+/** "any" is not a role: it is the absence of the filter. */
+const ROLE_CHOICES: { id: UserRole | 'any'; label: string }[] = [
+  { id: 'any', label: 'Qualquer papel' },
+  { id: 'ADMIN', label: ROLE_LABEL.ADMIN },
+  { id: 'MANAGER', label: ROLE_LABEL.MANAGER },
+  { id: 'RESIDENT', label: ROLE_LABEL.RESIDENT },
+]
 
 const STATUSES: { id: UserStatus; label: string }[] = [
   { id: 'all', label: 'Todos' },
@@ -108,15 +117,23 @@ export function UserFiltersDialog({
           </div>
         </RadioGroup>
 
-        <Switch
-          isSelected={draft.isManager === true}
-          onChange={(isSelected: boolean) => set({ isManager: isSelected ? true : undefined })}
+        <RadioGroup
+          variant="secondary"
+          value={draft.role ?? 'any'}
+          onChange={(role: string) => set({ role: role === 'any' ? undefined : (role as UserRole) })}
         >
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
-          <Switch.Content>Apenas síndicos</Switch.Content>
-        </Switch>
+          <Label>Papel</Label>
+          <div className="flex flex-wrap gap-4">
+            {ROLE_CHOICES.map((choice) => (
+              <Radio key={choice.id} value={choice.id}>
+                <Radio.Control>
+                  <Radio.Indicator />
+                </Radio.Control>
+                <Radio.Content>{choice.label}</Radio.Content>
+              </Radio>
+            ))}
+          </div>
+        </RadioGroup>
       </div>
     </ResponsiveDialog>
   )

@@ -12,7 +12,7 @@ export function buildUser(overrides: Partial<User> = {}): User {
     image: null,
     username: null,
     mustChangePassword: false,
-    isManager: false,
+    role: 'RESIDENT',
     deletedAt: null,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-02'),

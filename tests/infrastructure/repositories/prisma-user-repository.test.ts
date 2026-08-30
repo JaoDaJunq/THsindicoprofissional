@@ -71,10 +71,10 @@ describe('PrismaUserRepository', () => {
   it('updates only the given fields', async () => {
     const spy = delegate()
 
-    await new PrismaUserRepository(spy).update(storedUser.id, { isManager: true })
+    await new PrismaUserRepository(spy).update(storedUser.id, { role: 'MANAGER' })
 
     expect(spy.update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: storedUser.id }, data: { isManager: true } }),
+      expect.objectContaining({ where: { id: storedUser.id }, data: { role: 'MANAGER' } }),
     )
   })
 
@@ -110,14 +110,14 @@ describe('PrismaUserRepository', () => {
     })
   })
 
-  it('filters by the manager flag', async () => {
+  it('filters the listing by the role', async () => {
     const spy = delegate()
 
-    await new PrismaUserRepository(spy).list({ isManager: true }, { page: 1, pageSize: 10 })
+    await new PrismaUserRepository(spy).list({ role: 'ADMIN' }, { page: 1, pageSize: 10 })
 
     expect(vi.mocked(spy.findMany).mock.calls[0]?.[0]?.where).toEqual({
       deletedAt: null,
-      isManager: true,
+      role: 'ADMIN',
     })
   })
 

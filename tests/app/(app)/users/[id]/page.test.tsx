@@ -16,6 +16,11 @@ vi.mock('next/navigation', () => ({
 }))
 vi.mock('@/hooks/use-user', () => ({ useUser: (...args: unknown[]) => useUser(...args) }))
 
+const useAccount = vi.fn()
+vi.mock('@/hooks/use-account', () => ({
+  useAccount: (...args: unknown[]) => useAccount(...args),
+}))
+
 const useMemberships = vi.fn().mockReturnValue({ memberships: [], isLoading: false, error: null })
 vi.mock('@/hooks/use-memberships', () => ({
   useMemberships: (...args: unknown[]) => useMemberships(...args),
@@ -31,6 +36,8 @@ function loaded(overrides: Partial<User> = {}): void {
 beforeEach(() => {
   push.mockReset()
   useUser.mockReset()
+  useAccount.mockReset()
+  useAccount.mockReturnValue({ account: buildUser({ role: 'ADMIN' }), isLoading: false, isGone: false })
   loaded()
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => person }))
 })
@@ -48,11 +55,11 @@ describe('UserDetailPage', () => {
   })
 
   it('says whether the person is a manager', () => {
-    loaded({ isManager: true })
+    loaded({ role: 'MANAGER' })
 
     render(<UserDetailPage />)
 
-    expect(screen.getByRole('switch', { name: 'Síndico' })).toBeChecked()
+    expect(screen.getByRole('radio', { name: 'Síndico' })).toBeChecked()
   })
 
   it('says so while loading', () => {
@@ -80,7 +87,7 @@ describe('UserDetailPage', () => {
 
     await userEvent.clear(screen.getByLabelText('Nome'))
     await userEvent.type(screen.getByLabelText('Nome'), 'Ana Paula')
-    await userEvent.click(screen.getByRole('switch', { name: 'Síndico' }))
+    await userEvent.click(screen.getByRole('radio', { name: 'Síndico' }))
     await save()
 
     await waitFor(() =>
@@ -90,7 +97,7 @@ describe('UserDetailPage', () => {
         body: JSON.stringify({
           name: 'Ana Paula',
           email: 'ana@example.com',
-          isManager: true,
+          role: 'MANAGER',
         }),
       }),
     )
@@ -181,5 +188,38 @@ describe('UserDetailPage', () => {
     await userEvent.type(screen.getByLabelText('Buscar condomínio'), 'aur')
 
     expect(await screen.findByRole('option', { name: 'Residencial Aurora' })).toBeInTheDocument()
+  })
+  it('deixa o administrador escolher o papel da pessoa', () => {
+    loaded()
+
+    render(<UserDetailPage />)
+
+    expect(screen.getByRole('radio', { name: 'Síndico' })).toBeEnabled()
+  })
+
+  it('não deixa o síndico mexer no papel de ninguém', () => {
+    useAccount.mockReturnValue({
+      account: buildUser({ role: 'MANAGER' }),
+      isLoading: false,
+      isGone: false,
+    })
+    loaded()
+
+    render(<UserDetailPage />)
+
+    expect(screen.getByRole('radio', { name: 'Síndico' })).toBeDisabled()
+  })
+
+  it('manda o papel escolhido ao salvar', async () => {
+    loaded()
+    render(<UserDetailPage />)
+
+    await userEvent.click(screen.getByRole('radio', { name: 'Síndico' }))
+    await save()
+
+    await waitFor(() => {
+      const body = JSON.parse(String(vi.mocked(fetch).mock.calls[0]?.[1]?.body))
+      expect(body.role).toBe('MANAGER')
+    })
   })
 })

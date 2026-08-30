@@ -10,6 +10,7 @@ import type {
   User,
   UserFilters,
   UserId,
+  UserRole,
 } from '@/shared/types'
 
 type TextMatch = { contains: string; mode: 'insensitive' }
@@ -19,7 +20,7 @@ interface UserWhere {
   email?: string | TextMatch
   name?: TextMatch
   username?: string
-  isManager?: boolean
+  role?: UserRole
   deletedAt?: null | { not: null }
   OR?: readonly {
     name?: TextMatch
@@ -45,7 +46,7 @@ const USER_FIELDS = {
   image: true,
   username: true,
   mustChangePassword: true,
-  isManager: true,
+  role: true,
   deletedAt: true,
   createdAt: true,
   updatedAt: true,
@@ -172,7 +173,7 @@ function buildWhere(filters: UserFilters): UserWhere {
   if (filters.status === 'inactive') where.deletedAt = { not: null }
   else if (filters.status !== 'all') where.deletedAt = null
 
-  if (filters.isManager !== undefined) where.isManager = filters.isManager
+  if (filters.role) where.role = filters.role
   if (filters.id) where.id = filters.id
   if (filters.name) where.name = { contains: filters.name, mode: 'insensitive' }
   if (filters.email) where.email = { contains: filters.email, mode: 'insensitive' }

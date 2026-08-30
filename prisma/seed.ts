@@ -34,7 +34,7 @@ async function main(): Promise<void> {
       username: DEFAULT_USERNAME,
       passwordHash: await hasher.hash(DEFAULT_PASSWORD),
       mustChangePassword: true,
-      isManager: true,
+      role: 'ADMIN',
     },
   })
 

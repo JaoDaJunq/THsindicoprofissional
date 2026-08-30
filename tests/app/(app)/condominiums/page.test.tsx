@@ -4,10 +4,18 @@ import CondominiumsPage from '@/app/(app)/condominiums/page'
 import { setScreen } from '@/tests/support/match-media'
 import type { Condominium, Page } from '@/shared/types'
 import { buildCondominium } from '@/tests/support/build-condominium'
+import { buildUser } from '@/tests/support/build-user'
+
+const buildCondominiumAdmin = () => buildUser({ role: 'ADMIN' })
 
 const useCondominiums = vi.fn()
 vi.mock('@/hooks/use-condominiums', () => ({
   useCondominiums: (...args: unknown[]) => useCondominiums(...args),
+}))
+
+const useAccount = vi.fn()
+vi.mock('@/hooks/use-account', () => ({
+  useAccount: (...args: unknown[]) => useAccount(...args),
 }))
 
 const condominium: Condominium = buildCondominium()
@@ -18,6 +26,12 @@ function pageOf(items: Condominium[], pageCount = 1): Page<Condominium> {
 
 beforeEach(() => {
   useCondominiums.mockReset()
+  useAccount.mockReset()
+  useAccount.mockReturnValue({
+    account: buildCondominiumAdmin(),
+    isLoading: false,
+    isGone: false,
+  })
   setScreen('desktop')
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }))
 })
@@ -205,5 +219,17 @@ describe('CondominiumsPage', () => {
       ).not.toBeInTheDocument(),
     )
     expect(fetch).not.toHaveBeenCalled()
+  })
+  it('só oferece criar condomínio a quem é administrador', () => {
+    useAccount.mockReturnValue({
+      account: buildUser({ role: 'MANAGER' }),
+      isLoading: false,
+      isGone: false,
+    })
+    useCondominiums.mockReturnValue({ page: pageOf([condominium]), isLoading: false, error: null })
+
+    render(<CondominiumsPage />)
+
+    expect(screen.queryByRole('button', { name: 'Novo condomínio' })).not.toBeInTheDocument()
   })
 })

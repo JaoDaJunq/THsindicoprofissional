@@ -2,6 +2,12 @@
 
 export type UserId = string
 
+/**
+ * What the person can do system-wide. Where they do it comes from the
+ * membership — see `CondominiumRole` in `membership.ts`.
+ */
+export type UserRole = 'ADMIN' | 'MANAGER' | 'RESIDENT'
+
 export interface User {
   id: UserId
   email: string
@@ -10,8 +16,8 @@ export interface User {
   username: string | null
   /** True until the person replaces the password they were handed. */
   mustChangePassword: boolean
-  /** Building manager ("síndico"). Never self-assigned. */
-  isManager: boolean
+  /** Never self-assigned: only an administrator changes it. */
+  role: UserRole
   /** Null while the person is active; the date they were excluded otherwise. */
   deletedAt: Date | null
   createdAt: Date
@@ -33,7 +39,7 @@ export interface UpdateUserInput {
   name?: string | null
   email?: string
   image?: string | null
-  isManager?: boolean
+  role?: UserRole
 }
 
 /** Being active is not a column: it is whether the person was excluded. */
@@ -45,6 +51,6 @@ export interface UserFilters {
   id?: string
   name?: string
   email?: string
-  isManager?: boolean
+  role?: UserRole
   status?: UserStatus
 }

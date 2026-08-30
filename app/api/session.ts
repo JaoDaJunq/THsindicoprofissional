@@ -13,5 +13,5 @@ export async function requester(): Promise<User | null> {
 /** Everything that changes another person is a manager's job. */
 export async function requireManager(): Promise<User | null> {
   const user = await requester()
-  return user?.isManager ? user : null
+  return user && user.role !== 'RESIDENT' ? user : null
 }
