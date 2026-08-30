@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validarCommit } from '../../bash/commit.js';
+import { validateCommit } from '../../bash/commit.js';
 
-const passa = (comando) => assert.equal(validarCommit(comando), null, comando);
+const passa = (comando) => assert.equal(validateCommit(comando), null, comando);
 const barra = (comando, trecho) => {
-  const motivo = validarCommit(comando);
+  const motivo = validateCommit(comando);
   assert.ok(motivo, `deveria barrar: ${comando}`);
   assert.match(motivo, trecho);
 };
@@ -57,4 +57,10 @@ test('não confunde palavra que existe nos dois idiomas', () => {
   passa('git commit -m "tarefa: move implementação antiga para .old"');
   passa('git commit -m "refatora: usa o helper que já existe"');
   passa('git commit -m "feat: envia em pt"');
+});
+
+test('não confunde -m no meio de um caminho com a flag de mensagem', () => {
+  passa('git add hooks/use-is-mobile.ts && git commit');
+  passa('git add app/nav-mobile.tsx tests/mobile.test.ts && git commit');
+  passa('git add lib/format-money.ts && git commit');
 });

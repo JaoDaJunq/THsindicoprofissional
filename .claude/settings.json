@@ -16,6 +16,19 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/edit/check.js\"",
+            "statusMessage": "Running lint and tests for the file...",
+            "timeout": 60
+          }
+        ]
+      }
     ]
   }
 }
