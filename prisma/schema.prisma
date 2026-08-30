@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String
+  name      String?
+  image     String?
+  // required by the Auth.js adapter contract
+  emailVerified DateTime?
+  username           String?
+  passwordHash       String?
+  /** Forces the password change on first sign-in. */
+  mustChangePassword Boolean @default(true)
+  isManager Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+
+  accounts Account[]
+  sessions Session[]
+}
+
+// Tables below are required by the Auth.js Prisma adapter.
+model Account {
+  userId            String @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  deletedAt         DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String @db.Uuid
+  expires      DateTime
+  deletedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+  deletedAt  DateTime?
+
+  @@id([identifier, token])
+}

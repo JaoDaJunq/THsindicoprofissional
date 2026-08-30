@@ -1,0 +1,11 @@
+FROM node:26-slim
+# prisma needs openssl; argon2 ships glibc prebuilds, so no toolchain here
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+EXPOSE 3000
+# migrate first so the app never starts against an outdated schema;
+# generate because the client is built per platform.
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma generate && npm run dev -- -H 0.0.0.0"]
