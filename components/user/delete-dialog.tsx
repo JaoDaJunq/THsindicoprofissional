@@ -30,6 +30,10 @@ export function DeleteUserDialog({
 
     try {
       const response = await fetch(`/api/users/${id}`, { method: 'DELETE' })
+      if (response.status === 403) {
+        setError('Você não pode excluir a sua própria conta.')
+        return
+      }
       if (!response.ok) throw new Error('request-failed')
       onDeleted()
       onOpenChange(false)
@@ -46,13 +50,13 @@ export function DeleteUserDialog({
       onOpenChange={onOpenChange}
       title="Excluir usuário"
       footer={
-        <div className="flex w-full gap-2">
-          <Button variant="outline" className="flex-1" onPress={() => onOpenChange(false)}>
+        <div className="flex w-full flex-col-reverse gap-2 sm:flex-row">
+          <Button variant="ghost" className="w-full sm:flex-1" onPress={() => onOpenChange(false)}>
             Cancelar
           </Button>
           <Button
             variant="danger"
-            className="flex-1"
+            className="w-full sm:flex-1"
             isPending={isDeleting}
             onPress={() => void remove()}
           >

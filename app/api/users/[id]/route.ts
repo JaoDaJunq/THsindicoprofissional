@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { softDeleteUser } from '@/application/use-cases/soft-delete-user'
+import type { SoftDeleteUserError } from '@/application/use-cases/soft-delete-user'
 import { updateUser } from '@/application/use-cases/update-user'
 import { auth } from '@/infrastructure/auth/auth'
 import { getUserRepository } from '@/infrastructure/repositories'
@@ -7,13 +8,19 @@ import type { UpdateUserInput } from '@/shared/types'
 
 type Context = { params: Promise<{ id: string }> }
 
-async function requireSession(): Promise<boolean> {
+/** Null when nobody is signed in; otherwise who is asking. */
+async function requesterId(): Promise<string | null> {
   const session = await auth()
-  return Boolean(session?.user)
+  return session?.user?.id ?? null
+}
+
+const DELETE_STATUS: Record<SoftDeleteUserError, number> = {
+  'user-not-found': 404,
+  'cannot-delete-self': 403,
 }
 
 export async function PATCH(request: Request, context: Context): Promise<NextResponse> {
-  if (!(await requireSession())) {
+  if (!(await requesterId())) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
@@ -29,14 +36,15 @@ export async function PATCH(request: Request, context: Context): Promise<NextRes
 }
 
 export async function DELETE(_request: Request, context: Context): Promise<NextResponse> {
-  if (!(await requireSession())) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-  }
+  const requester = await requesterId()
+  if (!requester) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
   const { id } = await context.params
-  const result = await softDeleteUser(getUserRepository(), id)
+  const result = await softDeleteUser(getUserRepository(), id, requester)
 
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 404 })
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: DELETE_STATUS[result.error] })
+  }
 
   return new NextResponse(null, { status: 204 })
 }

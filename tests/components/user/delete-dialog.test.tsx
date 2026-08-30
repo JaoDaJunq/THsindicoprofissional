@@ -22,6 +22,20 @@ function renderDialog(person: User | null = user): void {
 }
 
 describe('DeleteUserDialog', () => {
+  it('explains that nobody deletes their own account', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: false, status: 403, json: async () => ({ error: 'cannot-delete-self' }) }),
+    )
+    renderDialog()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent(/própria conta/i),
+    )
+  })
+
   it('shows nothing when no one is selected', () => {
     renderDialog(null)
 
