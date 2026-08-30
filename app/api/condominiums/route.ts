@@ -4,7 +4,7 @@ import type { CreateCondominiumError } from '@/application/use-cases/create-cond
 import { listCondominiums } from '@/application/use-cases/list-condominiums'
 import { parseCondominiumQuery } from '@/infrastructure/http/condominium-query'
 import { getCondominiumRepository } from '@/infrastructure/repositories'
-import { requester, requireManager } from '../session'
+import { requireAdmin, requester, scopeOf } from '../session'
 import type { CreateCondominiumInput } from '@/shared/types'
 
 const CREATE_STATUS: Record<CreateCondominiumError, number> = {
@@ -17,12 +17,22 @@ const CREATE_STATUS: Record<CreateCondominiumError, number> = {
 }
 
 export async function GET(request: Request): Promise<NextResponse> {
-  if (!(await requester())) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  const user = await requester()
+  if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+
+  // A resident has no business in the admin panel: an empty list would say
+  // they are in the right place and there is nothing here, which is a lie.
+  if (user.role === 'RESIDENT') {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   }
 
   const { filters, page } = parseCondominiumQuery(new URL(request.url).searchParams)
-  const result = await listCondominiums(getCondominiumRepository(), filters, page)
+  const result = await listCondominiums(
+    getCondominiumRepository(),
+    filters,
+    page,
+    scopeOf(user),
+  )
 
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 })
 
@@ -30,7 +40,8 @@ export async function GET(request: Request): Promise<NextResponse> {
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
-  if (!(await requireManager())) {
+  // Only the administrator opens a new condominium.
+  if (!(await requireAdmin())) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   }
 

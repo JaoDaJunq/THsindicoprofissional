@@ -25,11 +25,10 @@ Legenda: `[ ]` a fazer · `[~]` existe mas precisa de ajuste · `[x]` pronto
 - [~] **Cadastro de usuários** — `app/(app)/users/`
   - [x] listar as pessoas com busca, filtros e paginação
   - [x] colunas de síndico e status
-  - [ ] toggle de síndico direto na linha
   - [ ] celular
   - [x] vínculo com o condomínio
 - [x] **Usuário · detalhe e permissões** — `app/(app)/users/[id]/`
-  - [x] único lugar onde a flag de síndico é ligada
+  - [x] único lugar onde o papel é definido, e só o administrador o define
   - [x] editar contato básico — nome e e-mail
   - [x] definir usuário e senha de outra pessoa
   - [x] só síndico edita outra pessoa
@@ -43,7 +42,8 @@ Legenda: `[ ]` a fazer · `[~]` existe mas precisa de ajuste · `[x]` pronto
   - [x] vínculo n↔n com usuários, com papel de morador ou síndico do condomínio
   - [x] a coluna Moradores conta os vínculos ativos, em vez de um número digitado
   - [ ] unidades como entidade
-  - [ ] síndico do condomínio governar o acesso àquele condomínio
+  - [x] síndico do condomínio governa o acesso àquele condomínio
+  - [ ] portal do morador: hoje o RESIDENT recebe 403 e fica sem tela
 - [x] **Calendário** — `app.js` · grade mensal
 - [~] **Manutenções (consolidado)** — `transition-ui.js` sobrescreve `app.js`
   - [ ] decidir qual versão fica e apagar a outra

@@ -8,7 +8,7 @@ import {
   getMembershipRepository,
   getUserRepository,
 } from '@/infrastructure/repositories'
-import { requester, requireManager } from '../session'
+import { requireManagerOf, requester } from '../session'
 import type { MembershipFilters, MembershipInput } from '@/shared/types'
 
 const ADD_STATUS: Record<AddMemberError, number> = {
@@ -35,22 +35,30 @@ function readFilters(params: URLSearchParams): MembershipFilters | null {
 }
 
 export async function GET(request: Request): Promise<NextResponse> {
-  if (!(await requester())) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-  }
+  const user = await requester()
+  if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
   const filters = readFilters(new URL(request.url).searchParams)
   if (!filters) return NextResponse.json({ error: 'missing-filter' }, { status: 400 })
+
+  // Asking for a condominium's people means administering that condominium.
+  // Asking for your own links is always allowed; asking for someone else's is not.
+  const allowed =
+    'condominiumId' in filters
+      ? Boolean(await requireManagerOf(filters.condominiumId))
+      : filters.userId === user.id || user.role !== 'RESIDENT'
+
+  if (!allowed) return NextResponse.json({ error: 'forbidden' }, { status: 403 })
 
   return NextResponse.json(await getMembershipRepository().list(filters))
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
-  if (!(await requireManager())) {
+  const input = (await request.json()) as MembershipInput
+  if (!(await requireManagerOf(input.condominiumId))) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   }
 
-  const input = (await request.json()) as MembershipInput
   const result = await addMember(ports(), input)
 
   if (!result.ok) {
@@ -61,11 +69,11 @@ export async function POST(request: Request): Promise<NextResponse> {
 }
 
 export async function PATCH(request: Request): Promise<NextResponse> {
-  if (!(await requireManager())) {
+  const { userId, condominiumId, role } = (await request.json()) as MembershipInput
+  if (!(await requireManagerOf(condominiumId))) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   }
 
-  const { userId, condominiumId, role } = (await request.json()) as MembershipInput
   const result = await changeMemberRole(
     getMembershipRepository(),
     userId,
@@ -79,16 +87,16 @@ export async function PATCH(request: Request): Promise<NextResponse> {
 }
 
 export async function DELETE(request: Request): Promise<NextResponse> {
-  if (!(await requireManager())) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 })
-  }
-
   const params = new URL(request.url).searchParams
   const userId = params.get('userId')
   const condominiumId = params.get('condominiumId')
 
   if (!userId || !condominiumId) {
     return NextResponse.json({ error: 'missing-filter' }, { status: 400 })
+  }
+
+  if (!(await requireManagerOf(condominiumId))) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   }
 
   const result = await removeMember(getMembershipRepository(), userId, condominiumId)

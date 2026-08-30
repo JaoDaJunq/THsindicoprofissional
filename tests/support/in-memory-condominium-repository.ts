@@ -1,4 +1,7 @@
-import type { CondominiumRepository } from '@/domain/repositories/condominium-repository'
+import type {
+  CondominiumRepository,
+  CondominiumScope,
+} from '@/domain/repositories/condominium-repository'
 import type {
   Condominium,
   CondominiumFilters,
@@ -12,7 +15,20 @@ import type {
 /** Test double. Keeps use-case tests free of a database. */
 export class InMemoryCondominiumRepository implements CondominiumRepository {
   private readonly condominiums = new Map<CondominiumId, Condominium>()
+  private readonly managers = new Map<CondominiumId, Set<string>>()
   private sequence = 0
+
+  /** Test helper: says that this person manages this condominium. */
+  linkManager(userId: string, condominiumId: CondominiumId): void {
+    const managers = this.managers.get(condominiumId) ?? new Set<string>()
+    managers.add(userId)
+    this.managers.set(condominiumId, managers)
+  }
+
+  private isInScope(condominium: Condominium, scope: CondominiumScope): boolean {
+    if (!scope) return true
+    return this.managers.get(condominium.id)?.has(scope.managedBy) === true
+  }
 
   /** Includes soft-deleted rows. Only tests asserting the delete strategy use it. */
   rawCount(): number {
@@ -23,8 +39,12 @@ export class InMemoryCondominiumRepository implements CondominiumRepository {
     return [...this.condominiums.values()].filter((it) => it.deletedAt === null)
   }
 
-  async findById(id: CondominiumId): Promise<Condominium | null> {
-    return this.active().find((it) => it.id === id) ?? null
+  async findById(
+    id: CondominiumId,
+    scope: CondominiumScope = null,
+  ): Promise<Condominium | null> {
+    const found = this.active().find((it) => it.id === id) ?? null
+    return found && this.isInScope(found, scope) ? found : null
   }
 
   async findByCnpj(cnpj: string): Promise<Condominium | null> {
@@ -73,7 +93,11 @@ export class InMemoryCondominiumRepository implements CondominiumRepository {
     return true
   }
 
-  async list(filters: CondominiumFilters, page: PageRequest): Promise<Page<Condominium>> {
+  async list(
+    filters: CondominiumFilters,
+    page: PageRequest,
+    scope: CondominiumScope = null,
+  ): Promise<Page<Condominium>> {
     const term = filters.search?.trim().toLowerCase() ?? ''
     const pool =
       filters.status === 'all'
@@ -83,6 +107,7 @@ export class InMemoryCondominiumRepository implements CondominiumRepository {
           : this.active()
 
     const matching = pool.filter((it) => {
+      if (!this.isInScope(it, scope)) return false
       if (filters.name && !it.name.toLowerCase().includes(filters.name.toLowerCase()))
         return false
       if (filters.cnpj && !(it.cnpj ?? '').includes(filters.cnpj)) return false

@@ -1,4 +1,7 @@
-import type { CondominiumRepository } from '@/domain/repositories/condominium-repository'
+import type {
+  CondominiumRepository,
+  CondominiumScope,
+} from '@/domain/repositories/condominium-repository'
 import type {
   Condominium,
   CondominiumFilters,
@@ -7,11 +10,17 @@ import type {
   Page,
   PageRequest,
   UpdateCondominiumInput,
+  UserId,
 } from '@/shared/types'
 
 type TextMatch = { contains: string; mode: 'insensitive' }
 
+interface ManagerFilter {
+  some: { userId: UserId; role: 'MANAGER'; deletedAt: null }
+}
+
 export interface CondominiumWhere {
+  members?: ManagerFilter
   id?: CondominiumId
   cnpj?: string | TextMatch
   name?: TextMatch
@@ -69,6 +78,16 @@ export interface PrismaCondominiumDelegate {
   }): Promise<{ count: number }>
 }
 
+/**
+ * The administrator has no scope; everyone else only reaches what they manage.
+ * Living in a condominium is not managing it — the link has to say MANAGER.
+ */
+function scopeWhere(scope: CondominiumScope): { members?: ManagerFilter } {
+  if (!scope) return {}
+
+  return { members: { some: { userId: scope.managedBy, role: 'MANAGER', deletedAt: null } } }
+}
+
 /** Soft delete is enforced here so no caller has to remember it. */
 export class PrismaCondominiumRepository implements CondominiumRepository {
   constructor(private readonly delegate: PrismaCondominiumDelegate) {}
@@ -78,8 +97,11 @@ export class PrismaCondominiumRepository implements CondominiumRepository {
     return found && toCondominium(found)
   }
 
-  async findById(id: CondominiumId): Promise<Condominium | null> {
-    return this.findOne({ id, deletedAt: null })
+  async findById(
+    id: CondominiumId,
+    scope: CondominiumScope = null,
+  ): Promise<Condominium | null> {
+    return this.findOne({ id, deletedAt: null, ...scopeWhere(scope) })
   }
 
   async findByCnpj(cnpj: string): Promise<Condominium | null> {
@@ -112,8 +134,12 @@ export class PrismaCondominiumRepository implements CondominiumRepository {
     return count > 0
   }
 
-  async list(filters: CondominiumFilters, page: PageRequest): Promise<Page<Condominium>> {
-    const where = buildWhere(filters)
+  async list(
+    filters: CondominiumFilters,
+    page: PageRequest,
+    scope: CondominiumScope = null,
+  ): Promise<Page<Condominium>> {
+    const where = { ...buildWhere(filters), ...scopeWhere(scope) }
 
     const [items, total] = await Promise.all([
       this.delegate.findMany({

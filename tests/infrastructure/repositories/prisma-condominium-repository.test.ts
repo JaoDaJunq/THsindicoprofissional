@@ -136,6 +136,38 @@ describe('PrismaCondominiumRepository', () => {
     )
   })
 
+  it('mostra todos os condomínios a quem não tem escopo', async () => {
+    const spy = delegate()
+
+    await repository(spy).list({}, { page: 1, pageSize: 10 }, null)
+
+    expect(vi.mocked(spy.findMany).mock.calls[0]?.[0].where.members).toBeUndefined()
+  })
+
+  it('mostra ao síndico apenas o que ele administra', async () => {
+    const spy = delegate()
+
+    await repository(spy).list({}, { page: 1, pageSize: 10 }, { managedBy: 'u1' })
+
+    expect(vi.mocked(spy.findMany).mock.calls[0]?.[0].where.members).toEqual({
+      some: { userId: 'u1', role: 'MANAGER', deletedAt: null },
+    })
+  })
+
+  it('não entrega pelo id o condomínio fora do escopo', async () => {
+    const spy = delegate()
+
+    await repository(spy).findById(stored.id, { managedBy: 'u1' })
+
+    expect(spy.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          members: { some: { userId: 'u1', role: 'MANAGER', deletedAt: null } },
+        }),
+      }),
+    )
+  })
+
   it('hides excluded rows from the listing by default', async () => {
     const spy = delegate()
 

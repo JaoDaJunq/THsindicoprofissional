@@ -229,4 +229,35 @@ describe('PrismaUserRepository', () => {
 
     expect(await new PrismaUserRepository(spy).findPasswordHash('ghost')).toBeNull()
   })
+  it('mostra todas as pessoas a quem não tem escopo', async () => {
+    const spy = delegate()
+
+    await new PrismaUserRepository(spy).list({}, { page: 1, pageSize: 10 }, null)
+
+    expect(vi.mocked(spy.findMany).mock.calls[0]?.[0].where.memberships).toBeUndefined()
+  })
+
+  it('mostra ao síndico apenas quem está nos condomínios dele', async () => {
+    const spy = delegate()
+
+    await new PrismaUserRepository(spy).list({}, { page: 1, pageSize: 10 }, {
+      inCondominiums: ['c1'],
+    })
+
+    expect(vi.mocked(spy.findMany).mock.calls[0]?.[0].where.memberships).toEqual({
+      some: { condominiumId: { in: ['c1'] }, deletedAt: null },
+    })
+  })
+
+  it('não mostra ninguém ao síndico sem condomínio', async () => {
+    const spy = delegate()
+
+    await new PrismaUserRepository(spy).list({}, { page: 1, pageSize: 10 }, {
+      inCondominiums: [],
+    })
+
+    expect(vi.mocked(spy.findMany).mock.calls[0]?.[0].where.memberships).toEqual({
+      some: { condominiumId: { in: [] }, deletedAt: null },
+    })
+  })
 })

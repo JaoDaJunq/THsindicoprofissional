@@ -3,7 +3,7 @@ import { softDeleteCondominium } from '@/application/use-cases/soft-delete-condo
 import { updateCondominium } from '@/application/use-cases/update-condominium'
 import type { UpdateCondominiumError } from '@/application/use-cases/update-condominium'
 import { getCondominiumRepository } from '@/infrastructure/repositories'
-import { requireManager } from '../../session'
+import { requireManagerOf } from '../../session'
 import type { UpdateCondominiumInput } from '@/shared/types'
 
 type Context = { params: Promise<{ id: string }> }
@@ -21,9 +21,9 @@ const UPDATE_STATUS: Record<UpdateCondominiumError, number> = {
 }
 
 export async function PATCH(request: Request, context: Context): Promise<NextResponse> {
-  if (!(await requireManager())) return forbidden
-
   const { id } = await context.params
+  if (!(await requireManagerOf(id))) return forbidden
+
   const input = (await request.json()) as UpdateCondominiumInput
   const result = await updateCondominium(getCondominiumRepository(), id, input)
 
@@ -35,9 +35,9 @@ export async function PATCH(request: Request, context: Context): Promise<NextRes
 }
 
 export async function DELETE(_request: Request, context: Context): Promise<NextResponse> {
-  if (!(await requireManager())) return forbidden
-
   const { id } = await context.params
+  if (!(await requireManagerOf(id))) return forbidden
+
   const result = await softDeleteCondominium(getCondominiumRepository(), id)
 
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 404 })

@@ -1,6 +1,7 @@
 import type {
   StoredCredentials,
   UserRepository,
+  UserScope,
 } from '@/domain/repositories/user-repository'
 import type {
   CreateUserInput,
@@ -19,7 +20,15 @@ interface StoredUser extends User {
 /** Test double. Keeps use-case tests free of a database. */
 export class InMemoryUserRepository implements UserRepository {
   private readonly users = new Map<UserId, StoredUser>()
+  private readonly condominiumsOf = new Map<UserId, Set<string>>()
   private sequence = 0
+
+  /** Test helper: says that this person is linked to this condominium. */
+  linkTo(userId: UserId, condominiumId: string): void {
+    const links = this.condominiumsOf.get(userId) ?? new Set<string>()
+    links.add(condominiumId)
+    this.condominiumsOf.set(userId, links)
+  }
 
   /** Includes soft-deleted rows. Only tests asserting the delete strategy use it. */
   rawCount(): number {
@@ -109,7 +118,11 @@ export class InMemoryUserRepository implements UserRepository {
     return true
   }
 
-  async list(filters: UserFilters, page: PageRequest): Promise<Page<User>> {
+  async list(
+    filters: UserFilters,
+    page: PageRequest,
+    scope: UserScope = null,
+  ): Promise<Page<User>> {
     const term = filters.search?.trim().toLowerCase() ?? ''
     const pool =
       filters.status === 'all'
@@ -119,6 +132,14 @@ export class InMemoryUserRepository implements UserRepository {
           : this.active()
 
     const matching = pool.filter((user) => {
+      if (
+        scope &&
+        ![...(this.condominiumsOf.get(user.id) ?? [])].some((id) =>
+          scope.inCondominiums.includes(id),
+        )
+      ) {
+        return false
+      }
       if (filters.role && user.role !== filters.role) return false
       if (filters.id && user.id !== filters.id) return false
       if (filters.name && !(user.name ?? '').toLowerCase().includes(filters.name.toLowerCase()))

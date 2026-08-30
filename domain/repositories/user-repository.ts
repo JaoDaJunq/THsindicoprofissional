@@ -1,4 +1,5 @@
 import type {
+  CondominiumId,
   CreateUserInput,
   Page,
   PageRequest,
@@ -7,6 +8,12 @@ import type {
   UserFilters,
   UserId,
 } from '@/shared/types'
+
+/**
+ * Which people the caller may see. Null sees everyone — that is the
+ * administrator. A manager only sees who is in the condominiums they manage.
+ */
+export type UserScope = { inCondominiums: readonly CondominiumId[] } | null
 
 export interface StoredCredentials {
   username?: string
@@ -32,5 +39,5 @@ export interface UserRepository {
   softDelete(id: UserId): Promise<void>
   /** Clears the exclusion. False when there is no such person. */
   restore(id: UserId): Promise<boolean>
-  list(filters: UserFilters, page: PageRequest): Promise<Page<User>>
+  list(filters: UserFilters, page: PageRequest, scope?: UserScope): Promise<Page<User>>
 }

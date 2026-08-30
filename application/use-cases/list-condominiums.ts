@@ -1,4 +1,7 @@
-import type { CondominiumRepository } from '@/domain/repositories/condominium-repository'
+import type {
+  CondominiumRepository,
+  CondominiumScope,
+} from '@/domain/repositories/condominium-repository'
 import type {
   Condominium,
   CondominiumFilters,
@@ -14,6 +17,7 @@ export async function listCondominiums(
   repository: CondominiumRepository,
   filters: CondominiumFilters,
   page: PageRequest,
+  scope: CondominiumScope = null,
 ): Promise<Result<Page<Condominium>, ListCondominiumsError>> {
   if (!Number.isInteger(page.page) || page.page < 1) return failure('invalid-page')
 
@@ -21,5 +25,5 @@ export async function listCondominiums(
     return failure('invalid-page-size')
   }
 
-  return success(await repository.list(filters, page))
+  return success(await repository.list(filters, page, scope))
 }

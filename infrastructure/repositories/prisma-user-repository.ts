@@ -1,8 +1,10 @@
 import type {
   StoredCredentials,
   UserRepository,
+  UserScope,
 } from '@/domain/repositories/user-repository'
 import type {
+  CondominiumId,
   CreateUserInput,
   Page,
   PageRequest,
@@ -15,7 +17,12 @@ import type {
 
 type TextMatch = { contains: string; mode: 'insensitive' }
 
+interface MembershipFilter {
+  some: { condominiumId: { in: readonly CondominiumId[] }; deletedAt: null }
+}
+
 interface UserWhere {
+  memberships?: MembershipFilter
   id?: UserId
   email?: string | TextMatch
   name?: TextMatch
@@ -139,8 +146,12 @@ export class PrismaUserRepository implements UserRepository {
     return count > 0
   }
 
-  async list(filters: UserFilters, page: PageRequest): Promise<Page<User>> {
-    const where = buildWhere(filters)
+  async list(
+    filters: UserFilters,
+    page: PageRequest,
+    scope: UserScope = null,
+  ): Promise<Page<User>> {
+    const where = { ...buildWhere(filters), ...scopeWhere(scope) }
 
     const [items, total] = await Promise.all([
       this.delegate.findMany({
@@ -160,6 +171,15 @@ export class PrismaUserRepository implements UserRepository {
       pageSize: page.pageSize,
       pageCount: Math.max(1, Math.ceil(total / page.pageSize)),
     }
+  }
+}
+
+/** The administrator has no scope; a manager reaches only their own people. */
+function scopeWhere(scope: UserScope): { memberships?: MembershipFilter } {
+  if (!scope) return {}
+
+  return {
+    memberships: { some: { condominiumId: { in: scope.inCondominiums }, deletedAt: null } },
   }
 }
 
