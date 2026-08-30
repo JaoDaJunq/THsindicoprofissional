@@ -4,12 +4,38 @@ Três shells: painel do síndico (multi-condomínio), portal do morador, admin d
 `TODO.md` lista as telas — cada tela é uma tarefa, variações entram como sub-itens dela.
 `.old/` é a implementação anterior, referência apenas: **não editar**.
 
+Stack: Next.js 16 (App Router) · React 19 · HeroUI v3 · Tailwind 4 · Postgres 18 · Prisma 7 · Auth.js v5.
+O padrão de camadas está em `docs/architecture.md` — leia antes de criar arquivo novo.
+
 @.claude/rules/tdd.md
+@.claude/rules/soft-delete.md
 
 ## Invariantes
 
-- **pt-BR em tudo**: código, identificadores, comentários, interface, documentação, branches. Nada em inglês além de palavras reservadas e APIs de terceiros.
-- **O mínimo que resolve.** Sem abstração especulativa, sem dependência para o que cabe em poucas linhas.
+- **Código em inglês**: identificadores, arquivos, pastas, comentários, testes, branches.
+  **Exceções deliberadas**: texto exibido ao usuário e mensagens de commit são pt-BR,
+  com acentuação correta e sem exceção.
+- **Tudo tipado.** Sem `any`, sem retorno implícito. O ESLint trata os dois como erro.
+- **Tipos compartilhados ficam em `shared/`** e nunca importam Prisma — senão o bundle
+  do cliente carrega o ORM junto.
+- **Testes ficam em `tests/`**, espelhando a árvore do código. Nunca ao lado do fonte.
+- **Sem componentes server-side para dados.** Tela é `'use client'` e busca de `/api/*`.
+- **Sempre UUID** como identificador, com tipo nativo `@db.Uuid`.
+- **O mínimo que resolve.** Sem abstração especulativa, sem dependência para o que cabe
+  em poucas linhas.
+
+## Rodar
+
+```
+docker compose up -d      # app em :3000, Postgres 18 em :5432
+npm test                  # suíte + cobertura (gate de 95%, quebra o build)
+npm run types             # tsc
+npm run lint              # eslint
+npm run db:migrate        # nova migração
+```
+
+O `.env` da raiz é o setup de dev. Fora do container o banco é `localhost`;
+dentro do compose o host vira `db`.
 
 ## Este arquivo
 

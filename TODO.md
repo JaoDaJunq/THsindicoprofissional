@@ -5,24 +5,32 @@ específicos entram como sub-itens **dentro** da própria tarefa — não como t
 
 Legenda: `[ ]` a fazer · `[~]` existe mas precisa de ajuste · `[x]` pronto
 
+> **Reescrita em andamento.** A stack mudou para Next.js + HeroUI + Postgres, e os
+> arquivos citados abaixo (`app.js`, `admin-panel.js`…) são da implementação anterior,
+> em `.old/`. Conforme cada tela é refeita, a referência passa a apontar para o
+> caminho novo. O padrão de camadas está em `docs/architecture.md`.
+
 ---
 
 ## Acesso e primeiro uso
 
-- [~] **Criar conta** — `auth-extension.js`
-  - [ ] fundir a tela de cadastro de síndico nesta; só nome, e-mail, celular, senha
-  - [ ] remover a escolha de papel — papel não se auto-atribui
-- [x] **Login** — `auth-extension.js` · roteia por papel
+- [x] **Criar conta** — deixou de existir: a pessoa é criada no primeiro acesso
+  - [x] papel não se auto-atribui — todo mundo nasce morador
+- [x] **Login** — `app/signin/` · Google ou usuário e senha
+  - [x] troca de senha obrigatória no primeiro acesso — `app/change-password/`
 - [~] **Onboarding 1 · Primeiro condomínio** — `auth-extension.js`
 - [x] **Onboarding 2 · Rotinas sugeridas** — `app.js`
 - [x] **Onboarding 3 · Conclusão** — `app.js`
 - [x] **Admin do sistema · Login** — `admin-panel.js`
-- [~] **Cadastro de usuários** — `admin-panel.js`
-  - [ ] listar todas as pessoas com celular e vínculo, com busca
-  - [ ] coluna com o toggle de síndico
+- [~] **Cadastro de usuários** — `app/(app)/users/`
+  - [x] listar as pessoas com busca, filtros e paginação
+  - [x] colunas de síndico e status
+  - [ ] toggle de síndico direto na linha
+  - [ ] celular e vínculo com o condomínio
 - [ ] **Usuário · detalhe e permissões** — tela nova
   - [ ] único lugar onde a flag de síndico é ligada
   - [ ] editar contato básico
+  - [ ] definir usuário e senha de outra pessoa (o caso de uso já existe)
 
 ## Painel do síndico (multi-condomínio)
 
