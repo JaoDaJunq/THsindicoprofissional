@@ -18,12 +18,19 @@ export function AdminNav({
 }): ReactElement {
   return (
     <div data-testid="admin-nav" className="contents">
-      {/* stays mounted so the width can animate; `inert` keeps the closed rail
-          away from the mouse, the keyboard and screen readers */}
+      {/* Stays mounted so the width can animate; `inert` keeps the closed rail
+          away from the mouse, the keyboard and screen readers.
+
+          The stickiness belongs here, not on the rail inside: this element owns
+          the `overflow-hidden` the animation needs, and an ancestor with
+          overflow silently cancels `position: sticky` on its descendants.
+          `self-start` earns its place too — a flex item stretched to the
+          container's height has nowhere to slide. */}
       <div
         inert={!isRailOpen}
         className={[
-          'hidden overflow-hidden transition-[width] duration-200 ease-out md:block',
+          'sticky top-0 hidden h-screen self-start overflow-hidden',
+          'transition-[width] duration-200 ease-out md:block',
           isRailOpen ? 'w-60' : 'w-0',
         ].join(' ')}
       >

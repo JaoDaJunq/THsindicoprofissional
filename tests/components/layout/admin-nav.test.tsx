@@ -139,4 +139,23 @@ describe('AdminNav', () => {
 
     expect(screen.getByRole('button', { name: 'Abrir a conta' })).toBeInTheDocument()
   })
+  it('gruda no topo o invólucro da barra, e não a barra dentro dele', () => {
+    renderNav()
+
+    // sticky has to live on the element that owns `overflow-hidden`: an
+    // ancestor with overflow silently cancels sticky on its descendants.
+    const wrapper = screen.getByTestId('nav-desktop').parentElement
+
+    expect(wrapper?.className).toContain('sticky')
+    expect(wrapper?.className).toContain('top-0')
+    expect(wrapper?.className).toContain('h-screen')
+    // a stretched flex item has nowhere to slide, and sticky does nothing
+    expect(wrapper?.className).toContain('self-start')
+  })
+
+  it('não deixa a barra ganhar rolagem própria', () => {
+    renderNav()
+
+    expect(screen.getByTestId('nav-desktop').className).toContain('overflow-hidden')
+  })
 })

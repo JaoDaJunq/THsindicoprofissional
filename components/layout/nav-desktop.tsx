@@ -11,7 +11,11 @@ import { NAV_ITEMS } from './nav-items'
 import { UserAvatar } from '@/components/user-avatar'
 import type { User } from '@/shared/types'
 
-/** Left rail: who is signed in on top, the screens below, the way out at the bottom. */
+/**
+ * Left rail: who is signed in on top, the screens below, the way out at the
+ * bottom. Fills the height of its wrapper, which is what stays stuck to the
+ * top; the rail itself never grows a scrollbar.
+ */
 export function NavDesktop({ account }: { account: User }): ReactElement {
   const pathname = usePathname()
   const [isSigningOut, setIsSigningOut] = useState(false)
@@ -19,7 +23,7 @@ export function NavDesktop({ account }: { account: User }): ReactElement {
   return (
     <Surface
       data-testid="nav-desktop"
-      className="border-default-200 flex h-screen w-60 shrink-0 flex-col gap-2 border-r p-3"
+      className="border-default-200 flex h-full w-60 shrink-0 flex-col gap-2 overflow-hidden border-r p-3"
     >
       <div className="flex items-center gap-3 px-2 py-3">
         <UserAvatar user={account} className="size-10 shrink-0" />
