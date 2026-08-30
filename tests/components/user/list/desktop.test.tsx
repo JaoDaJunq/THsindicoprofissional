@@ -9,7 +9,7 @@ const noop = (): void => undefined
 
 function renderTable(users: User[], firstIndex = 0): void {
   render(
-    <UserListDesktop users={users} firstIndex={firstIndex} onView={noop} onEdit={noop} onDelete={noop} />,
+    <UserListDesktop users={users} firstIndex={firstIndex} onEdit={noop} onDeactivate={noop} onActivate={noop} />,
   )
 }
 
@@ -40,7 +40,7 @@ describe('UserListDesktop', () => {
   })
 
   it('shows the status as a label', () => {
-    renderTable([{ ...base, isActive: false }])
+    renderTable([{ ...base, deletedAt: new Date('2026-02-01') }])
 
     expect(screen.getByText('Inativo')).toBeInTheDocument()
   })

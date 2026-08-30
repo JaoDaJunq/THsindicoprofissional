@@ -30,5 +30,7 @@ export interface UserRepository {
   /** Returns the stored hash, which never leaves the repository as part of `User`. */
   findPasswordHash(id: UserId): Promise<string | null>
   softDelete(id: UserId): Promise<void>
+  /** Clears the exclusion. False when there is no such person. */
+  restore(id: UserId): Promise<boolean>
   list(filters: UserFilters, page: PageRequest): Promise<Page<User>>
 }

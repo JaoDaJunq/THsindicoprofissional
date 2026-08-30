@@ -13,7 +13,6 @@ import type {
 } from '@/shared/types'
 
 interface StoredUser extends User {
-  deletedAt: Date | null
   passwordHash: string | null
 }
 
@@ -50,7 +49,6 @@ export class InMemoryUserRepository implements UserRepository {
       mustChangePassword: false,
       passwordHash: null,
       isManager: false,
-      isActive: true,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
@@ -68,7 +66,6 @@ export class InMemoryUserRepository implements UserRepository {
       name: input.name === undefined ? current.name : input.name,
       image: input.image === undefined ? current.image : input.image,
       isManager: input.isManager ?? current.isManager,
-      isActive: input.isActive ?? current.isActive,
       updatedAt: new Date(),
     }
     this.users.set(id, updated)
@@ -104,12 +101,29 @@ export class InMemoryUserRepository implements UserRepository {
     this.users.set(id, { ...current, deletedAt: new Date() })
   }
 
+  async restore(id: UserId): Promise<boolean> {
+    const current = this.users.get(id)
+    if (!current) return false
+    this.users.set(id, { ...current, deletedAt: null })
+    return true
+  }
+
   async list(filters: UserFilters, page: PageRequest): Promise<Page<User>> {
     const term = filters.search?.trim().toLowerCase() ?? ''
+    const pool =
+      filters.status === 'all'
+        ? [...this.users.values()]
+        : filters.status === 'inactive'
+          ? [...this.users.values()].filter((user) => user.deletedAt !== null)
+          : this.active()
 
-    const matching = this.active().filter((user) => {
+    const matching = pool.filter((user) => {
       if (filters.isManager !== undefined && user.isManager !== filters.isManager) return false
-      if (filters.isActive !== undefined && user.isActive !== filters.isActive) return false
+      if (filters.id && user.id !== filters.id) return false
+      if (filters.name && !(user.name ?? '').toLowerCase().includes(filters.name.toLowerCase()))
+        return false
+      if (filters.email && !user.email.toLowerCase().includes(filters.email.toLowerCase()))
+        return false
       if (!term) return true
       return (
         user.email.toLowerCase().includes(term) ||

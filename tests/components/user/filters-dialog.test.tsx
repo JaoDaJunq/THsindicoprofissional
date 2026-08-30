@@ -24,27 +24,86 @@ function renderDialog(filters: UserFilters = {}): void {
   )
 }
 
+async function apply(): Promise<void> {
+  await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
+}
+
 describe('UserFiltersDialog', () => {
   it('offers a filter for every column that can be filtered', () => {
     renderDialog()
 
+    expect(screen.getByLabelText('Código')).toBeInTheDocument()
+    expect(screen.getByLabelText('Nome')).toBeInTheDocument()
+    expect(screen.getByLabelText('E-mail')).toBeInTheDocument()
     expect(screen.getByText('Apenas síndicos')).toBeInTheDocument()
-    expect(screen.getByText('Apenas inativos')).toBeInTheDocument()
   })
 
-  it('applies the chosen filters', async () => {
+  it('offers the three states a person can be in', () => {
+    renderDialog()
+
+    expect(screen.getByRole('radio', { name: 'Todos' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'Ativos' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'Inativos' })).toBeInTheDocument()
+  })
+
+  it('starts on all of them', () => {
+    renderDialog()
+
+    expect(screen.getByRole('radio', { name: 'Todos' })).toBeChecked()
+  })
+
+  it('applies the code, the name and the e-mail', async () => {
+    renderDialog()
+
+    await userEvent.type(screen.getByLabelText('Código'), 'abc-123')
+    await userEvent.type(screen.getByLabelText('Nome'), 'Ana')
+    await userEvent.type(screen.getByLabelText('E-mail'), 'ana@')
+    await apply()
+
+    expect(onApply).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'abc-123', name: 'Ana', email: 'ana@' }),
+    )
+  })
+
+  it('applies the inactive-only filter', async () => {
+    renderDialog()
+
+    await userEvent.click(screen.getByRole('radio', { name: 'Inativos' }))
+    await apply()
+
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ status: 'inactive' }))
+  })
+
+  it('applies the manager filter', async () => {
     renderDialog()
 
     await userEvent.click(screen.getByRole('switch', { name: 'Apenas síndicos' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
+    await apply()
 
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ isManager: true }))
+  })
+
+  it('unchecking a filter removes it instead of sending false', async () => {
+    renderDialog({ isManager: true })
+
+    await userEvent.click(screen.getByRole('switch', { name: 'Apenas síndicos' }))
+    await apply()
+
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ isManager: undefined }))
+  })
+
+  it('leaves an empty text field out of the filters', async () => {
+    renderDialog()
+
+    await apply()
+
+    expect(onApply).toHaveBeenCalledWith({ status: 'all' })
   })
 
   it('closes itself after applying', async () => {
     renderDialog()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
+    await apply()
 
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
@@ -63,30 +122,5 @@ describe('UserFiltersDialog', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Limpar' }))
 
     expect(onApply).toHaveBeenCalledWith({})
-  })
-  it('applies the inactive-only filter', async () => {
-    renderDialog()
-
-    await userEvent.click(screen.getByRole('switch', { name: 'Apenas inativos' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
-
-    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ isActive: false }))
-  })
-
-  it('unchecking a filter removes it instead of sending false', async () => {
-    renderDialog({ isManager: true })
-
-    await userEvent.click(screen.getByRole('switch', { name: 'Apenas síndicos' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
-
-    expect(onApply).toHaveBeenCalledWith({ isManager: undefined })
-  })
-  it('unchecking the inactive filter removes it', async () => {
-    renderDialog({ isActive: false })
-
-    await userEvent.click(screen.getByRole('switch', { name: 'Apenas inativos' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
-
-    expect(onApply).toHaveBeenCalledWith({ isActive: undefined })
   })
 })

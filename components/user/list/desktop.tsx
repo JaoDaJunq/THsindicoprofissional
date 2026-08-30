@@ -1,8 +1,9 @@
 'use client'
 
-import { Chip, Table } from '@heroui/react'
+import { Table } from '@heroui/react'
 import { useState } from 'react'
 import type { MouseEvent, ReactElement } from 'react'
+import { StatusChip } from '../status-chip'
 import { UserAvatar } from '@/components/user-avatar'
 import { UserRowMenu } from '../row-menu'
 import type { UserMenuTarget } from '../row-menu'
@@ -18,9 +19,9 @@ interface NumberedUser {
 export function UserListDesktop({
   users,
   firstIndex,
-  onView,
   onEdit,
-  onDelete,
+  onDeactivate,
+  onActivate,
 }: UserListProps): ReactElement {
   const [target, setTarget] = useState<UserMenuTarget | null>(null)
 
@@ -60,9 +61,7 @@ export function UserListDesktop({
                 <Table.Cell>{row.user.email}</Table.Cell>
                 <Table.Cell>{row.user.isManager ? 'Sim' : 'Não'}</Table.Cell>
                 <Table.Cell>
-                  <Chip variant={row.user.isActive ? 'primary' : 'soft'}>
-                    {row.user.isActive ? 'Ativo' : 'Inativo'}
-                  </Chip>
+                  <StatusChip user={row.user} />
                 </Table.Cell>
               </Table.Row>
             )}
@@ -74,9 +73,9 @@ export function UserListDesktop({
       <UserRowMenu
         target={target}
         onClose={() => setTarget(null)}
-        onView={onView}
         onEdit={onEdit}
-        onDelete={onDelete}
+        onDeactivate={onDeactivate}
+        onActivate={onActivate}
       />
     </Table>
   )

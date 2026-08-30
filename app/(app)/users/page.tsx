@@ -3,7 +3,7 @@
 import { Button, SearchField, Tooltip } from '@heroui/react'
 import { useState } from 'react'
 import type { ReactElement } from 'react'
-import { DeleteUserDialog } from '@/components/user/delete-dialog'
+import { DeactivateUserDialog } from '@/components/user/deactivate-dialog'
 import { UserFiltersDialog } from '@/components/user/filters-dialog'
 import { UsersPagination } from '@/components/user/list/pagination'
 import { UserList } from '@/components/user/list'
@@ -27,7 +27,7 @@ function FilterButton({ onPress }: { onPress: () => void }): ReactElement {
   return (
     <Tooltip>
       <Tooltip.Trigger>
-        <Button aria-label="Filtros" isIconOnly variant="outline" onPress={onPress}>
+        <Button aria-label="Filtros" isIconOnly variant="primary" onPress={onPress}>
           <FilterIcon />
         </Button>
       </Tooltip.Trigger>
@@ -40,7 +40,7 @@ export default function UsersPage(): ReactElement {
   const [filters, setFilters] = useState<UserFilters>({})
   const [page, setPage] = useState(1)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [userToDelete, setUserToDelete] = useState<User | null>(null)
+  const [userToDeactivate, setUserToDeactivate] = useState<User | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
   const { page: result, isLoading, error } = useUsers(filters, page, reloadToken)
 
@@ -55,6 +55,11 @@ export default function UsersPage(): ReactElement {
   }
 
   const notImplemented = (): void => undefined
+
+  async function activate(user: User): Promise<void> {
+    await fetch(`/api/users/${user.id}/restore`, { method: 'POST' })
+    setReloadToken((token) => token + 1)
+  }
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-4 p-6">
@@ -86,9 +91,9 @@ export default function UsersPage(): ReactElement {
           <UserList
             users={result.items}
             firstIndex={(result.page - 1) * result.pageSize}
-            onView={notImplemented}
             onEdit={notImplemented}
-            onDelete={setUserToDelete}
+            onDeactivate={setUserToDeactivate}
+            onActivate={(user) => void activate(user)}
           />
         )
       )}
@@ -101,9 +106,9 @@ export default function UsersPage(): ReactElement {
         />
       )}
 
-      <DeleteUserDialog
-        user={userToDelete}
-        onOpenChange={(isOpen) => !isOpen && setUserToDelete(null)}
+      <DeactivateUserDialog
+        user={userToDeactivate}
+        onOpenChange={(isOpen) => !isOpen && setUserToDeactivate(null)}
         onDeleted={() => setReloadToken((token) => token + 1)}
       />
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { Surface } from '@heroui/react'
 import type { ReactElement } from 'react'
 import { UserListDesktop } from './desktop'
 import { UserListMobile } from './mobile'
@@ -11,14 +12,17 @@ import type { UserListProps } from './mobile'
  */
 export function UserList(props: UserListProps): ReactElement {
   return (
-    <div data-testid="user-list">
+    <Surface
+      data-testid="user-list"
+      className="border-default-200 overflow-hidden rounded-2xl border"
+    >
       <div className="hidden md:block">
         <UserListDesktop {...props} />
       </div>
       <div className="md:hidden">
         <UserListMobile {...props} />
       </div>
-    </div>
+    </Surface>
   )
 }
 

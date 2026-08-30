@@ -36,11 +36,18 @@ describe('parseUserQuery', () => {
     expect(parse('').filters.isManager).toBeUndefined()
   })
 
-  it('ignores a flag that is neither true nor false', () => {
-    expect(parse('?isActive=maybe').filters.isActive).toBeUndefined()
+  it('ignores a status it does not know', () => {
+    expect(parse('?status=maybe').filters.status).toBeUndefined()
   })
-  it('reads the status flag as a boolean', () => {
-    expect(parse('?isActive=true').filters.isActive).toBe(true)
-    expect(parse('?isActive=false').filters.isActive).toBe(false)
+
+  it('reads the status the person chose', () => {
+    expect(parse('?status=all').filters.status).toBe('all')
+    expect(parse('?status=inactive').filters.status).toBe('inactive')
+  })
+
+  it('reads the code, the name and the e-mail', () => {
+    const filters = parse('?id=abc&name=Ana&email=ana%40example.com').filters
+
+    expect(filters).toMatchObject({ id: 'abc', name: 'Ana', email: 'ana@example.com' })
   })
 })

@@ -127,7 +127,24 @@ describe('UsersPage', () => {
     await userEvent.click(screen.getByRole('switch', { name: 'Apenas síndicos' }))
     await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
 
-    expect(useUsers).toHaveBeenLastCalledWith({ isManager: true }, 1, 0)
+    expect(useUsers).toHaveBeenLastCalledWith({ isManager: true, status: 'all' }, 1, 0)
+  })
+
+  it('brings an inactive person back from the row menu', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+    const inactive = buildUser({ deletedAt: new Date('2026-02-01') })
+    useUsers.mockReturnValue({ page: pageOf([inactive]), isLoading: false, error: null })
+
+    render(<UsersPage />)
+    openRowMenu()
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Ativar' }))
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(`/api/users/${inactive.id}/restore`, {
+        method: 'POST',
+      }),
+    )
   })
 
   it('goes to another page', async () => {
@@ -138,28 +155,28 @@ describe('UsersPage', () => {
 
     expect(useUsers).toHaveBeenLastCalledWith({}, 2, 0)
   })
-  it('deletes a person from the row menu and reloads the list', async () => {
+  it('deactivates a person from the row menu and reloads the list', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }))
     useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
 
     render(<UsersPage />)
     openRowMenu()
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Excluir' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }))
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Desativar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Desativar' }))
 
     await waitFor(() => expect(useUsers).toHaveBeenLastCalledWith({}, 1, 1))
   })
 
-  it('closes the delete dialog on cancel', async () => {
+  it('closes the deactivate dialog on cancel', async () => {
     useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
 
     render(<UsersPage />)
     openRowMenu()
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Excluir' }))
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Desativar' }))
     await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
 
     await waitFor(() =>
-      expect(screen.queryByText('Excluir usuário')).not.toBeInTheDocument(),
+      expect(screen.queryByText('Desativar usuário')).not.toBeInTheDocument(),
     )
   })
   it('clearing the search stops filtering by it', async () => {

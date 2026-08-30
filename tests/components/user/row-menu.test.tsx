@@ -7,15 +7,15 @@ import { buildUser } from '@/tests/support/build-user'
 const user: User = buildUser()
 
 const onClose = vi.fn()
-const onView = vi.fn()
 const onEdit = vi.fn()
-const onDelete = vi.fn()
+const onDeactivate = vi.fn()
+const onActivate = vi.fn()
 
 beforeEach(() => {
   onClose.mockReset()
-  onView.mockReset()
   onEdit.mockReset()
-  onDelete.mockReset()
+  onDeactivate.mockReset()
+  onActivate.mockReset()
 })
 
 function renderMenu(person: User | null = user): void {
@@ -23,9 +23,9 @@ function renderMenu(person: User | null = user): void {
     <UserRowMenu
       target={person && { user: person, x: 10, y: 20 }}
       onClose={onClose}
-      onView={onView}
       onEdit={onEdit}
-      onDelete={onDelete}
+      onDeactivate={onDeactivate}
+      onActivate={onActivate}
     />,
   )
 }
@@ -37,12 +37,33 @@ describe('UserRowMenu', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
 
-  it('offers viewing, editing and deleting', () => {
+  it('offers editing and deactivating', () => {
     renderMenu()
 
-    expect(screen.getByRole('menuitem', { name: /Visualizar/ })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: /Editar/ })).toBeInTheDocument()
-    expect(screen.getByRole('menuitem', { name: /Excluir/ })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /Desativar/ })).toBeInTheDocument()
+  })
+
+  it('does not offer viewing, which no screen answers yet', () => {
+    renderMenu()
+
+    expect(screen.queryByRole('menuitem', { name: /Visualizar/ })).not.toBeInTheDocument()
+  })
+
+  it('offers to bring an inactive person back', () => {
+    renderMenu(buildUser({ deletedAt: new Date('2026-02-01') }))
+
+    expect(screen.getByRole('menuitem', { name: /Ativar/ })).toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: /Desativar/ })).not.toBeInTheDocument()
+  })
+
+  it('asks to bring the person back', async () => {
+    const person = buildUser({ deletedAt: new Date('2026-02-01') })
+    renderMenu(person)
+
+    await userEvent.click(screen.getByRole('menuitem', { name: /Ativar/ }))
+
+    expect(onActivate).toHaveBeenCalledWith(person)
   })
 
   it('gives every option an icon', () => {
@@ -53,13 +74,6 @@ describe('UserRowMenu', () => {
     }
   })
 
-  it('asks to view the person', async () => {
-    renderMenu()
-    await userEvent.click(screen.getByRole('menuitem', { name: /Visualizar/ }))
-
-    expect(onView).toHaveBeenCalledWith(user)
-  })
-
   it('asks to edit the person', async () => {
     renderMenu()
     await userEvent.click(screen.getByRole('menuitem', { name: /Editar/ }))
@@ -67,11 +81,11 @@ describe('UserRowMenu', () => {
     expect(onEdit).toHaveBeenCalledWith(user)
   })
 
-  it('asks to delete the person', async () => {
+  it('asks to deactivate the person', async () => {
     renderMenu()
-    await userEvent.click(screen.getByRole('menuitem', { name: /Excluir/ }))
+    await userEvent.click(screen.getByRole('menuitem', { name: /Desativar/ }))
 
-    expect(onDelete).toHaveBeenCalledWith(user)
+    expect(onDeactivate).toHaveBeenCalledWith(user)
   })
 
   it('closes itself once an option was chosen', async () => {

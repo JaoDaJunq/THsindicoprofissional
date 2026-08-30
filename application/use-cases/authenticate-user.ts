@@ -3,7 +3,7 @@ import type { PasswordHasher } from '@/domain/security/password-hasher'
 import type { Result, User } from '@/shared/types'
 import { failure, success } from '@/shared/types'
 
-export type AuthenticateUserError = 'invalid-credentials' | 'inactive-user'
+export type AuthenticateUserError = 'invalid-credentials'
 
 export interface Credentials {
   username: string
@@ -11,6 +11,8 @@ export interface Credentials {
 }
 
 /**
+ * An excluded person never gets here: the repository does not return them.
+ *
  * A wrong username and a wrong password give the same answer on purpose:
  * telling them apart would let someone enumerate who exists.
  */
@@ -28,8 +30,6 @@ export async function authenticateUser(
   if (!(await hasher.verify(hash, credentials.password))) {
     return failure('invalid-credentials')
   }
-
-  if (!user.isActive) return failure('inactive-user')
 
   return success(user)
 }

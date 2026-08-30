@@ -39,7 +39,7 @@ describe('auth adapter against the real database', () => {
     const stored = await prisma.user.findFirstOrThrow({ where: { id: created?.id } })
 
     expect(stored.isManager).toBe(false)
-    expect(stored.isActive).toBe(true)
+    expect(stored.deletedAt).toBeNull()
   })
 
   it('gives every user a uuid', async () => {

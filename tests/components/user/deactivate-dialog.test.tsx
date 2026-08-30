@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { DeleteUserDialog } from '@/components/user/delete-dialog'
+import { DeactivateUserDialog } from '@/components/user/deactivate-dialog'
 import { setScreen } from '@/tests/support/match-media'
 import type { User } from '@/shared/types'
 import { buildUser } from '@/tests/support/build-user'
@@ -18,10 +18,10 @@ beforeEach(() => {
 })
 
 function renderDialog(person: User | null = user): void {
-  render(<DeleteUserDialog user={person} onOpenChange={onOpenChange} onDeleted={onDeleted} />)
+  render(<DeactivateUserDialog user={person} onOpenChange={onOpenChange} onDeleted={onDeleted} />)
 }
 
-describe('DeleteUserDialog', () => {
+describe('DeactivateUserDialog', () => {
   it('explains that nobody deletes their own account', async () => {
     vi.stubGlobal(
       'fetch',
@@ -29,7 +29,7 @@ describe('DeleteUserDialog', () => {
     )
     renderDialog()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Desativar' }))
 
     await waitFor(() =>
       expect(screen.getByRole('alert')).toHaveTextContent(/própria conta/i),
@@ -39,7 +39,7 @@ describe('DeleteUserDialog', () => {
   it('shows nothing when no one is selected', () => {
     renderDialog(null)
 
-    expect(screen.queryByText('Excluir usuário')).not.toBeInTheDocument()
+    expect(screen.queryByText('Desativar usuário')).not.toBeInTheDocument()
   })
 
   it('names the person about to be excluded', () => {
@@ -57,7 +57,7 @@ describe('DeleteUserDialog', () => {
   it('asks the API to delete the person', async () => {
     renderDialog()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Desativar' }))
 
     expect(fetch).toHaveBeenCalledWith(`/api/users/${user.id}`, { method: 'DELETE' })
   })
@@ -65,7 +65,7 @@ describe('DeleteUserDialog', () => {
   it('tells the screen to reload after deleting', async () => {
     renderDialog()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Desativar' }))
 
     await waitFor(() => expect(onDeleted).toHaveBeenCalled())
   })
@@ -83,10 +83,10 @@ describe('DeleteUserDialog', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }))
     renderDialog()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Desativar' }))
 
     await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(/não foi possível excluir/i),
+      expect(screen.getByRole('alert')).toHaveTextContent(/não foi possível desativar/i),
     )
     expect(onDeleted).not.toHaveBeenCalled()
   })

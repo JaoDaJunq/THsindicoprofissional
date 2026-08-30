@@ -15,12 +15,12 @@ export interface UserMenuTarget {
 export interface UserRowMenuProps {
   target: UserMenuTarget | null
   onClose: () => void
-  onView: (user: User) => void
   onEdit: (user: User) => void
-  onDelete: (user: User) => void
+  onDeactivate: (user: User) => void
+  onActivate: (user: User) => void
 }
 
-type Action = 'view' | 'edit' | 'delete'
+type Action = 'edit' | 'deactivate' | 'activate'
 
 function Icon({ d }: { d: string }): ReactElement {
   return (
@@ -30,11 +30,21 @@ function Icon({ d }: { d: string }): ReactElement {
   )
 }
 
-const ITEMS: { id: Action; label: string; path: string }[] = [
-  { id: 'view', label: 'Visualizar', path: 'M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6Zm10 2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z' },
-  { id: 'edit', label: 'Editar', path: 'M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z' },
-  { id: 'delete', label: 'Excluir', path: 'M4 7h16M9 7V5h6v2m-9 0 1 13h8l1-13' },
-]
+const EDIT = { id: 'edit', label: 'Editar', path: 'M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4Z' } as const
+const DEACTIVATE = {
+  id: 'deactivate',
+  label: 'Desativar',
+  path: 'M4 7h16M9 7V5h6v2m-9 0 1 13h8l1-13',
+} as const
+const ACTIVATE = {
+  id: 'activate',
+  label: 'Ativar',
+  path: 'M20 6 9 17l-5-5',
+} as const
+
+function itemsFor(user: User): readonly { id: Action; label: string; path: string }[] {
+  return [EDIT, user.deletedAt === null ? DEACTIVATE : ACTIVATE]
+}
 
 /**
  * Row actions live in the context menu: the table shows data, the right button
@@ -43,9 +53,9 @@ const ITEMS: { id: Action; label: string; path: string }[] = [
 export function UserRowMenu({
   target,
   onClose,
-  onView,
   onEdit,
-  onDelete,
+  onDeactivate,
+  onActivate,
 }: UserRowMenuProps): ReactElement | null {
   if (!target) return null
 
@@ -53,9 +63,9 @@ export function UserRowMenu({
 
   function run(key: Key): void {
     const action = String(key) as Action
-    if (action === 'view') onView(user)
     if (action === 'edit') onEdit(user)
-    if (action === 'delete') onDelete(user)
+    if (action === 'deactivate') onDeactivate(user)
+    if (action === 'activate') onActivate(user)
     onClose()
   }
 
@@ -69,7 +79,7 @@ export function UserRowMenu({
       />
       <Dropdown.Popover placement="bottom start">
         <Dropdown.Menu onAction={run}>
-          {ITEMS.map((item) => (
+          {itemsFor(user).map((item) => (
             <Dropdown.Item key={item.id} id={item.id} className="flex items-center gap-2">
               <Icon d={item.path} />
               {item.label}

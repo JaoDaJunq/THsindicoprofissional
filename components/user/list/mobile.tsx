@@ -1,16 +1,17 @@
 'use client'
 
-import { Accordion, Button, Chip } from '@heroui/react'
+import { Accordion, Button } from '@heroui/react'
 import type { ReactElement } from 'react'
+import { StatusChip } from '../status-chip'
 import { UserAvatar } from '@/components/user-avatar'
 import type { User } from '@/shared/types'
 
 export interface UserListProps {
   users: readonly User[]
   firstIndex: number
-  onView: (user: User) => void
   onEdit: (user: User) => void
-  onDelete: (user: User) => void
+  onDeactivate: (user: User) => void
+  onActivate: (user: User) => void
 }
 
 function Field({
@@ -32,16 +33,16 @@ function Field({
 export function UserListMobile({
   users,
   firstIndex,
-  onView,
   onEdit,
-  onDelete,
+  onDeactivate,
+  onActivate,
 }: UserListProps): ReactElement {
   if (users.length === 0) {
     return <p className="text-default-500 py-8 text-center text-sm">Nenhum usuário encontrado.</p>
   }
 
   return (
-    <Accordion>
+    <Accordion variant="surface" hideSeparator>
       {users.map((user, index) => (
         <Accordion.Item key={user.id} id={user.id}>
           <Accordion.Heading>
@@ -61,22 +62,23 @@ export function UserListMobile({
                 <Field label="E-mail">{user.email}</Field>
                 <Field label="Perfil">{user.isManager ? 'Síndico' : 'Morador'}</Field>
                 <Field label="Status">
-                  <Chip variant={user.isActive ? 'primary' : 'soft'}>
-                    {user.isActive ? 'Ativo' : 'Inativo'}
-                  </Chip>
+                  <StatusChip user={user} />
                 </Field>
               </dl>
 
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onPress={() => onView(user)}>
-                  Visualizar
-                </Button>
                 <Button variant="outline" className="flex-1" onPress={() => onEdit(user)}>
                   Editar
                 </Button>
-                <Button variant="danger" className="flex-1" onPress={() => onDelete(user)}>
-                  Excluir
-                </Button>
+                {user.deletedAt === null ? (
+                  <Button variant="danger" className="flex-1" onPress={() => onDeactivate(user)}>
+                    Desativar
+                  </Button>
+                ) : (
+                  <Button variant="primary" className="flex-1" onPress={() => onActivate(user)}>
+                    Ativar
+                  </Button>
+                )}
               </div>
             </Accordion.Body>
           </Accordion.Panel>

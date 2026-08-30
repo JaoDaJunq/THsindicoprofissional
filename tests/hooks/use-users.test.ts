@@ -10,7 +10,7 @@ describe('buildUsersQuery', () => {
 
     expect(query).not.toContain('search')
     expect(query).not.toContain('isManager')
-    expect(query).not.toContain('isActive')
+    expect(query).not.toContain('status')
   })
 
   it('sends the search term', () => {
@@ -18,6 +18,18 @@ describe('buildUsersQuery', () => {
   })
 
   it('sends false flags, which are a real filter and not an absent one', () => {
-    expect(buildUsersQuery({ isActive: false }, 1)).toContain('isActive=false')
+    expect(buildUsersQuery({ isManager: false }, 1)).toContain('isManager=false')
+  })
+
+  it('sends the status, the code, the name and the e-mail', () => {
+    const query = buildUsersQuery(
+      { status: 'inactive', id: 'abc', name: 'Ana', email: 'ana@' },
+      1,
+    )
+
+    expect(query).toContain('status=inactive')
+    expect(query).toContain('id=abc')
+    expect(query).toContain('name=Ana')
+    expect(query).toContain('email=ana%40')
   })
 })

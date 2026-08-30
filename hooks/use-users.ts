@@ -25,8 +25,11 @@ export function buildUsersQuery(filters: UserFilters, page: number): string {
   })
 
   if (filters.search) params.set('search', filters.search)
+  if (filters.id) params.set('id', filters.id)
+  if (filters.name) params.set('name', filters.name)
+  if (filters.email) params.set('email', filters.email)
   if (filters.isManager !== undefined) params.set('isManager', String(filters.isManager))
-  if (filters.isActive !== undefined) params.set('isActive', String(filters.isActive))
+  if (filters.status) params.set('status', filters.status)
 
   return `/api/users?${params.toString()}`
 }

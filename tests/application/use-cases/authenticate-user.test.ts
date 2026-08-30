@@ -59,18 +59,18 @@ describe('authenticateUser', () => {
     expect(result).toEqual({ ok: false, error: 'invalid-credentials' })
   })
 
-  it('refuses an inactive person even with the right password', async () => {
+  it('refuses an excluded person even with the right password', async () => {
     const repository = await repositoryWithAdmin()
     const admin = await repository.findByUsername('admin')
     if (!admin) throw new Error('fixture failed')
-    await repository.update(admin.id, { isActive: false })
+    await repository.softDelete(admin.id)
 
     const result = await authenticateUser(repository, hasher, {
       username: 'admin',
       password: 'admin',
     })
 
-    expect(result).toEqual({ ok: false, error: 'inactive-user' })
+    expect(result).toEqual({ ok: false, error: 'invalid-credentials' })
   })
 
   it('reports that the password still has to be changed', async () => {

@@ -13,7 +13,7 @@ export function buildUser(overrides: Partial<User> = {}): User {
     username: null,
     mustChangePassword: false,
     isManager: false,
-    isActive: true,
+    deletedAt: null,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-02'),
     ...overrides,

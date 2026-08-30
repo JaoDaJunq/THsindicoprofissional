@@ -12,21 +12,23 @@ import type {
   UserId,
 } from '@/shared/types'
 
+type TextMatch = { contains: string; mode: 'insensitive' }
+
 interface UserWhere {
   id?: UserId
-  email?: string
+  email?: string | TextMatch
+  name?: TextMatch
   username?: string
   isManager?: boolean
-  isActive?: boolean
-  deletedAt: null
+  deletedAt?: null | { not: null }
   OR?: readonly {
-    name?: { contains: string; mode: 'insensitive' }
-    email?: { contains: string; mode: 'insensitive' }
+    name?: TextMatch
+    email?: TextMatch
   }[]
 }
 
 type UpdateData = UpdateUserInput & {
-  deletedAt?: Date
+  deletedAt?: Date | null
   username?: string
   passwordHash?: string
   mustChangePassword?: boolean
@@ -44,7 +46,7 @@ const USER_FIELDS = {
   username: true,
   mustChangePassword: true,
   isManager: true,
-  isActive: true,
+  deletedAt: true,
   createdAt: true,
   updatedAt: true,
 } as const
@@ -74,6 +76,7 @@ export interface PrismaUserDelegate {
     select: UserFields
   }): Promise<User[]>
   count(args: { where: UserWhere }): Promise<number>
+  updateMany(args: { where: { id: UserId }; data: UpdateData }): Promise<{ count: number }>
 }
 
 /** Soft delete is enforced here so no caller has to remember it. */
@@ -127,6 +130,14 @@ export class PrismaUserRepository implements UserRepository {
     })
   }
 
+  async restore(id: UserId): Promise<boolean> {
+    const { count } = await this.delegate.updateMany({
+      where: { id },
+      data: { deletedAt: null },
+    })
+    return count > 0
+  }
+
   async list(filters: UserFilters, page: PageRequest): Promise<Page<User>> {
     const where = buildWhere(filters)
 
@@ -151,11 +162,20 @@ export class PrismaUserRepository implements UserRepository {
   }
 }
 
+/**
+ * Only a listing that says so sees excluded people: everywhere else the default
+ * stands, as `.claude/rules/soft-delete.md` requires.
+ */
 function buildWhere(filters: UserFilters): UserWhere {
-  const where: UserWhere = { deletedAt: null }
+  const where: UserWhere = {}
+
+  if (filters.status === 'inactive') where.deletedAt = { not: null }
+  else if (filters.status !== 'all') where.deletedAt = null
 
   if (filters.isManager !== undefined) where.isManager = filters.isManager
-  if (filters.isActive !== undefined) where.isActive = filters.isActive
+  if (filters.id) where.id = filters.id
+  if (filters.name) where.name = { contains: filters.name, mode: 'insensitive' }
+  if (filters.email) where.email = { contains: filters.email, mode: 'insensitive' }
 
   const term = filters.search?.trim()
   if (term) {

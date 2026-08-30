@@ -1,4 +1,4 @@
-import type { PageRequest, UserFilters } from '@/shared/types'
+import type { PageRequest, UserFilters, UserStatus } from '@/shared/types'
 import { DEFAULT_PAGE_SIZE } from '@/shared/types'
 
 export interface UserQuery {
@@ -27,8 +27,15 @@ export function parseUserQuery(params: URLSearchParams): UserQuery {
   const isManager = readFlag(params.get('isManager'))
   if (isManager !== undefined) filters.isManager = isManager
 
-  const isActive = readFlag(params.get('isActive'))
-  if (isActive !== undefined) filters.isActive = isActive
+  for (const key of ['id', 'name', 'email'] as const) {
+    const value = params.get(key)?.trim()
+    if (value) filters[key] = value
+  }
+
+  const status = params.get('status')
+  if (status === 'all' || status === 'active' || status === 'inactive') {
+    filters.status = status satisfies UserStatus
+  }
 
   return {
     filters,

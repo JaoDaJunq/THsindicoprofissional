@@ -9,9 +9,9 @@ function renderList(): HTMLElement {
     <UserList
       users={[buildUser()]}
       firstIndex={0}
-      onView={noop}
+      onDeactivate={noop}
       onEdit={noop}
-      onDelete={noop}
+      onActivate={noop}
     />,
   )
   return container

@@ -12,10 +12,29 @@ function delegate(found: (User & { passwordHash?: string | null }) | null = stor
     update: vi.fn().mockResolvedValue(storedUser),
     findMany: vi.fn().mockResolvedValue([storedUser]),
     count: vi.fn().mockResolvedValue(1),
+    updateMany: vi.fn().mockResolvedValue({ count: 1 }),
   }
 }
 
 describe('PrismaUserRepository', () => {
+  it('clears the exclusion when restoring someone', async () => {
+    const spy = delegate()
+
+    await new PrismaUserRepository(spy).restore(storedUser.id)
+
+    expect(spy.updateMany).toHaveBeenCalledWith({
+      where: { id: storedUser.id },
+      data: { deletedAt: null },
+    })
+  })
+
+  it('says nobody was restored when the person does not exist', async () => {
+    const spy = delegate()
+    vi.mocked(spy.updateMany).mockResolvedValue({ count: 0 })
+
+    expect(await new PrismaUserRepository(spy).restore('ghost')).toBe(false)
+  })
+
   it('never returns a soft-deleted row when looking up by id', async () => {
     const spy = delegate()
 
@@ -102,14 +121,37 @@ describe('PrismaUserRepository', () => {
     })
   })
 
-  it('filters by status', async () => {
+  it('looks only at the excluded people when asked for the inactive ones', async () => {
     const spy = delegate()
 
-    await new PrismaUserRepository(spy).list({ isActive: false }, { page: 1, pageSize: 10 })
+    await new PrismaUserRepository(spy).list({ status: 'inactive' }, { page: 1, pageSize: 10 })
+
+    expect(vi.mocked(spy.findMany).mock.calls[0]?.[0]?.where).toEqual({
+      deletedAt: { not: null },
+    })
+  })
+
+  it('drops the exclusion filter only when the listing asks for everyone', async () => {
+    const spy = delegate()
+
+    await new PrismaUserRepository(spy).list({ status: 'all' }, { page: 1, pageSize: 10 })
+
+    expect(vi.mocked(spy.findMany).mock.calls[0]?.[0]?.where).toEqual({})
+  })
+
+  it('filters by code, name and e-mail', async () => {
+    const spy = delegate()
+
+    await new PrismaUserRepository(spy).list(
+      { id: 'abc', name: 'Ana', email: 'ana@' },
+      { page: 1, pageSize: 10 },
+    )
 
     expect(vi.mocked(spy.findMany).mock.calls[0]?.[0]?.where).toEqual({
       deletedAt: null,
-      isActive: false,
+      id: 'abc',
+      name: { contains: 'Ana', mode: 'insensitive' },
+      email: { contains: 'ana@', mode: 'insensitive' },
     })
   })
 

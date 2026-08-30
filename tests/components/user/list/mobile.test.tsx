@@ -4,14 +4,14 @@ import { UserListMobile } from '@/components/user/list/mobile'
 import { buildUser } from '@/tests/support/build-user'
 import type { User } from '@/shared/types'
 
-const onView = vi.fn()
+const onActivate = vi.fn()
 const onEdit = vi.fn()
-const onDelete = vi.fn()
+const onDeactivate = vi.fn()
 
 beforeEach(() => {
-  onView.mockReset()
+  onActivate.mockReset()
   onEdit.mockReset()
-  onDelete.mockReset()
+  onDeactivate.mockReset()
 })
 
 function renderList(users: User[] = [buildUser()], firstIndex = 0): void {
@@ -19,9 +19,9 @@ function renderList(users: User[] = [buildUser()], firstIndex = 0): void {
     <UserListMobile
       users={users}
       firstIndex={firstIndex}
-      onView={onView}
+      onActivate={onActivate}
       onEdit={onEdit}
-      onDelete={onDelete}
+      onDeactivate={onDeactivate}
     />,
   )
 }
@@ -85,22 +85,24 @@ describe('UserListMobile', () => {
     expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({ email: 'ana@example.com' }))
   })
 
-  it('offers deleting inside the opened row', async () => {
+  it('offers deactivating inside the opened row', async () => {
     renderList()
     await expand()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Desativar' }))
 
-    expect(onDelete).toHaveBeenCalledWith(expect.objectContaining({ email: 'ana@example.com' }))
+    expect(onDeactivate).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'ana@example.com' }),
+    )
   })
 
-  it('offers viewing inside the opened row', async () => {
-    renderList()
+  it('offers activating someone who is inactive', async () => {
+    renderList([buildUser({ deletedAt: new Date('2026-02-01') })])
     await expand()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Visualizar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Ativar' }))
 
-    expect(onView).toHaveBeenCalledWith(expect.objectContaining({ email: 'ana@example.com' }))
+    expect(onActivate).toHaveBeenCalledWith(expect.objectContaining({ email: 'ana@example.com' }))
   })
 
   it('says when there is nobody to show', () => {

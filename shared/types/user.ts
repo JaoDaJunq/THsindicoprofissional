@@ -12,7 +12,8 @@ export interface User {
   mustChangePassword: boolean
   /** Building manager ("síndico"). Never self-assigned. */
   isManager: boolean
-  isActive: boolean
+  /** Null while the person is active; the date they were excluded otherwise. */
+  deletedAt: Date | null
   createdAt: Date
   updatedAt: Date
 }
@@ -32,12 +33,17 @@ export interface UpdateUserInput {
   name?: string | null
   image?: string | null
   isManager?: boolean
-  isActive?: boolean
 }
+
+/** Being active is not a column: it is whether the person was excluded. */
+export type UserStatus = 'all' | 'active' | 'inactive'
 
 /** Mirrors the columns the table shows, so the UI can only filter what it displays. */
 export interface UserFilters {
   search?: string
+  id?: string
+  name?: string
+  email?: string
   isManager?: boolean
-  isActive?: boolean
+  status?: UserStatus
 }
