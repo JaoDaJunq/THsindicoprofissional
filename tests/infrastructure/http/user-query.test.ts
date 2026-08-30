@@ -1,0 +1,46 @@
+import { parseUserQuery } from '@/infrastructure/http/user-query'
+import { DEFAULT_PAGE_SIZE } from '@/shared/types'
+
+const parse = (query: string) => parseUserQuery(new URL(`http://x/api/users${query}`).searchParams)
+
+describe('parseUserQuery', () => {
+  it('defaults to the first page', () => {
+    expect(parse('')).toEqual({
+      filters: {},
+      page: { page: 1, pageSize: DEFAULT_PAGE_SIZE },
+    })
+  })
+
+  it('reads page and size', () => {
+    expect(parse('?page=3&pageSize=25').page).toEqual({ page: 3, pageSize: 25 })
+  })
+
+  it('falls back to page one when the page is not a number', () => {
+    expect(parse('?page=abc').page.page).toBe(1)
+  })
+
+  it('keeps the search term', () => {
+    expect(parse('?search=ana').filters.search).toBe('ana')
+  })
+
+  it('ignores a blank search term instead of filtering by nothing', () => {
+    expect(parse('?search=%20%20').filters.search).toBeUndefined()
+  })
+
+  it('reads the manager flag as a boolean', () => {
+    expect(parse('?isManager=true').filters.isManager).toBe(true)
+    expect(parse('?isManager=false').filters.isManager).toBe(false)
+  })
+
+  it('leaves the flag unset when it is absent, so nothing is filtered', () => {
+    expect(parse('').filters.isManager).toBeUndefined()
+  })
+
+  it('ignores a flag that is neither true nor false', () => {
+    expect(parse('?isActive=maybe').filters.isActive).toBeUndefined()
+  })
+  it('reads the status flag as a boolean', () => {
+    expect(parse('?isActive=true').filters.isActive).toBe(true)
+    expect(parse('?isActive=false').filters.isActive).toBe(false)
+  })
+})

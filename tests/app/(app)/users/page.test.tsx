@@ -1,0 +1,179 @@
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import UsersPage from '@/app/(app)/users/page'
+import { setScreen } from '@/tests/support/match-media'
+import type { Page, User } from '@/shared/types'
+import { buildUser } from '@/tests/support/build-user'
+
+const useUsers = vi.fn()
+vi.mock('@/hooks/use-users', () => ({ useUsers: (...args: unknown[]) => useUsers(...args) }))
+
+const person: User = buildUser()
+
+function pageOf(items: User[], pageCount = 1): Page<User> {
+  return { items, total: items.length, page: 1, pageSize: 10, pageCount }
+}
+
+beforeEach(() => {
+  useUsers.mockReset()
+  setScreen('desktop')
+})
+
+describe('UsersPage', () => {
+  it('shows the screen title', () => {
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+
+    render(<UsersPage />)
+
+    expect(screen.getByRole('heading', { name: 'Usuários' })).toBeInTheDocument()
+  })
+
+  it('offers a search field', () => {
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+
+    render(<UsersPage />)
+
+    expect(screen.getByLabelText('Buscar usuários')).toBeInTheDocument()
+  })
+
+  it('offers the filters button', () => {
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+
+    render(<UsersPage />)
+
+    expect(screen.getByRole('button', { name: 'Filtros' })).toBeInTheDocument()
+  })
+
+  it('lists the people it received', () => {
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+
+    render(<UsersPage />)
+
+    // both shapes render; CSS decides which one the visitor sees
+    expect(screen.getAllByText('ana@example.com').length).toBeGreaterThan(0)
+  })
+
+  it('says so while loading', () => {
+    useUsers.mockReturnValue({ page: null, isLoading: true, error: null })
+
+    render(<UsersPage />)
+
+    expect(screen.getByText('Carregando…')).toBeInTheDocument()
+  })
+
+  it('says so when nothing matches', () => {
+    useUsers.mockReturnValue({ page: pageOf([]), isLoading: false, error: null })
+
+    render(<UsersPage />)
+
+    expect(screen.getByText('Nenhum usuário encontrado.')).toBeInTheDocument()
+  })
+
+  it('reports a failure to load', () => {
+    useUsers.mockReturnValue({
+      page: null,
+      isLoading: false,
+      error: 'Não foi possível carregar os usuários.',
+    })
+
+    render(<UsersPage />)
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/não foi possível carregar/i)
+  })
+
+  it('hides the pager when everything fits on one page', () => {
+    useUsers.mockReturnValue({ page: pageOf([person], 1), isLoading: false, error: null })
+
+    render(<UsersPage />)
+
+    expect(screen.queryByRole('button', { name: 'Página 1' })).not.toBeInTheDocument()
+  })
+
+  it('shows the pager when there is more than one page', () => {
+    useUsers.mockReturnValue({ page: pageOf([person], 3), isLoading: false, error: null })
+
+    render(<UsersPage />)
+
+    expect(screen.getByRole('button', { name: 'Página 2' })).toBeInTheDocument()
+  })
+
+  it('searches by what the visitor typed', async () => {
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+
+    render(<UsersPage />)
+    await userEvent.type(screen.getByLabelText('Buscar usuários'), 'ana')
+
+    expect(useUsers).toHaveBeenLastCalledWith({ search: 'ana' }, 1, 0)
+  })
+
+  it('opens the filters dialog', async () => {
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+
+    render(<UsersPage />)
+    await userEvent.click(screen.getByRole('button', { name: 'Filtros' }))
+
+    expect(screen.getByRole('button', { name: 'Aplicar' })).toBeInTheDocument()
+  })
+  it('reloads with the filters chosen in the dialog', async () => {
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+
+    render(<UsersPage />)
+    await userEvent.click(screen.getByRole('button', { name: 'Filtros' }))
+    await userEvent.click(screen.getByRole('switch', { name: 'Apenas síndicos' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
+
+    expect(useUsers).toHaveBeenLastCalledWith({ isManager: true }, 1, 0)
+  })
+
+  it('goes to another page', async () => {
+    useUsers.mockReturnValue({ page: pageOf([person], 3), isLoading: false, error: null })
+
+    render(<UsersPage />)
+    await userEvent.click(screen.getByRole('button', { name: 'Página 2' }))
+
+    expect(useUsers).toHaveBeenLastCalledWith({}, 2, 0)
+  })
+  it('deletes a person from the row menu and reloads the list', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }))
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+
+    render(<UsersPage />)
+    await userEvent.click(screen.getByRole('button', { name: 'Ações de Ana Souza' }))
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Excluir' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Excluir' }))
+
+    await waitFor(() => expect(useUsers).toHaveBeenLastCalledWith({}, 1, 1))
+  })
+
+  it('closes the delete dialog on cancel', async () => {
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+
+    render(<UsersPage />)
+    await userEvent.click(screen.getByRole('button', { name: 'Ações de Ana Souza' }))
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Excluir' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
+
+    await waitFor(() =>
+      expect(screen.queryByText('Excluir usuário')).not.toBeInTheDocument(),
+    )
+  })
+  it('clearing the search stops filtering by it', async () => {
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+
+    render(<UsersPage />)
+    const field = screen.getByLabelText('Buscar usuários')
+    await userEvent.type(field, 'ana')
+    await userEvent.clear(field)
+
+    expect(useUsers).toHaveBeenLastCalledWith({ search: undefined }, 1, 0)
+  })
+  it('does not break when an action that is not built yet is chosen', async () => {
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+
+    render(<UsersPage />)
+    await userEvent.click(screen.getByRole('button', { name: 'Ações de Ana Souza' }))
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Editar' }))
+
+    expect(screen.getByRole('heading', { name: 'Usuários' })).toBeInTheDocument()
+  })
+})
