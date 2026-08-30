@@ -4,6 +4,7 @@ import { Button, Input, Label, Surface, Switch, TextField } from '@heroui/react'
 import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { ReactElement, ReactNode } from 'react'
+import { MembershipEditor } from '@/components/membership-editor'
 import { useUser } from '@/hooks/use-user'
 import type { User } from '@/shared/types'
 
@@ -161,6 +162,14 @@ export default function UserDetailPage(): ReactElement {
           type="password"
           value={form.password}
           onChange={(password) => set({ password })}
+        />
+      </Section>
+
+      <Section title="Condomínios">
+        <MembershipEditor
+          side={{ userId: id }}
+          resource="condominiums"
+          searchLabel="Buscar condomínio"
         />
       </Section>
 

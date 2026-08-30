@@ -28,6 +28,7 @@ model User {
 
   accounts Account[]
   sessions Session[]
+  memberships CondominiumMember[]
 }
 
 // Tables below are required by the Auth.js Prisma adapter.
@@ -66,4 +67,48 @@ model VerificationToken {
   deletedAt  DateTime?
 
   @@id([identifier, token])
+}
+
+model Condominium {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  address        String
+  cnpj           String?
+  phone          String?
+  email          String?
+  unitsCount     Int      @default(0)
+  blocksCount    Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  /** Null means active. Filled means excluded, with the date. */
+  deletedAt      DateTime?
+
+  @@index([deletedAt])
+
+  members CondominiumMember[]
+}
+
+/** What someone is inside one condominium. Unrelated to `User.isManager`,
+    which is what grants write access to the system as a whole. */
+enum CondominiumRole {
+  RESIDENT
+  MANAGER
+}
+
+model CondominiumMember {
+  id            String          @id @default(uuid()) @db.Uuid
+  condominiumId String          @db.Uuid
+  userId        String          @db.Uuid
+  role          CondominiumRole @default(RESIDENT)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  /** Null means active. Filled means excluded, with the date. */
+  deletedAt     DateTime?
+
+  condominium Condominium @relation(fields: [condominiumId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@index([deletedAt])
+  @@index([condominiumId])
+  @@index([userId])
 }

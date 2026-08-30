@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import UserDetailPage from '@/app/(app)/users/[id]/page'
 import { buildUser } from '@/tests/support/build-user'
+import { buildCondominium } from '@/tests/support/build-condominium'
 import type { User } from '@/shared/types'
 
 const person: User = buildUser({ username: 'ana' })
@@ -14,6 +15,14 @@ vi.mock('next/navigation', () => ({
   useParams: () => ({ id: person.id }),
 }))
 vi.mock('@/hooks/use-user', () => ({ useUser: (...args: unknown[]) => useUser(...args) }))
+
+const useMemberships = vi.fn().mockReturnValue({ memberships: [], isLoading: false, error: null })
+vi.mock('@/hooks/use-memberships', () => ({
+  useMemberships: (...args: unknown[]) => useMemberships(...args),
+}))
+
+const useSearch = vi.fn().mockReturnValue({ results: [], isLoading: false })
+vi.mock('@/hooks/use-search', () => ({ useSearch: (...args: unknown[]) => useSearch(...args) }))
 
 function loaded(overrides: Partial<User> = {}): void {
   useUser.mockReturnValue({ user: { ...person, ...overrides }, isLoading: false, error: null })
@@ -142,5 +151,35 @@ describe('UserDetailPage', () => {
 
     expect(push).toHaveBeenCalledWith('/users')
     expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('lets the manager link this person to condominiums', () => {
+    loaded()
+
+    render(<UserDetailPage />)
+
+    expect(screen.getByRole('heading', { name: 'Condomínios' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Buscar condomínio')).toBeInTheDocument()
+  })
+
+  it('asks for the links of this very person', () => {
+    loaded()
+
+    render(<UserDetailPage />)
+
+    expect(useMemberships).toHaveBeenCalledWith({ userId: person.id }, expect.any(Number))
+  })
+
+  it('offers the condominiums the search found', async () => {
+    useSearch.mockReturnValue({
+      results: [{ id: buildCondominium().id, label: 'Residencial Aurora' }],
+      isLoading: false,
+    })
+    loaded()
+    render(<UserDetailPage />)
+
+    await userEvent.type(screen.getByLabelText('Buscar condomínio'), 'aur')
+
+    expect(await screen.findByRole('option', { name: 'Residencial Aurora' })).toBeInTheDocument()
   })
 })

@@ -1,4 +1,18 @@
 export type {
+  Membership,
+  MembershipInput,
+  MembershipFilters,
+  CondominiumRole,
+} from './membership'
+export type {
+  Condominium,
+  CondominiumId,
+  CreateCondominiumInput,
+  UpdateCondominiumInput,
+  CondominiumFilters,
+  CondominiumStatus,
+} from './condominium'
+export type {
   User,
   UserId,
   CreateUserInput,
