@@ -12,6 +12,9 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['tests/**/*.test.{ts,tsx}'],
+    // the integration suite has its own config: it needs a database and runs
+    // one file at a time. Running it here too raced two files over one schema.
+    exclude: ['tests/integration/**'],
     coverage: {
       provider: 'v8',
       include: [
