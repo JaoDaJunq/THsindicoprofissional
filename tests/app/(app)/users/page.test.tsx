@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import UsersPage from '@/app/(app)/users/page'
 import { setScreen } from '@/tests/support/match-media'
@@ -18,6 +18,11 @@ beforeEach(() => {
   useUsers.mockReset()
   setScreen('desktop')
 })
+
+/** The row menu answers to the right mouse button, as in the real table. */
+function openRowMenu(): void {
+  fireEvent.contextMenu(screen.getAllByText('Ana Souza')[0]!.closest('tr') as HTMLElement)
+}
 
 describe('UsersPage', () => {
   it('shows the screen title', () => {
@@ -138,7 +143,7 @@ describe('UsersPage', () => {
     useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
 
     render(<UsersPage />)
-    await userEvent.click(screen.getByRole('button', { name: 'Ações de Ana Souza' }))
+    openRowMenu()
     await userEvent.click(screen.getByRole('menuitem', { name: 'Excluir' }))
     await userEvent.click(screen.getByRole('button', { name: 'Excluir' }))
 
@@ -149,7 +154,7 @@ describe('UsersPage', () => {
     useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
 
     render(<UsersPage />)
-    await userEvent.click(screen.getByRole('button', { name: 'Ações de Ana Souza' }))
+    openRowMenu()
     await userEvent.click(screen.getByRole('menuitem', { name: 'Excluir' }))
     await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
 
@@ -171,7 +176,7 @@ describe('UsersPage', () => {
     useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
 
     render(<UsersPage />)
-    await userEvent.click(screen.getByRole('button', { name: 'Ações de Ana Souza' }))
+    openRowMenu()
     await userEvent.click(screen.getByRole('menuitem', { name: 'Editar' }))
 
     expect(screen.getByRole('heading', { name: 'Usuários' })).toBeInTheDocument()

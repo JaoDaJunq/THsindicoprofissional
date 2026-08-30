@@ -6,61 +6,78 @@ import { buildUser } from '@/tests/support/build-user'
 
 const user: User = buildUser()
 
+const onClose = vi.fn()
 const onView = vi.fn()
 const onEdit = vi.fn()
 const onDelete = vi.fn()
 
 beforeEach(() => {
+  onClose.mockReset()
   onView.mockReset()
   onEdit.mockReset()
   onDelete.mockReset()
 })
 
-async function openMenu(person: User = user): Promise<void> {
-  render(<UserRowMenu user={person} onView={onView} onEdit={onEdit} onDelete={onDelete} />)
-  await userEvent.click(screen.getByRole('button', { name: `Ações de ${person.name}` }))
+function renderMenu(person: User | null = user): void {
+  render(
+    <UserRowMenu
+      target={person && { user: person, x: 10, y: 20 }}
+      onClose={onClose}
+      onView={onView}
+      onEdit={onEdit}
+      onDelete={onDelete}
+    />,
+  )
 }
 
 describe('UserRowMenu', () => {
-  it('names the trigger after the person, so screen readers can tell rows apart', () => {
-    render(<UserRowMenu user={user} onView={onView} onEdit={onEdit} onDelete={onDelete} />)
+  it('stays out of the way while no row was asked for', () => {
+    renderMenu(null)
 
-    expect(screen.getByRole('button', { name: 'Ações de Ana Souza' })).toBeInTheDocument()
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
 
-  it('falls back to the e-mail when the person has no name', () => {
-    const nameless = { ...user, name: null }
-    render(<UserRowMenu user={nameless} onView={onView} onEdit={onEdit} onDelete={onDelete} />)
+  it('offers viewing, editing and deleting', () => {
+    renderMenu()
 
-    expect(screen.getByRole('button', { name: 'Ações de ana@example.com' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /Visualizar/ })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /Editar/ })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /Excluir/ })).toBeInTheDocument()
   })
 
-  it('offers viewing, editing and deleting', async () => {
-    await openMenu()
+  it('gives every option an icon', () => {
+    renderMenu()
 
-    expect(screen.getByRole('menuitem', { name: 'Visualizar' })).toBeInTheDocument()
-    expect(screen.getByRole('menuitem', { name: 'Editar' })).toBeInTheDocument()
-    expect(screen.getByRole('menuitem', { name: 'Excluir' })).toBeInTheDocument()
+    for (const item of screen.getAllByRole('menuitem')) {
+      expect(item.querySelector('svg')).not.toBeNull()
+    }
   })
 
   it('asks to view the person', async () => {
-    await openMenu()
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Visualizar' }))
+    renderMenu()
+    await userEvent.click(screen.getByRole('menuitem', { name: /Visualizar/ }))
 
     expect(onView).toHaveBeenCalledWith(user)
   })
 
   it('asks to edit the person', async () => {
-    await openMenu()
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Editar' }))
+    renderMenu()
+    await userEvent.click(screen.getByRole('menuitem', { name: /Editar/ }))
 
     expect(onEdit).toHaveBeenCalledWith(user)
   })
 
   it('asks to delete the person', async () => {
-    await openMenu()
-    await userEvent.click(screen.getByRole('menuitem', { name: 'Excluir' }))
+    renderMenu()
+    await userEvent.click(screen.getByRole('menuitem', { name: /Excluir/ }))
 
     expect(onDelete).toHaveBeenCalledWith(user)
+  })
+
+  it('closes itself once an option was chosen', async () => {
+    renderMenu()
+    await userEvent.click(screen.getByRole('menuitem', { name: /Editar/ }))
+
+    expect(onClose).toHaveBeenCalled()
   })
 })

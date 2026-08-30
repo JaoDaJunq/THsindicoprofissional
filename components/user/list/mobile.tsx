@@ -1,7 +1,8 @@
 'use client'
 
-import { Accordion, Avatar, Button, Chip } from '@heroui/react'
+import { Accordion, Button, Chip } from '@heroui/react'
 import type { ReactElement } from 'react'
+import { UserAvatar } from '@/components/user-avatar'
 import type { User } from '@/shared/types'
 
 export interface UserListProps {
@@ -10,10 +11,6 @@ export interface UserListProps {
   onView: (user: User) => void
   onEdit: (user: User) => void
   onDelete: (user: User) => void
-}
-
-function initials(user: User): string {
-  return (user.name ?? user.email).slice(0, 2).toUpperCase()
 }
 
 function Field({
@@ -49,16 +46,7 @@ export function UserListMobile({
         <Accordion.Item key={user.id} id={user.id}>
           <Accordion.Heading>
             <Accordion.Trigger className="flex w-full items-center gap-3 text-left">
-              <Avatar
-                aria-label={`Foto de ${user.name ?? user.email}`}
-                className="size-8 shrink-0"
-              >
-                {user.image ? (
-                  <Avatar.Image src={user.image} alt="" />
-                ) : (
-                  <Avatar.Fallback>{initials(user)}</Avatar.Fallback>
-                )}
-              </Avatar>
+              <UserAvatar user={user} className="size-8 shrink-0" />
               <span className="flex-1 truncate text-sm font-medium">
                 {user.name ?? user.email}
               </span>

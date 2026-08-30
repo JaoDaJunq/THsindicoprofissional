@@ -62,7 +62,11 @@ export default function UsersPage(): ReactElement {
 
       <div className="flex items-center gap-2">
         <SearchField aria-label="Buscar usuários" className="flex-1" onChange={search}>
-          <SearchField.Input placeholder="escreva para busca..." />
+          <SearchField.Group>
+            <SearchField.SearchIcon />
+            <SearchField.Input placeholder="escreva para busca..." />
+            <SearchField.ClearButton />
+          </SearchField.Group>
         </SearchField>
         <FilterButton onPress={() => setIsFilterOpen(true)} />
       </div>

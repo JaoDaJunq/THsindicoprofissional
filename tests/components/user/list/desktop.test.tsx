@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { UserListDesktop } from '@/components/user/list/desktop'
 import type { User } from '@/shared/types'
 import { buildUser } from '@/tests/support/build-user'
@@ -45,10 +45,18 @@ describe('UserListDesktop', () => {
     expect(screen.getByText('Inativo')).toBeInTheDocument()
   })
 
-  it('offers row actions', () => {
+  it('leaves no actions column taking up room', () => {
     renderTable([base])
 
-    expect(screen.getByRole('button', { name: 'Ações de Ana Souza' })).toBeInTheDocument()
+    expect(screen.queryByRole('columnheader', { name: 'Ações' })).not.toBeInTheDocument()
+  })
+
+  it('opens the row actions with the right mouse button', async () => {
+    renderTable([base])
+
+    fireEvent.contextMenu(screen.getByText('Ana Souza').closest('tr') as HTMLElement)
+
+    expect(await screen.findByRole('menuitem', { name: /Editar/ })).toBeInTheDocument()
   })
   it('renders the row normally when the person has a photo', () => {
     renderTable([{ ...base, image: 'https://example.com/ana.png' }])
