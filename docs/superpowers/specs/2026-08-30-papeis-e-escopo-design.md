@@ -70,7 +70,11 @@ O filtro nasce no repositório, como manda a regra de exclusão lógica — quem
 chama não pode ter de lembrar.
 
 - `listCondominiums` recebe quem está pedindo. `ADMIN` sem restrição; os demais
-  só onde há vínculo ativo (`members: { some: { userId, deletedAt: null } }`).
+  só onde **administram** — vínculo ativo com `role: MANAGER`
+  (`members: { some: { userId, role: 'MANAGER', deletedAt: null } }`).
+  Vínculo de morador não abre o painel: a pessoa que mora no Vale Verde e é
+  síndica do Aurora administra o Aurora e nada mais. O Vale Verde dela é assunto
+  do portal do morador, que ainda não existe.
 - `findById` aplica o mesmo escopo: sem isso a URL direta contorna a listagem.
 - A listagem de **pessoas** segue a mesma regra: o síndico vê quem está nos
   condomínios dele; o admin vê todos.
