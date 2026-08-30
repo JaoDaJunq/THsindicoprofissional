@@ -68,7 +68,7 @@ export function UserFiltersDialog({
       title="Filtros"
       footer={
         <div className="flex w-full flex-col-reverse gap-2 sm:flex-row">
-          <Button variant="outline" className="w-full sm:flex-1" onPress={clear}>
+          <Button variant="ghost" className="w-full sm:flex-1" onPress={clear}>
             Limpar
           </Button>
           <Button variant="primary" className="w-full sm:flex-1" onPress={apply}>
@@ -91,6 +91,7 @@ export function UserFiltersDialog({
         />
 
         <RadioGroup
+          variant="secondary"
           value={draft.status ?? 'all'}
           onChange={(status: string) => set({ status: status as UserStatus })}
         >

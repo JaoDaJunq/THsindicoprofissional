@@ -31,6 +31,7 @@ export interface SetCredentialsInput {
 
 export interface UpdateUserInput {
   name?: string | null
+  email?: string
   image?: string | null
   isManager?: boolean
 }

@@ -39,12 +39,18 @@ export function CredentialsSignInForm(): ReactElement {
 
   return (
     <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-3">
-      <TextField name="username" isRequired autoComplete="username">
+      <TextField variant="secondary" name="username" isRequired autoComplete="username">
         <Label>Usuário</Label>
         <Input placeholder="admin" />
       </TextField>
 
-      <TextField name="password" type="password" isRequired autoComplete="current-password">
+      <TextField
+        variant="secondary"
+        name="password"
+        type="password"
+        isRequired
+        autoComplete="current-password"
+      >
         <Label>Senha</Label>
         <Input />
       </TextField>

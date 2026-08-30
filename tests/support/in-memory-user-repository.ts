@@ -64,6 +64,7 @@ export class InMemoryUserRepository implements UserRepository {
     const updated: StoredUser = {
       ...current,
       name: input.name === undefined ? current.name : input.name,
+      email: input.email ?? current.email,
       image: input.image === undefined ? current.image : input.image,
       isManager: input.isManager ?? current.isManager,
       updatedAt: new Date(),

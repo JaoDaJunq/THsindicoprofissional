@@ -55,12 +55,12 @@ export default function ChangePasswordPage(): ReactElement {
           </p>
 
           <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-3">
-            <TextField name="currentPassword" type="password" isRequired>
+            <TextField variant="secondary" name="currentPassword" type="password" isRequired>
               <Label>Senha atual</Label>
               <Input />
             </TextField>
 
-            <TextField name="newPassword" type="password" isRequired>
+            <TextField variant="secondary" name="newPassword" type="password" isRequired>
               <Label>Nova senha</Label>
               <Input />
             </TextField>

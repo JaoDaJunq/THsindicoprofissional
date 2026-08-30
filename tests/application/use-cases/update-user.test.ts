@@ -18,6 +18,47 @@ async function repositoryWithUser(): Promise<{
 }
 
 describe('updateUser', () => {
+  it('changes the e-mail', async () => {
+    const { repository, id } = await repositoryWithUser()
+
+    const result = await updateUser(repository, id, { email: 'nova@example.com' })
+
+    expect(result.ok && result.value.email).toBe('nova@example.com')
+  })
+
+  it('stores the e-mail the way the sign-in looks it up', async () => {
+    const { repository, id } = await repositoryWithUser()
+
+    const result = await updateUser(repository, id, { email: '  Nova@Example.com ' })
+
+    expect(result.ok && result.value.email).toBe('nova@example.com')
+  })
+
+  it('refuses an e-mail without an at sign', async () => {
+    const { repository, id } = await repositoryWithUser()
+
+    const result = await updateUser(repository, id, { email: 'nova' })
+
+    expect(result).toEqual({ ok: false, error: 'invalid-email' })
+  })
+
+  it('refuses an e-mail that belongs to someone else', async () => {
+    const { repository, id } = await repositoryWithUser()
+    await createUser(repository, { email: 'outra@example.com', name: 'Outra', image: null })
+
+    const result = await updateUser(repository, id, { email: 'outra@example.com' })
+
+    expect(result).toEqual({ ok: false, error: 'email-already-registered' })
+  })
+
+  it('lets the person keep their own e-mail', async () => {
+    const { repository, id } = await repositoryWithUser()
+
+    const result = await updateUser(repository, id, { email: 'sindico@example.com' })
+
+    expect(result.ok).toBe(true)
+  })
+
   it('changes the name of an existing user', async () => {
     const { repository, id } = await repositoryWithUser()
 

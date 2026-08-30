@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
 import { restoreUser } from '@/application/use-cases/restore-user'
-import { auth } from '@/infrastructure/auth/auth'
 import { getUserRepository } from '@/infrastructure/repositories'
+import { requireManager } from '../../../session'
 
 type Context = { params: Promise<{ id: string }> }
 
 export async function POST(_request: Request, context: Context): Promise<NextResponse> {
-  const session = await auth()
-  if (!session?.user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  if (!(await requireManager())) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+  }
 
   const { id } = await context.params
   const result = await restoreUser(getUserRepository(), id)

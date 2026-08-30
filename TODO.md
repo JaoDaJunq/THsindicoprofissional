@@ -27,10 +27,11 @@ Legenda: `[ ]` a fazer · `[~]` existe mas precisa de ajuste · `[x]` pronto
   - [x] colunas de síndico e status
   - [ ] toggle de síndico direto na linha
   - [ ] celular e vínculo com o condomínio
-- [ ] **Usuário · detalhe e permissões** — tela nova
-  - [ ] único lugar onde a flag de síndico é ligada
-  - [ ] editar contato básico
-  - [ ] definir usuário e senha de outra pessoa (o caso de uso já existe)
+- [x] **Usuário · detalhe e permissões** — `app/(app)/users/[id]/`
+  - [x] único lugar onde a flag de síndico é ligada
+  - [x] editar contato básico — nome e e-mail
+  - [x] definir usuário e senha de outra pessoa
+  - [x] só síndico edita outra pessoa
 
 ## Painel do síndico (multi-condomínio)
 

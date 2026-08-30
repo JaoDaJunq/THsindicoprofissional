@@ -1,6 +1,7 @@
 'use client'
 
 import { Button, SearchField, Tooltip } from '@heroui/react'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { ReactElement } from 'react'
 import { DeactivateUserDialog } from '@/components/user/deactivate-dialog'
@@ -37,6 +38,7 @@ function FilterButton({ onPress }: { onPress: () => void }): ReactElement {
 }
 
 export default function UsersPage(): ReactElement {
+  const router = useRouter()
   const [filters, setFilters] = useState<UserFilters>({})
   const [page, setPage] = useState(1)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
@@ -53,8 +55,6 @@ export default function UsersPage(): ReactElement {
     setPage(1)
     setFilters(next)
   }
-
-  const notImplemented = (): void => undefined
 
   async function activate(user: User): Promise<void> {
     await fetch(`/api/users/${user.id}/restore`, { method: 'POST' })
@@ -91,7 +91,7 @@ export default function UsersPage(): ReactElement {
           <UserList
             users={result.items}
             firstIndex={(result.page - 1) * result.pageSize}
-            onEdit={notImplemented}
+            onEdit={(user) => router.push(`/users/${user.id}`)}
             onDeactivate={setUserToDeactivate}
             onActivate={(user) => void activate(user)}
           />

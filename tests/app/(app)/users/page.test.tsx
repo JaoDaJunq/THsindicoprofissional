@@ -5,6 +5,9 @@ import { setScreen } from '@/tests/support/match-media'
 import type { Page, User } from '@/shared/types'
 import { buildUser } from '@/tests/support/build-user'
 
+const push = vi.fn()
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }))
+
 const useUsers = vi.fn()
 vi.mock('@/hooks/use-users', () => ({ useUsers: (...args: unknown[]) => useUsers(...args) }))
 
@@ -16,6 +19,7 @@ function pageOf(items: User[], pageCount = 1): Page<User> {
 
 beforeEach(() => {
   useUsers.mockReset()
+  push.mockReset()
   setScreen('desktop')
 })
 
@@ -189,13 +193,13 @@ describe('UsersPage', () => {
 
     expect(useUsers).toHaveBeenLastCalledWith({ search: undefined }, 1, 0)
   })
-  it('does not break when an action that is not built yet is chosen', async () => {
+  it('opens the detail screen of the person to edit', async () => {
     useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
 
     render(<UsersPage />)
     openRowMenu()
     await userEvent.click(screen.getByRole('menuitem', { name: 'Editar' }))
 
-    expect(screen.getByRole('heading', { name: 'Usuários' })).toBeInTheDocument()
+    expect(push).toHaveBeenCalledWith(`/users/${person.id}`)
   })
 })
