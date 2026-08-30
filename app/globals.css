@@ -5,10 +5,3 @@
 :root {
   --tooltip-delay: 0ms;
 }
-
-/* O cinza claro do HeroUI já contrasta com o card branco; no escuro o padrão é
-   grafite demais para o gosto do projeto. */
-.dark,
-[data-theme='dark'] {
-  --background: oklch(0.08 0 0);
-}

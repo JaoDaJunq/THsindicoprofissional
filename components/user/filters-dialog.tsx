@@ -29,7 +29,7 @@ function Field({
   onChange: (value: string) => void
 }): ReactElement {
   return (
-    <TextField value={value} onChange={onChange}>
+    <TextField variant="secondary" value={value} onChange={onChange}>
       <Label>{label}</Label>
       <Input />
     </TextField>

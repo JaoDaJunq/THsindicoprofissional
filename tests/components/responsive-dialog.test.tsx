@@ -30,6 +30,14 @@ describe('ResponsiveDialog', () => {
     expect(screen.getByTestId('filters-drawer')).toBeInTheDocument()
   })
 
+  it('shows the bar that says where to drag the drawer', () => {
+    renderDialog('mobile')
+
+    expect(
+      screen.getByTestId('filters-drawer').querySelector('[data-slot="drawer-handle-bar"]'),
+    ).not.toBeNull()
+  })
+
   it('shows the title in both shapes', () => {
     renderDialog('mobile')
 

@@ -23,6 +23,8 @@ O padrão de camadas está em `docs/architecture.md` — leia antes de criar arq
 - **Sempre UUID** como identificador, com tipo nativo `@db.Uuid`.
 - **Botão de voltar ou cancelar é `variant="ghost"`**: sem borda, sem cor, sem peso.
   A ação principal é a única com cor.
+- **Campo dentro de modal ou drawer é `variant="secondary"`**: o primário tem o
+  mesmo fundo do overlay e some no modo escuro.
 - **No telefone, botão nunca fica ao lado de botão**: um por linha. Lado a lado só
   a partir de `sm:`, e empilhado cada um ocupa a largura toda. Exceção: as ações dentro do painel do acordeão, que cabem
   as três na mesma linha.

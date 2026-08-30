@@ -28,9 +28,11 @@ export function ResponsiveDialog({
   if (isMobile) {
     return (
       <Drawer isOpen={isOpen} onOpenChange={onOpenChange}>
-        <Drawer.Backdrop>
+        <Drawer.Backdrop variant="blur">
           <Drawer.Content placement="bottom">
             <Drawer.Dialog data-testid="filters-drawer">
+              {/* the bar that says where to drag */}
+              <Drawer.Handle />
               <Drawer.Header>
                 <Drawer.Heading>{title}</Drawer.Heading>
               </Drawer.Header>
@@ -45,7 +47,7 @@ export function ResponsiveDialog({
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-      <Modal.Backdrop>
+      <Modal.Backdrop variant="blur">
         <Modal.Container>
           <Modal.Dialog data-testid="filters-modal">
             <Modal.Header>

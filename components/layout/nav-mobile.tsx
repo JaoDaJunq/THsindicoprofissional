@@ -51,9 +51,10 @@ export function NavMobile({ account }: { account: User }): ReactElement {
       </nav>
 
       <Drawer isOpen={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <Drawer.Backdrop>
+        <Drawer.Backdrop variant="blur">
           <Drawer.Content placement="bottom">
             <Drawer.Dialog>
+              <Drawer.Handle />
               <Drawer.Header>
                 <Drawer.Heading>Menu</Drawer.Heading>
               </Drawer.Header>
