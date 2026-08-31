@@ -6,6 +6,7 @@
 
   const path = () => (location.hash || '#/').replace(/^#\//,'').split('?')[0].split('/').filter(Boolean);
   const params = () => { const raw=(location.hash||'').split('?')[1]||''; const p=new URLSearchParams(raw); return {start:p.get('start')||null,end:p.get('end')||null}; };
+  const consolidatedFinance = () => window.financeConsolidatedPage || window.financeOverviewPage;
 
   route = function(){
     const p = path();
@@ -15,7 +16,7 @@
     if (p[0] === 'relatorios' && typeof window.managementReportsPage === 'function') return window.managementReportsPage(null,rp.start||undefined,rp.end||undefined);
     if (p[0] === 'integracoes' && typeof window.integrationsPage === 'function') return window.integrationsPage();
     if (p[0] === 'notificacoes' && typeof window.notificationsPage === 'function') return window.notificationsPage();
-    if (p[0] === 'financeiro' && typeof window.financeConsolidatedPage === 'function') return window.financeConsolidatedPage();
+    if (p[0] === 'financeiro' && typeof consolidatedFinance() === 'function') return consolidatedFinance()();
 
     if (p[0] === 'condominio') {
       const cid = p[1];
