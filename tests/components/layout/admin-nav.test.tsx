@@ -15,7 +15,10 @@ beforeEach(() => {
 })
 
 function renderNav(overrides = {}): HTMLElement {
-  const { container } = render(<AdminNav account={buildUser(overrides)} />)
+  // the full menu belongs to a manager; a resident sees only Início
+  const { container } = render(
+    <AdminNav account={buildUser({ role: 'MANAGER', ...overrides })} />,
+  )
   return container
 }
 
@@ -77,20 +80,20 @@ describe('AdminNav', () => {
   })
 
   it('puts the closed rail out of reach, without touching the pill', () => {
-    render(<AdminNav account={buildUser()} isRailOpen={false} />)
+    render(<AdminNav account={buildUser({ role: 'MANAGER' })} isRailOpen={false} />)
 
     expect(screen.getByTestId('nav-desktop').parentElement).toHaveAttribute('inert')
     expect(screen.getByTestId('nav-mobile')).toBeInTheDocument()
   })
 
   it('slides the rail instead of making it blink away', () => {
-    render(<AdminNav account={buildUser()} isRailOpen={false} />)
+    render(<AdminNav account={buildUser({ role: 'MANAGER' })} isRailOpen={false} />)
 
     expect(screen.getByTestId('nav-desktop').parentElement).toHaveClass('transition-[width]')
   })
 
   it('keeps the open rail reachable', () => {
-    render(<AdminNav account={buildUser()} isRailOpen />)
+    render(<AdminNav account={buildUser({ role: 'MANAGER' })} isRailOpen />)
 
     expect(screen.getByTestId('nav-desktop').parentElement).not.toHaveAttribute('inert')
   })
@@ -157,5 +160,31 @@ describe('AdminNav', () => {
     renderNav()
 
     expect(screen.getByTestId('nav-desktop').className).toContain('overflow-hidden')
+  })
+  it('chama pelo e-mail quem ainda não tem nome', () => {
+    renderNav({ name: null })
+
+    expect(screen.getByText('ana@example.com')).toBeInTheDocument()
+  })
+  it('leva para o início pessoal, seja qual for o papel', () => {
+    renderNav({ role: 'MANAGER' })
+
+    const inicio = screen.getAllByRole('link', { name: 'Início' })
+
+    expect(inicio.length).toBeGreaterThan(0)
+    expect(inicio[0]).toHaveAttribute('href', '/portal')
+  })
+
+  it('mostra o início também para o administrador', () => {
+    renderNav({ role: 'ADMIN' })
+
+    expect(screen.getAllByRole('link', { name: 'Início' })[0]).toHaveAttribute('href', '/portal')
+  })
+  it('esconde do morador as telas que não são dele', () => {
+    renderNav({ role: 'RESIDENT' })
+
+    expect(screen.queryAllByRole('link', { name: 'Usuários' })).toHaveLength(0)
+    expect(screen.queryAllByRole('link', { name: 'Condomínios' })).toHaveLength(0)
+    expect(screen.getAllByRole('link', { name: 'Início' }).length).toBeGreaterThan(0)
   })
 })

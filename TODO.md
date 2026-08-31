@@ -43,7 +43,7 @@ Legenda: `[ ]` a fazer · `[~]` existe mas precisa de ajuste · `[x]` pronto
   - [x] a coluna Moradores conta os vínculos ativos, em vez de um número digitado
   - [ ] unidades como entidade
   - [x] síndico do condomínio governa o acesso àquele condomínio
-  - [ ] portal do morador: hoje o RESIDENT recebe 403 e fica sem tela
+  - [x] portal do morador: o RESIDENT entra em `/portal` em vez de bater em 403
 - [x] **Calendário** — `app.js` · grade mensal
 - [~] **Manutenções (consolidado)** — `transition-ui.js` sobrescreve `app.js`
   - [ ] decidir qual versão fica e apagar a outra
@@ -78,7 +78,10 @@ Legenda: `[ ]` a fazer · `[~]` existe mas precisa de ajuste · `[x]` pronto
 
 ## Portal do morador
 
-- [x] **Início** — `resident-portal.js`
+- [x] **Início** — `app/(resident)/portal/` · meus dados e meus condomínios
+  - [x] editar o próprio contato — `app/(resident)/portal/dados/`
+  - [ ] comunicados, chamados, documentos e calendário: nenhum existe no banco ainda
+- [x] **Início (anterior)** — `resident-portal.js`
 - [x] **Comunicados** — `resident-portal.js`
 - [x] **Meus chamados** — `resident-portal.js`
 - [~] **Calendário** — `resident-portal.js`

@@ -1,9 +1,11 @@
 'use client'
 
-import { Button, Input, Label, Radio, RadioGroup, Surface, TextField } from '@heroui/react'
+import { Button, Label, Radio, RadioGroup } from '@heroui/react'
 import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
-import type { ReactElement, ReactNode } from 'react'
+import type { ReactElement } from 'react'
+import { Field } from '@/components/form/field'
+import { Section } from '@/components/form/section'
 import { MembershipEditor } from '@/components/membership-editor'
 import { ROLE_LABEL } from '@/components/user/role-chip'
 import { isAdmin } from '@/domain/authorization'
@@ -39,34 +41,6 @@ function draftOf(user: User): Draft {
     username: user.username ?? '',
     password: '',
   }
-}
-
-function Section({ title, children }: { title: string; children: ReactNode }): ReactElement {
-  return (
-    <Surface className="border-default-200 flex flex-col gap-4 rounded-2xl border p-5">
-      <h2 className="text-sm font-semibold">{title}</h2>
-      {children}
-    </Surface>
-  )
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  type,
-}: {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  type?: 'password'
-}): ReactElement {
-  return (
-    <TextField variant="secondary" value={value} onChange={onChange} type={type}>
-      <Label>{label}</Label>
-      <Input />
-    </TextField>
-  )
 }
 
 export default function UserDetailPage(): ReactElement {

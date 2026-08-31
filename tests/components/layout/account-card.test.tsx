@@ -56,4 +56,10 @@ describe('AccountCard', () => {
 
     expect(container.querySelector('[aria-label^="Foto de"]')).toBeInTheDocument()
   })
+  it('chama pelo e-mail quem ainda não tem nome', () => {
+    render(<AccountCard account={buildUser({ name: null })} />)
+
+    // o e-mail aparece duas vezes: como nome e como e-mail
+    expect(screen.getAllByText('ana@example.com')).toHaveLength(2)
+  })
 })

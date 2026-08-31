@@ -1,9 +1,12 @@
 import type { ReactElement } from 'react'
+import type { UserRole } from '@/shared/types'
 
 export interface NavItem {
   href: string
   label: string
   icon: ReactElement
+  /** Who sees it. Absent means everyone. */
+  roles?: readonly UserRole[]
 }
 
 // Inline icons: two drawings do not justify an icon library.
@@ -35,8 +38,36 @@ function BuildingIcon(): ReactElement {
   )
 }
 
-/** Every screen reachable from the admin navigation. */
+function HomeIcon(): ReactElement {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="size-5 shrink-0">
+      <path
+        d="M3 10.5 12 3l9 7.5M5.5 9.5V20h13V9.5M10 20v-6h4v6"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+/**
+ * Every screen reachable from the admin navigation. "Início" is everyone's
+ * own page — the same one a resident lands on — so it is here for every role.
+ */
 export const NAV_ITEMS: readonly NavItem[] = [
-  { href: '/users', label: 'Usuários', icon: <UsersIcon /> },
-  { href: '/condominiums', label: 'Condomínios', icon: <BuildingIcon /> },
+  { href: '/portal', label: 'Início', icon: <HomeIcon /> },
+  { href: '/users', label: 'Usuários', icon: <UsersIcon />, roles: ['ADMIN', 'MANAGER'] },
+  {
+    href: '/condominiums',
+    label: 'Condomínios',
+    icon: <BuildingIcon />,
+    roles: ['ADMIN', 'MANAGER'],
+  },
 ]
+
+/** The navigation shows only what the person may actually open. */
+export function navItemsFor(role: UserRole): readonly NavItem[] {
+  return NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(role))
+}

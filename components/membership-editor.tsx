@@ -22,7 +22,7 @@ export interface MembershipEditorProps {
   searchLabel: string
 }
 
-const ROLE_LABEL = { RESIDENT: 'Morador', MANAGER: 'Síndico' } as const
+export const MEMBERSHIP_ROLE_LABEL = { RESIDENT: 'Morador', MANAGER: 'Síndico' } as const
 
 /** The field says what it searches: the same box serves both sides. */
 const PLACEHOLDER = {
@@ -160,13 +160,13 @@ export function MembershipEditor({
             return (
               <li key={membership.id} className="flex items-center gap-2">
                 <span className="flex-1 truncate text-sm">{end.label}</span>
-                <Chip variant="soft">{ROLE_LABEL[membership.role]}</Chip>
+                <Chip variant="soft">{MEMBERSHIP_ROLE_LABEL[membership.role]}</Chip>
                 <Button
-                  aria-label={`Tornar ${end.label} ${ROLE_LABEL[next].toLowerCase()}`}
+                  aria-label={`Tornar ${end.label} ${MEMBERSHIP_ROLE_LABEL[next].toLowerCase()}`}
                   variant="ghost"
                   onPress={() => changeRole(end.id, next)}
                 >
-                  {ROLE_LABEL[next]}
+                  {MEMBERSHIP_ROLE_LABEL[next]}
                 </Button>
                 <Button
                   aria-label={

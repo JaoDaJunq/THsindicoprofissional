@@ -123,4 +123,11 @@ describe('UserFiltersDialog', () => {
 
     expect(onApply).toHaveBeenCalledWith({})
   })
+  it('começa com os filtros que já estavam aplicados', () => {
+    renderDialog({ id: 'abc', name: 'Ana', email: 'ana@' })
+
+    expect(screen.getByLabelText('Código')).toHaveValue('abc')
+    expect(screen.getByLabelText('Nome')).toHaveValue('Ana')
+    expect(screen.getByLabelText('E-mail')).toHaveValue('ana@')
+  })
 })

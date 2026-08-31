@@ -3,6 +3,7 @@ import { softDeleteUser } from '@/application/use-cases/soft-delete-user'
 import type { SoftDeleteUserError } from '@/application/use-cases/soft-delete-user'
 import { updateUser } from '@/application/use-cases/update-user'
 import type { UpdateUserError } from '@/application/use-cases/update-user'
+import { assignsRole, editsProfileOf } from '@/domain/authorization'
 import { getUserRepository } from '@/infrastructure/repositories'
 import { requester, requireManager } from '../../session'
 import type { UpdateUserInput } from '@/shared/types'
@@ -37,10 +38,17 @@ export async function GET(_request: Request, context: Context): Promise<NextResp
 }
 
 export async function PATCH(request: Request, context: Context): Promise<NextResponse> {
-  if (!(await requireManager())) return forbidden
+  const user = await requester()
+  if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
   const { id } = await context.params
-  const input = (await request.json()) as UpdateUserInput
+  if (!editsProfileOf(user, id)) return forbidden
+
+  // The owner may fix their own name and e-mail; handing out a role is the
+  // administrator's alone, so it never rides in on someone else's request.
+  const { role, ...contact } = (await request.json()) as UpdateUserInput
+  const input: UpdateUserInput = assignsRole(user) ? { ...contact, role } : contact
+
   const result = await updateUser(getUserRepository(), id, input)
 
   if (!result.ok) {

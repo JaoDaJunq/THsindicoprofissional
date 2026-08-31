@@ -7,7 +7,7 @@ import { useState } from 'react'
 import type { ReactElement } from 'react'
 import { AccountMenu } from './account'
 import { ThemeToggle } from './theme-toggle'
-import { NAV_ITEMS } from './nav-items'
+import { navItemsFor } from './nav-items'
 import type { User } from '@/shared/types'
 
 function MenuIcon(): ReactElement {
@@ -60,7 +60,7 @@ export function NavMobile({ account }: { account: User }): ReactElement {
               </Drawer.Header>
               <Drawer.Body>
                 <div className="flex flex-col gap-2 pb-4">
-                  {NAV_ITEMS.map((item) => (
+                  {navItemsFor(account.role).map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}

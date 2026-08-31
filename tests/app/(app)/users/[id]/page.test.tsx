@@ -222,4 +222,20 @@ describe('UserDetailPage', () => {
       expect(body.role).toBe('MANAGER')
     })
   })
+  it('começa vazios o nome e o usuário de quem ainda não os tem', () => {
+    loaded({ name: null, username: null })
+
+    render(<UserDetailPage />)
+
+    expect(screen.getByLabelText('Nome')).toHaveValue('')
+    expect(screen.getByLabelText('Usuário')).toHaveValue('')
+  })
+
+  it('chama a tela pelo e-mail de quem não tem nome', () => {
+    loaded({ name: null })
+
+    render(<UserDetailPage />)
+
+    expect(screen.getByRole('heading', { name: 'ana@example.com' })).toBeInTheDocument()
+  })
 })

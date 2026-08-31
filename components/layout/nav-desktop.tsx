@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { ROLE_LABEL } from '@/components/user/role-chip'
 import type { ReactElement } from 'react'
-import { NAV_ITEMS } from './nav-items'
+import { navItemsFor } from './nav-items'
 import { UserAvatar } from '@/components/user-avatar'
 import type { User } from '@/shared/types'
 
@@ -36,7 +36,7 @@ export function NavDesktop({ account }: { account: User }): ReactElement {
       </div>
 
       <nav aria-label="Menu administrativo" className="flex flex-1 flex-col gap-1">
-        {NAV_ITEMS.map((item) => (
+        {navItemsFor(account.role).map((item) => (
           <Link
             key={item.href}
             href={item.href}
