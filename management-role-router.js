@@ -7,6 +7,7 @@
 
   const parts = () => (location.hash || '#/').replace(/^#\//, '').split('?')[0].split('/').filter(Boolean);
   const reportParams = () => { const raw=(location.hash||'').split('?')[1]||''; const p=new URLSearchParams(raw); return {start:p.get('start')||undefined,end:p.get('end')||undefined}; };
+  const consolidatedFinance = () => window.financeConsolidatedPage || window.financeOverviewPage;
 
   function applyRestrictions(cid = null) {
     const access = window.CondoAccess;
@@ -54,7 +55,7 @@
     else if (p[0] === 'manutencoes') result = maintenancesPage();
     else if (p[0] === 'tarefas') result = tasksPage();
     else if (p[0] === 'chamados') result = callsPage();
-    else if (p[0] === 'financeiro' && typeof window.financeConsolidatedPage === 'function') result = window.financeConsolidatedPage();
+    else if (p[0] === 'financeiro' && typeof consolidatedFinance() === 'function') result = consolidatedFinance()();
     else if (p[0] === 'condominio') {
       const sub = p[2];
       if (!sub) result = typeof window.condoManagementDashboard==='function' ? window.condoManagementDashboard(cid) : condoOverview(cid);
