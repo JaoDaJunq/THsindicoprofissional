@@ -1,4 +1,4 @@
-name: JavaScript Syntax Check
+name: Frontend Safety Checks
 
 on:
   push:
@@ -7,9 +7,10 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  syntax:
+  frontend-safety:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,3 +24,29 @@ jobs:
             echo "Checking $file"
             node --check "$file"
           done < <(find . -type f -name '*.js' -not -path './node_modules/*' -print0)
+
+      - name: Check local scripts referenced by index
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const scripts = [...html.matchAll(/<script\s+src=["']\.\/([^"']+)["']/g)].map(m => m[1]);
+          const missing = scripts.filter(file => !fs.existsSync(file));
+          if (missing.length) {
+            console.error('Missing local scripts:', missing.join(', '));
+            process.exit(1);
+          }
+          console.log(`Validated ${scripts.length} local script references.`);
+          NODE
+
+      - name: Reject Supabase secret keys in frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RIn --exclude-dir=.git --exclude='*.md' 'sb_secret_' .; then
+            echo 'Supabase secret key pattern found in repository.'
+            exit 1
+          fi
+          echo 'No Supabase secret key pattern found.'
