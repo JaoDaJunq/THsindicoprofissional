@@ -1,0 +1,66 @@
+{
+  "name": "condo-management",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "types": "tsc --noEmit",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:generate": "prisma generate",
+    "prepare": "lefthook install || true",
+    "test:integration": "vitest run --config vitest.integration.config.mts",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:test:setup": "docker compose exec -T db psql -U condo -d postgres -c \"CREATE DATABASE condo_test\" || true && DATABASE_URL=$DATABASE_URL_TEST prisma migrate deploy"
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.11.3",
+    "@heroui/react": "^3.2.4",
+    "@heroui/styles": "^3.2.4",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "7.10.0",
+    "argon2": "^0.45.1",
+    "dotenv": "^17.4.2",
+    "next": "^16.3.3",
+    "next-auth": "5.0.0-beta.32",
+    "pg": "^8.23.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^26.4.0",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.2.8",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@vitest/coverage-v8": "^4.1.11",
+    "eslint": "9.39.5",
+    "eslint-config-next": "^16.3.3",
+    "jsdom": "^30.0.1",
+    "lefthook": "^2.1.12",
+    "prisma": "7.10.0",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.12",
+    "typescript": "5.9.3",
+    "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "typescript": "5.9.3",
+    "eslint": "9.39.5"
+  },
+  "allowScripts": {
+    "lefthook@2.1.12": true,
+    "unrs-resolver@1.12.2": true,
+    "prisma@7.10.0": true,
+    "@prisma/engines@7.10.0": true,
+    "argon2@0.45.1": true
+  }
+}

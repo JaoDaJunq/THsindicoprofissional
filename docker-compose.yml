@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: condo
+      POSTGRES_PASSWORD: condo
+      POSTGRES_DB: condo
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U condo -d condo']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    env_file: .env
+    environment:
+      # inside the compose network the database answers as "db", not localhost
+      DATABASE_URL: postgresql://condo:condo@db:5432/condo?schema=public
+      # bind mounts on macOS do not propagate inotify; the watcher needs polling
+      WATCHPACK_POLLING: 'true'
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  db-data:

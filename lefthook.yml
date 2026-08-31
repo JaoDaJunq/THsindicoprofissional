@@ -1,0 +1,12 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: lint
+      glob: '*.{ts,tsx}'
+      run: npx eslint --max-warnings 0 {staged_files}
+    - name: types
+      run: npm run types
+    - name: tests
+      run: npm test
+    - name: hook-tests
+      run: node --test .claude/hooks/tests/**/*.test.js

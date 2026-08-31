@@ -1,0 +1,7 @@
+@import 'tailwindcss';
+@import '@heroui/styles';
+
+/* O tooltip aparece assim que o mouse chega, em toda a aplicação. */
+:root {
+  --tooltip-delay: 0ms;
+}

@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/** What the person can do system-wide. Where they do it comes from the membership. */
+enum UserRole {
+  ADMIN
+  MANAGER
+  RESIDENT
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String
+  name      String?
+  image     String?
+  // required by the Auth.js adapter contract
+  emailVerified DateTime?
+  username           String?
+  passwordHash       String?
+  /** True only while the person still uses a password someone else set for them. */
+  mustChangePassword Boolean @default(false)
+  role      UserRole @default(RESIDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  /** Null means active. Filled means excluded, with the date. */
+  deletedAt DateTime?
+
+  @@index([deletedAt])
+
+  accounts Account[]
+  sessions Session[]
+  memberships CondominiumMember[]
+}
+
+// Tables below are required by the Auth.js Prisma adapter.
+model Account {
+  userId            String @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  deletedAt         DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String @db.Uuid
+  expires      DateTime
+  deletedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+  deletedAt  DateTime?
+
+  @@id([identifier, token])
+}
+
+model Condominium {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  address        String
+  cnpj           String?
+  phone          String?
+  email          String?
+  unitsCount     Int      @default(0)
+  blocksCount    Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  /** Null means active. Filled means excluded, with the date. */
+  deletedAt      DateTime?
+
+  @@index([deletedAt])
+
+  members CondominiumMember[]
+}
+
+/** What someone is inside one condominium. Unrelated to `User.isManager`,
+    which is what grants write access to the system as a whole. */
+enum CondominiumRole {
+  RESIDENT
+  MANAGER
+}
+
+model CondominiumMember {
+  id            String          @id @default(uuid()) @db.Uuid
+  condominiumId String          @db.Uuid
+  userId        String          @db.Uuid
+  role          CondominiumRole @default(RESIDENT)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  /** Null means active. Filled means excluded, with the date. */
+  deletedAt     DateTime?
+
+  condominium Condominium @relation(fields: [condominiumId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@index([deletedAt])
+  @@index([condominiumId])
+  @@index([userId])
+}
