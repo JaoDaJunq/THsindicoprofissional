@@ -110,4 +110,48 @@ describe('UserListMobile', () => {
 
     expect(screen.getByText('Nenhum usuário encontrado.')).toBeInTheDocument()
   })
+  it('oferece ver como a pessoa, quando quem olha pode', async () => {
+    const onImpersonate = vi.fn()
+    const pessoa = buildUser()
+    render(
+      <UserListMobile
+        users={[pessoa]}
+        firstIndex={0}
+        onEdit={onEdit}
+        onDeactivate={onDeactivate}
+        onActivate={onActivate}
+        onImpersonate={onImpersonate}
+        canImpersonate={() => true}
+      />,
+    )
+    await expand()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Ver como' }))
+
+    expect(onImpersonate).toHaveBeenCalledWith(pessoa)
+  })
+
+  it('não oferece isso na linha de quem não pode ser impersonado', async () => {
+    render(
+      <UserListMobile
+        users={[buildUser()]}
+        firstIndex={0}
+        onEdit={onEdit}
+        onDeactivate={onDeactivate}
+        onActivate={onActivate}
+        onImpersonate={vi.fn()}
+        canImpersonate={() => false}
+      />,
+    )
+    await expand()
+
+    expect(screen.queryByRole('button', { name: 'Ver como' })).not.toBeInTheDocument()
+  })
+
+  it('não oferece isso quando ninguém passou a ação', async () => {
+    renderList()
+    await expand()
+
+    expect(screen.queryByRole('button', { name: 'Ver como' })).not.toBeInTheDocument()
+  })
 })

@@ -23,6 +23,8 @@ export function UserListDesktop({
   onEdit,
   onDeactivate,
   onActivate,
+  onImpersonate,
+  canImpersonate,
 }: UserListProps): ReactElement {
   const [target, setTarget] = useState<UserMenuTarget | null>(null)
 
@@ -79,6 +81,8 @@ export function UserListDesktop({
         onEdit={onEdit}
         onDeactivate={onDeactivate}
         onActivate={onActivate}
+        onImpersonate={onImpersonate}
+        canImpersonate={canImpersonate}
       />
     </Table>
   )

@@ -11,8 +11,20 @@ export interface RowMenuTarget<T> {
   y: number
 }
 
+/** An action beyond the three every listing has. */
+export interface RowMenuExtra<T> {
+  id: string
+  label: string
+  path: string
+  /** Per row, not per listing: a mixed list offers it on some rows only. */
+  isVisible?: (item: T) => boolean
+  onSelect: (item: T) => void
+}
+
 export interface RowMenuProps<T> {
   target: RowMenuTarget<T> | null
+  /** Shown after the usual ones, when the caller has something else to offer. */
+  extras?: readonly RowMenuExtra<T>[]
   /** Names the row for a screen reader. */
   label: (item: T) => string
   isActive: (item: T) => boolean
@@ -46,6 +58,7 @@ const ACTIVATE = { id: 'activate', label: 'Ativar', path: 'M20 6 9 17l-5-5' } as
  */
 export function RowMenu<T>({
   target,
+  extras = [],
   label,
   isActive,
   onClose,
@@ -62,6 +75,8 @@ export function RowMenu<T>({
     if (action === 'edit') onEdit(item)
     if (action === 'deactivate') onDeactivate(item)
     if (action === 'activate') onActivate(item)
+
+    extras.find((extra) => extra.id === action)?.onSelect(item)
     onClose()
   }
 
@@ -75,7 +90,11 @@ export function RowMenu<T>({
       />
       <Dropdown.Popover placement="bottom start">
         <Dropdown.Menu onAction={run}>
-          {[EDIT, isActive(item) ? DEACTIVATE : ACTIVATE].map((action) => (
+          {[
+            EDIT,
+            isActive(item) ? DEACTIVATE : ACTIVATE,
+            ...extras.filter((extra) => extra.isVisible?.(item) ?? true),
+          ].map((action) => (
             <Dropdown.Item key={action.id} id={action.id} className="flex items-center gap-2">
               <Icon d={action.path} />
               {action.label}

@@ -2,6 +2,7 @@
 
 import { SearchField } from '@heroui/react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { useState } from 'react'
 import type { ReactElement } from 'react'
 import { DeactivateUserDialog } from '@/components/user/deactivate-dialog'
@@ -9,6 +10,8 @@ import { UserFiltersDialog } from '@/components/user/filters-dialog'
 import { FilterButton } from '@/components/list/filter-button'
 import { ListPagination } from '@/components/list/pagination'
 import { UserList } from '@/components/user/list'
+import { impersonates } from '@/domain/authorization'
+import { useAccount } from '@/hooks/use-account'
 import { useUsers } from '@/hooks/use-users'
 import type { User, UserFilters } from '@/shared/types'
 
@@ -20,6 +23,14 @@ export default function UsersPage(): ReactElement {
   const [userToDeactivate, setUserToDeactivate] = useState<User | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
   const { page: result, isLoading, error } = useUsers(filters, page, reloadToken)
+  const { account } = useAccount(true)
+  const { update } = useSession()
+
+  /** Seeing the system as someone else rewrites the session, then goes home. */
+  async function impersonate(user: User): Promise<void> {
+    await update({ impersonate: user.id })
+    router.push('/portal')
+  }
 
   function search(term: string): void {
     setPage(1)
@@ -69,6 +80,10 @@ export default function UsersPage(): ReactElement {
             onEdit={(user) => router.push(`/users/${user.id}`)}
             onDeactivate={setUserToDeactivate}
             onActivate={(user) => void activate(user)}
+            onImpersonate={account ? (user: User): void => void impersonate(user) : undefined}
+            canImpersonate={(user: User): boolean =>
+              account !== null && impersonates(account, user)
+            }
           />
         )
       )}

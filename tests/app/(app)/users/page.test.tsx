@@ -8,6 +8,12 @@ import { buildUser } from '@/tests/support/build-user'
 const push = vi.fn()
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }))
 
+const useAccount = vi.fn()
+vi.mock('@/hooks/use-account', () => ({ useAccount: (...a: unknown[]) => useAccount(...a) }))
+
+const update = vi.fn()
+vi.mock('next-auth/react', () => ({ useSession: () => ({ update }) }))
+
 const useUsers = vi.fn()
 vi.mock('@/hooks/use-users', () => ({ useUsers: (...args: unknown[]) => useUsers(...args) }))
 
@@ -19,6 +25,13 @@ function pageOf(items: User[], pageCount = 1): Page<User> {
 
 beforeEach(() => {
   useUsers.mockReset()
+  useAccount.mockReset()
+  update.mockReset()
+  useAccount.mockReturnValue({
+    account: buildUser({ id: 'admin-1', role: 'ADMIN' }),
+    isLoading: false,
+    isGone: false,
+  })
   push.mockReset()
   setScreen('desktop')
 })
@@ -201,5 +214,67 @@ describe('UsersPage', () => {
     await userEvent.click(screen.getByRole('menuitem', { name: 'Editar' }))
 
     expect(push).toHaveBeenCalledWith(`/users/${person.id}`)
+  })
+  it('oferece ao administrador ver o sistema como a pessoa', async () => {
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+    render(<UsersPage />)
+
+    openRowMenu()
+
+    expect(await screen.findByRole('menuitem', { name: /Ver como/ })).toBeInTheDocument()
+  })
+
+  it('não oferece isso ao síndico', async () => {
+    useAccount.mockReturnValue({
+      account: buildUser({ id: 'manager-1', role: 'MANAGER' }),
+      isLoading: false,
+      isGone: false,
+    })
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+    render(<UsersPage />)
+
+    openRowMenu()
+
+    await screen.findByRole('menuitem', { name: /Editar/ })
+    expect(screen.queryByRole('menuitem', { name: /Ver como/ })).not.toBeInTheDocument()
+  })
+
+  it('não oferece impersonar outro administrador', async () => {
+    useUsers.mockReturnValue({
+      page: pageOf([{ ...person, role: 'ADMIN' }]),
+      isLoading: false,
+      error: null,
+    })
+    render(<UsersPage />)
+
+    openRowMenu()
+
+    await screen.findByRole('menuitem', { name: /Editar/ })
+    expect(screen.queryByRole('menuitem', { name: /Ver como/ })).not.toBeInTheDocument()
+  })
+
+  it('troca a sessão e vai para o início ao impersonar', async () => {
+    useUsers.mockReturnValue({ page: pageOf([person]), isLoading: false, error: null })
+    render(<UsersPage />)
+
+    openRowMenu()
+    await userEvent.click(await screen.findByRole('menuitem', { name: /Ver como/ }))
+
+    await waitFor(() => expect(update).toHaveBeenCalledWith({ impersonate: person.id }))
+    expect(push).toHaveBeenCalledWith('/portal')
+  })
+  it('decide linha a linha: numa lista mista, o administrador não é impersonável', async () => {
+    const outroAdmin = buildUser({ id: 'admin-2', name: 'Bruno Admin', role: 'ADMIN' })
+    useUsers.mockReturnValue({
+      page: pageOf([person, outroAdmin]),
+      isLoading: false,
+      error: null,
+    })
+    render(<UsersPage />)
+
+    fireEvent.contextMenu(screen.getAllByText('Bruno Admin')[0]!.closest('tr') as HTMLElement)
+
+    await screen.findByRole('menuitem', { name: /Editar/ })
+    expect(screen.queryByRole('menuitem', { name: /Ver como/ })).not.toBeInTheDocument()
   })
 })

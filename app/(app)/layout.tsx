@@ -1,11 +1,12 @@
 'use client'
 
 import { Button } from '@heroui/react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import type { ReactElement, ReactNode } from 'react'
 import { signOut, useSession } from 'next-auth/react'
 import { AdminNav } from '@/components/layout/admin-nav'
+import { ImpersonationBanner } from '@/components/layout/impersonation-banner'
 import { ThemeToggle } from '@/components/layout/theme-toggle'
 import { useAccount } from '@/hooks/use-account'
 import type { User } from '@/shared/types'
@@ -36,6 +37,7 @@ export default function AppLayout({ children }: { children: ReactNode }): ReactE
   const { status } = useSession()
   const { account, isLoading, isGone } = useAccount(status === 'authenticated')
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -50,8 +52,17 @@ export default function AppLayout({ children }: { children: ReactNode }): ReactE
       return
     }
 
-    if (mustChangePassword(account)) router.replace('/change-password')
-  }, [status, account, isGone, router])
+    if (mustChangePassword(account)) {
+      router.replace('/change-password')
+      return
+    }
+
+    // Same shell for everyone; a resident just has fewer screens in it, and
+    // gets sent home if a link or an old URL lands them on one of the others.
+    if (account?.role === 'RESIDENT' && !pathname.startsWith('/portal')) {
+      router.replace('/portal')
+    }
+  }, [status, account, isGone, pathname, router])
 
   if (isLoading || !account || mustChangePassword(account)) return null
 
@@ -60,6 +71,9 @@ export default function AppLayout({ children }: { children: ReactNode }): ReactE
       <AdminNav account={account} isRailOpen={isRailOpen} />
       {/* room for the floating pill on phones */}
       <div className="flex-1 pb-28 md:pb-0">
+        {/* inside the content column, so the rail still reaches the top edge */}
+        <ImpersonationBanner account={account} />
+
         {/* the rail is a desktop shape; on phones the pill already does this */}
         <div className="hidden items-center gap-1 px-3 pt-3 md:flex">
           <Button

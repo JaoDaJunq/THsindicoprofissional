@@ -8,6 +8,7 @@ import { prisma } from '@/infrastructure/database/prisma'
 import { getUserRepository } from '@/infrastructure/repositories'
 import { Argon2PasswordHasher } from '@/infrastructure/security/argon2-password-hasher'
 import { withSoftDeleteAwareLookup } from './adapter'
+import { applyImpersonation } from './impersonation'
 import { readCredentials } from './credentials'
 
 const result: NextAuthResult = NextAuth({
@@ -42,12 +43,27 @@ const result: NextAuthResult = NextAuth({
     }),
   ],
   callbacks: {
-    jwt: async ({ token, user }) => {
+    jwt: async ({ token, user, trigger, session }) => {
       if (user?.id) token.sub = user.id
+
+      // The update payload comes from the browser; applyImpersonation is what
+      // decides, reading the administrator back from the database.
+      if (trigger === 'update') {
+        const decided = await applyImpersonation(
+          { sub: token.sub, impersonatorId: token.impersonatorId },
+          (session ?? {}) as Record<string, unknown>,
+          getUserRepository(),
+        )
+        token.sub = decided.sub
+        token.impersonatorId = decided.impersonatorId
+      }
+
       return token
     },
     session: async ({ session, token }) => {
       if (token.sub) session.user.id = token.sub
+      // The banner needs to know; nothing else does.
+      session.user.isImpersonated = Boolean(token.impersonatorId)
       return session
     },
   },

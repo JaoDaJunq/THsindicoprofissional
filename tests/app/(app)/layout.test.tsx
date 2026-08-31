@@ -25,7 +25,12 @@ beforeEach(() => {
   replace.mockReset()
   useSession.mockReturnValue({ status: 'authenticated' })
   signOut.mockReset()
-  useAccount.mockReturnValue({ account: buildUser(), isLoading: false, isGone: false })
+  // whoever uses the panel is a manager; a resident belongs in the portal
+  useAccount.mockReturnValue({
+    account: buildUser({ role: 'MANAGER' }),
+    isLoading: false,
+    isGone: false,
+  })
 })
 
 function renderLayout(): ReturnType<typeof render> {
@@ -92,7 +97,7 @@ describe('AppLayout', () => {
 
   it('holds the screen back until the first password is replaced', async () => {
     useAccount.mockReturnValue({
-      account: buildUser({ mustChangePassword: true, username: 'ana' }),
+      account: buildUser({ role: 'MANAGER', mustChangePassword: true, username: 'ana' }),
       isLoading: false,
       isGone: false,
     })
@@ -104,7 +109,7 @@ describe('AppLayout', () => {
   })
   it('never asks for a password from someone who signs in with Google', async () => {
     useAccount.mockReturnValue({
-      account: buildUser({ mustChangePassword: true, username: null }),
+      account: buildUser({ role: 'MANAGER', mustChangePassword: true, username: null }),
       isLoading: false,
       isGone: false,
     })
@@ -121,5 +126,41 @@ describe('AppLayout', () => {
     renderLayout()
 
     await waitFor(() => expect(signOut).toHaveBeenCalledWith({ callbackUrl: '/signin' }))
+  })
+  it('desenha o painel para o morador, com o menu reduzido', () => {
+    useAccount.mockReturnValue({
+      account: buildUser({ role: 'RESIDENT' }),
+      isLoading: false,
+      isGone: false,
+    })
+
+    renderLayout()
+
+    expect(screen.getByText('conteúdo da tela')).toBeInTheDocument()
+    expect(screen.queryAllByRole('link', { name: 'Usuários' })).toHaveLength(0)
+  })
+
+  it('tira o morador de uma tela administrativa', async () => {
+    useAccount.mockReturnValue({
+      account: buildUser({ role: 'RESIDENT' }),
+      isLoading: false,
+      isGone: false,
+    })
+
+    renderLayout()
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/portal'))
+  })
+
+
+  it('avisa, em qualquer tela, quando alguém está impersonando', () => {
+    useSession.mockReturnValue({
+      status: 'authenticated',
+      data: { user: { id: 'x', isImpersonated: true } },
+    })
+
+    renderLayout()
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/Vendo como/i)
   })
 })

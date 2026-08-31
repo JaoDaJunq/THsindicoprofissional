@@ -2,6 +2,13 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { useAccount } from '@/hooks/use-account'
 import { buildUser } from '@/tests/support/build-user'
 
+const useSession = vi.fn()
+vi.mock('next-auth/react', () => ({ useSession: () => useSession() }))
+
+beforeEach(() => {
+  useSession.mockReturnValue({ data: { user: { id: 'quem-entrou' } } })
+})
+
 const account = buildUser({ mustChangePassword: true })
 
 describe('useAccount', () => {
@@ -65,5 +72,31 @@ describe('useAccount', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.isGone).toBe(false)
+  })
+  it('pede de novo quando a identidade da sessão troca', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => account })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { rerender } = renderHook(() => useAccount(true))
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+    // é o que acontece ao impersonar alguém, e ao voltar a ser você
+    useSession.mockReturnValue({ data: { user: { id: 'outra-pessoa' } } })
+    rerender()
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+  })
+
+  it('não fica pedindo à toa quando nada muda', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => account })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { rerender } = renderHook(() => useAccount(true))
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+    rerender()
+    rerender()
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 })

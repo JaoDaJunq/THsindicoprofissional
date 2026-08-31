@@ -10,12 +10,14 @@ const onClose = vi.fn()
 const onEdit = vi.fn()
 const onDeactivate = vi.fn()
 const onActivate = vi.fn()
+const onImpersonate = vi.fn()
 
 beforeEach(() => {
   onClose.mockReset()
   onEdit.mockReset()
   onDeactivate.mockReset()
   onActivate.mockReset()
+  onImpersonate.mockReset()
 })
 
 function renderMenu(person: User | null = user): void {
@@ -93,5 +95,27 @@ describe('UserRowMenu', () => {
     await userEvent.click(screen.getByRole('menuitem', { name: /Editar/ }))
 
     expect(onClose).toHaveBeenCalled()
+  })
+  it('oferece impersonar quando quem olha pode fazer isso', async () => {
+    render(
+      <UserRowMenu
+        target={{ user, x: 10, y: 20 }}
+        onClose={onClose}
+        onEdit={onEdit}
+        onDeactivate={onDeactivate}
+        onActivate={onActivate}
+        onImpersonate={onImpersonate}
+      />,
+    )
+
+    await userEvent.click(await screen.findByRole('menuitem', { name: /Ver como/ }))
+
+    expect(onImpersonate).toHaveBeenCalledWith(user)
+  })
+
+  it('não oferece impersonar quando ninguém passou a ação', () => {
+    renderMenu()
+
+    expect(screen.queryByRole('menuitem', { name: /Ver como/ })).not.toBeInTheDocument()
   })
 })

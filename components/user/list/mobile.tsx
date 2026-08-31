@@ -13,6 +13,10 @@ export interface UserListProps {
   onEdit: (user: User) => void
   onDeactivate: (user: User) => void
   onActivate: (user: User) => void
+  /** Absent when whoever is looking cannot impersonate. */
+  onImpersonate?: (user: User) => void
+  /** Which rows accept it. Absent means all of them. */
+  canImpersonate?: (user: User) => boolean
 }
 
 function Field({
@@ -37,6 +41,8 @@ export function UserListMobile({
   onEdit,
   onDeactivate,
   onActivate,
+  onImpersonate,
+  canImpersonate,
 }: UserListProps): ReactElement {
   if (users.length === 0) {
     return <p className="text-default-500 py-8 text-center text-sm">Nenhum usuário encontrado.</p>
@@ -69,10 +75,20 @@ export function UserListMobile({
                 </Field>
               </dl>
 
+              {/* the accordion panel is where three buttons may share a line */}
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" onPress={() => onEdit(user)}>
                   Editar
                 </Button>
+                {onImpersonate && (canImpersonate?.(user) ?? true) && (
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onPress={() => onImpersonate(user)}
+                  >
+                    Ver como
+                  </Button>
+                )}
                 {user.deletedAt === null ? (
                   <Button variant="danger" className="flex-1" onPress={() => onDeactivate(user)}>
                     Desativar
