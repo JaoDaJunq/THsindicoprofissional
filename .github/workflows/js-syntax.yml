@@ -45,7 +45,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if grep -RIn --exclude-dir=.git --exclude='*.md' 'sb_secret_' .; then
+          if grep -RIn --exclude-dir=.git --exclude='*.md' '[s]b_secret_' .; then
             echo 'Supabase secret key pattern found in repository.'
             exit 1
           fi
