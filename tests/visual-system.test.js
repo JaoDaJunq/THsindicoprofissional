@@ -8,6 +8,7 @@ const path = require('node:path');
 const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const design = fs.readFileSync(path.join(root, 'design-system.css'), 'utf8');
+const accessibility = fs.readFileSync(path.join(root, 'design-system-accessibility.css'), 'utf8');
 const visual = fs.readFileSync(path.join(root, 'visual-system.js'), 'utf8');
 const legacyMobile = fs.readFileSync(path.join(root, 'mobile-fixes.css'), 'utf8');
 
@@ -21,10 +22,11 @@ function count(source, needle) {
   return source.split(needle).length - 1;
 }
 
-test('design-system é a última folha local e pode sobrescrever legado visual', () => {
+test('design system e acessibilidade sobrescrevem o legado na ordem correta', () => {
   assert.ok(positionOf(html, './design-system.css') > positionOf(html, './mobile-fixes.css'));
+  assert.ok(positionOf(html, './design-system-accessibility.css') > positionOf(html, './design-system.css'));
   const localStyles = [...html.matchAll(/<link[^>]+href=["']\.\/([^"']+\.css)["']/g)].map(match => match[1]);
-  assert.equal(localStyles.at(-1), 'design-system.css');
+  assert.equal(localStyles.at(-1), 'design-system-accessibility.css');
 });
 
 test('visual-system executa depois dos roteadores de estabilidade e antes do PWA', () => {
@@ -80,6 +82,8 @@ test('conteúdo desktop possui limite e sidebar não cresce com o viewport', () 
 test('design respeita foco, redução de movimento e alvos confortáveis', () => {
   assert.match(design, /:focus-visible/);
   assert.match(design, /prefers-reduced-motion:reduce/);
+  assert.match(accessibility, /prefers-reduced-motion: reduce/);
+  assert.match(accessibility, /\.sidebar[\s\S]*transition:none!important/);
   assert.match(design, /min-height:42px!important/);
   assert.match(design, /\.mobile-nav-toggle\{[\s\S]*width:44px;height:44px/);
 });
