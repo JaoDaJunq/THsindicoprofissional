@@ -12,6 +12,7 @@
     const p = path();
     const rp=params();
 
+    if (p[0] === 'nao-migrado' && typeof window.legacyMigrationPage === 'function') return window.legacyMigrationPage();
     if (p[0] === 'auditoria' && typeof window.auditPage === 'function') return window.auditPage();
     if (p[0] === 'relatorios' && typeof window.managementReportsPage === 'function') return window.managementReportsPage(null,rp.start||undefined,rp.end||undefined);
     if (p[0] === 'integracoes' && typeof window.integrationsPage === 'function') return window.integrationsPage();
