@@ -10,10 +10,15 @@ async function noHorizontalOverflow(page) {
   expect(overflow.scroll).toBeLessThanOrEqual(overflow.viewport + 1);
 }
 
+async function openFixture(page, width, height) {
+  await page.setViewportSize({ width, height });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(fixture);
+}
+
 test.describe('responsive design system', () => {
   test('desktop keeps readable content, fixed sidebar and no horizontal overflow', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(fixture);
+    await openFixture(page, 1440, 900);
     await noHorizontalOverflow(page);
 
     const sidebar = page.locator('.sidebar');
@@ -35,8 +40,7 @@ test.describe('responsive design system', () => {
   });
 
   test('phone uses off-canvas navigation and stacked data cards', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(fixture);
+    await openFixture(page, 390, 844);
     await noHorizontalOverflow(page);
 
     const toggle = page.locator('.mobile-nav-toggle');
@@ -77,8 +81,7 @@ test.describe('responsive design system', () => {
   });
 
   test('dynamically inserted table rows are enhanced without duplicating navigation', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(fixture);
+    await openFixture(page, 390, 844);
 
     await page.evaluate(() => {
       const row = document.createElement('tr');
