@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Visual fixture</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="stylesheet" href="../../ui-refresh.css">
+  <link rel="stylesheet" href="../../mobile-fixes.css">
+  <link rel="stylesheet" href="../../design-system.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">SG</div><div><strong>Gestão Condominial</strong><span>Portal do Síndico</span></div></div>
+      <div class="nav-section">Principal</div>
+      <nav class="nav">
+        <a class="active" href="#"><span>⌂</span><span>Visão geral</span></a>
+        <a href="#"><span>▦</span><span>Condomínios</span></a>
+        <a href="#"><span>$</span><span>Financeiro</span></a>
+        <a href="#"><span>▣</span><span>Calendário</span></a>
+        <a href="#"><span>⚒</span><span>Manutenções</span></a>
+        <a href="#"><span>◉</span><span>Chamados</span></a>
+      </nav>
+      <div class="nav-section">Workspace</div>
+      <div class="workspace-label">Ed. Ametista</div>
+      <nav class="nav">
+        <a href="#"><span>⌂</span><span>Resumo</span></a>
+        <a class="active" href="#"><span>⚒</span><span>Manutenções</span></a>
+        <a href="#"><span>✓</span><span>Tarefas</span></a>
+        <a href="#"><span>◉</span><span>Chamados</span></a>
+        <a href="#"><span>♟</span><span>Equipe</span></a>
+      </nav>
+    </aside>
+    <main class="main">
+      <div class="mobile-top"><div class="brand"><div class="brand-mark">SG</div><div><strong>Gestão Condominial</strong><span>Ed. Ametista</span></div></div></div>
+      <header class="topbar">
+        <div><div class="eyebrow">Operação</div><h1>Manutenções</h1><div class="muted small">Rotinas preventivas e corretivas de Ed. Ametista.</div></div>
+        <div class="top-actions"><button class="btn btn-primary">+ Nova manutenção</button><button class="icon-btn">🔔</button><div class="avatar">TG</div></div>
+      </header>
+      <section class="metrics">
+        <article class="metric"><div class="metric-top"><div><span>Total</span><strong>13</strong></div><div class="icon blue">⚒</div></div></article>
+        <article class="metric"><div class="metric-top"><div><span>Atrasadas</span><strong>0</strong></div><div class="icon orange">!</div></div></article>
+        <article class="metric"><div class="metric-top"><div><span>Próx. 7 dias</span><strong>0</strong></div><div class="icon green">◫</div></div></article>
+        <article class="metric"><div class="metric-top"><div><span>Cadastro incompleto</span><strong>0</strong></div><div class="icon orange">?</div></div></article>
+      </section>
+      <article class="panel">
+        <div class="panel-head"><div><h2>Agenda de manutenção</h2><div class="muted small">Cada conclusão gera uma execução histórica própria.</div></div></div>
+        <div class="panel-body">
+          <div class="table-wrap">
+            <table class="table" id="maintenance-table">
+              <thead><tr><th>Manutenção</th><th>Condomínio</th><th>Próxima data</th><th>Recorrência</th><th>Prioridade</th><th>Status</th><th>Ações</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Teste da iluminação de emergência</strong><div class="list-sub">Preventiva</div></td><td>Ed. Ametista</td><td>15/01/2027</td><td>Semestral</td><td>Normal</td><td><span class="badge good">Em 136 dias</span></td><td><div class="row-actions"><button class="btn btn-soft">Histórico</button><button class="btn btn-primary">Concluir</button></div></td></tr>
+                <tr><td><strong>Plano de prevenção contra incêndio</strong><div class="list-sub">Preventiva</div></td><td>Ed. Ametista</td><td>02/02/2027</td><td>Anual</td><td>Normal</td><td><span class="badge good">Em 154 dias</span></td><td><div class="row-actions"><button class="btn btn-soft">Histórico</button><button class="btn btn-primary">Concluir</button></div></td></tr>
+                <tr><td><strong>Limpeza dos reservatórios de água</strong><div class="list-sub">Preventiva</div></td><td>Ed. Ametista</td><td>28/02/2027</td><td>Semestral</td><td>Normal</td><td><span class="badge good">Em 180 dias</span></td><td><div class="row-actions"><button class="btn btn-soft">Histórico</button><button class="btn btn-primary">Concluir</button></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+    </main>
+  </div>
+  <script src="../../visual-system.js"></script>
+</body>
+</html>
