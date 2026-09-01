@@ -16,6 +16,10 @@ async function openFixture(page, width, height) {
   await page.goto(fixture);
 }
 
+async function metricColumns(page) {
+  return page.locator('.metrics').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+}
+
 test.describe('responsive design system', () => {
   test('desktop keeps readable content, fixed sidebar and no horizontal overflow', async ({ page }) => {
     await openFixture(page, 1440, 900);
@@ -29,9 +33,7 @@ test.describe('responsive design system', () => {
     expect(await sidebar.evaluate(el => Math.round(el.getBoundingClientRect().width))).toBe(240);
     expect(await main.evaluate(el => el.getBoundingClientRect().left)).toBeGreaterThanOrEqual(239);
     expect(await metrics.count()).toBe(4);
-
-    const columns = await page.locator('.metrics').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
-    expect(columns).toBe(4);
+    expect(await metricColumns(page)).toBe(4);
 
     const primaryHeight = await page.locator('.btn-primary').first().evaluate(el => el.getBoundingClientRect().height);
     expect(primaryHeight).toBeGreaterThanOrEqual(42);
@@ -39,7 +41,7 @@ test.describe('responsive design system', () => {
     await page.screenshot({ path: 'test-results/desktop-maintenance.png', fullPage: true });
   });
 
-  test('phone uses off-canvas navigation and stacked data cards', async ({ page }) => {
+  test('phone uses off-canvas navigation, two compact KPIs per row and stacked data cards', async ({ page }) => {
     await openFixture(page, 390, 844);
     await noHorizontalOverflow(page);
 
@@ -52,8 +54,7 @@ test.describe('responsive design system', () => {
 
     const reducedMotionState = await sidebar.evaluate(el => ({
       requested: matchMedia('(prefers-reduced-motion: reduce)').matches,
-      transitionDuration: getComputedStyle(el).transitionDuration,
-      transitionProperty: getComputedStyle(el).transitionProperty
+      transitionDuration: getComputedStyle(el).transitionDuration
     }));
     expect(reducedMotionState.requested).toBe(true);
     expect(['0s', '0ms']).toContain(reducedMotionState.transitionDuration);
@@ -72,12 +73,17 @@ test.describe('responsive design system', () => {
     await expect(page.locator('#maintenance-table thead')).toHaveCSS('display', 'none');
     const firstCell = page.locator('#maintenance-table tbody tr').first().locator('td').first();
     await expect(firstCell).toHaveAttribute('data-label', 'Manutenção');
-
-    const columns = await page.locator('.metrics').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
-    expect(columns).toBe(1);
+    expect(await metricColumns(page)).toBe(2);
 
     await noHorizontalOverflow(page);
     await page.screenshot({ path: 'test-results/mobile-maintenance.png', fullPage: true });
+  });
+
+  test('very narrow phone falls back to one KPI per row without overflow', async ({ page }) => {
+    await openFixture(page, 320, 700);
+    expect(await metricColumns(page)).toBe(1);
+    await noHorizontalOverflow(page);
+    await page.screenshot({ path: 'test-results/narrow-mobile-maintenance.png', fullPage: true });
   });
 
   test('dynamically inserted table rows are enhanced without duplicating navigation', async ({ page }) => {
