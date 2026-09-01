@@ -48,6 +48,7 @@
     let handled = true;
 
     if (!p.length) result = typeof window.managementDashboard==='function' ? window.managementDashboard() : dashboard();
+    else if (p[0] === 'nao-migrado' && typeof window.legacyMigrationPage === 'function') result = window.legacyMigrationPage();
     else if (p[0] === 'auditoria' && typeof window.auditPage === 'function') result = window.auditPage();
     else if (p[0] === 'relatorios' && typeof window.managementReportsPage === 'function') result = window.managementReportsPage(null,rp.start,rp.end);
     else if (p[0] === 'condominios') result = access.canCreateCondo() ? condosPage() : (typeof window.managementDashboard==='function'?window.managementDashboard():dashboard());
@@ -110,7 +111,7 @@
 
   window.addEventListener('condo-access-ready', () => {
     const p = parts();
-    if (window.CondoAccess?.hasAnyManagementRole() && (p.length === 0 || p[0] === 'condominio' || p[0] === 'relatorios' || p[0] === 'auditoria')) {
+    if (window.CondoAccess?.hasAnyManagementRole() && (p.length === 0 || p[0] === 'condominio' || p[0] === 'relatorios' || p[0] === 'auditoria' || p[0] === 'nao-migrado')) {
       setTimeout(() => applyRestrictions(p[0] === 'condominio' ? p[1] : null), 0);
     }
   });
