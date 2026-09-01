@@ -8,6 +8,7 @@ const path = require('node:path');
 const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const design = fs.readFileSync(path.join(root, 'design-system.css'), 'utf8');
+const polish = fs.readFileSync(path.join(root, 'design-system-polish.css'), 'utf8');
 const accessibility = fs.readFileSync(path.join(root, 'design-system-accessibility.css'), 'utf8');
 const visual = fs.readFileSync(path.join(root, 'visual-system.js'), 'utf8');
 const legacyMobile = fs.readFileSync(path.join(root, 'mobile-fixes.css'), 'utf8');
@@ -30,9 +31,10 @@ function mediaBlock(maxWidth) {
   return design.slice(start, next === -1 ? design.length : next);
 }
 
-test('design system e acessibilidade sobrescrevem o legado na ordem correta', () => {
+test('camadas visuais sobrescrevem o legado na ordem correta', () => {
   assert.ok(positionOf(html, './design-system.css') > positionOf(html, './mobile-fixes.css'));
-  assert.ok(positionOf(html, './design-system-accessibility.css') > positionOf(html, './design-system.css'));
+  assert.ok(positionOf(html, './design-system-polish.css') > positionOf(html, './design-system.css'));
+  assert.ok(positionOf(html, './design-system-accessibility.css') > positionOf(html, './design-system-polish.css'));
   const localStyles = [...html.matchAll(/<link[^>]+href=["']\.\/([^"']+\.css)["']/g)].map(match => match[1]);
   assert.equal(localStyles.at(-1), 'design-system-accessibility.css');
 });
@@ -67,6 +69,13 @@ test('tabelas comuns recebem labels inclusive em linhas inseridas depois', () =>
   assert.doesNotMatch(visual, /if \(!table \|\| table\.dataset\.mobileEnhanced === 'true'\) return/);
   assert.match(visual, /mobile-card-table/);
   assert.match(design, /content:attr\(data-label\)/);
+});
+
+test('polish mobile mantém marca legível e ações compactas', () => {
+  assert.match(polish, /\.mobile-top \.brand strong\{[\s\S]*color:var\(--ui-text\)!important/);
+  assert.match(polish, /\.top-actions>[.]icon-btn,[\s\S]*\.top-actions>[.]avatar\{[\s\S]*flex:0 0 42px!important/);
+  assert.match(polish, /\.mobile-card-table \.table td:first-child\{[\s\S]*text-align:left!important/);
+  assert.match(polish, /\.mobile-card-table \.row-actions\{[\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/);
 });
 
 test('calendário é explicitamente excluído da conversão para cards', () => {
