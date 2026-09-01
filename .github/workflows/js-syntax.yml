@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - phase-1-foundation
+      - main
   pull_request:
     branches:
       - main
@@ -24,6 +25,12 @@ jobs:
             echo "Checking $file"
             node --check "$file"
           done < <(find . -type f -name '*.js' -not -path './node_modules/*' -print0)
+
+      - name: Run automated regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/*.test.js
 
       - name: Check local scripts referenced by index
         shell: bash
