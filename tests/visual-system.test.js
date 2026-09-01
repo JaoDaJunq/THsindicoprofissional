@@ -22,6 +22,14 @@ function count(source, needle) {
   return source.split(needle).length - 1;
 }
 
+function mediaBlock(maxWidth) {
+  const startToken = `@media(max-width:${maxWidth}px)`;
+  const start = design.indexOf(startToken);
+  assert.notEqual(start, -1, `${startToken} deve existir`);
+  const next = design.indexOf('@media(', start + startToken.length);
+  return design.slice(start, next === -1 ? design.length : next);
+}
+
 test('design system e acessibilidade sobrescrevem o legado na ordem correta', () => {
   assert.ok(positionOf(html, './design-system.css') > positionOf(html, './mobile-fixes.css'));
   assert.ok(positionOf(html, './design-system-accessibility.css') > positionOf(html, './design-system.css'));
@@ -36,10 +44,10 @@ test('visual-system executa depois dos roteadores de estabilidade e antes do PWA
 
 test('mobile usa navegação off-canvas e sobrescreve a sidebar horizontal antiga', () => {
   assert.match(legacyMobile, /\.sidebar\{[\s\S]*position:sticky!important/);
-  assert.match(design, /@media\(max-width:960px\)/);
-  assert.match(design, /\.sidebar\{[\s\S]*position:fixed!important/);
-  assert.match(design, /transform:translateX\(-104%\)/);
-  assert.match(design, /body\.nav-open \.sidebar\{transform:translateX\(0\)/);
+  const tablet = mediaBlock(960);
+  assert.match(tablet, /\.sidebar\{[\s\S]*position:fixed!important/);
+  assert.match(tablet, /transform:translateX\(-104%\)/);
+  assert.match(tablet, /body\.nav-open \.sidebar\{transform:translateX\(0\)/);
   assert.match(visual, /mobile-nav-toggle/);
   assert.match(visual, /mobile-nav-backdrop/);
   assert.match(visual, /const NAV_BREAKPOINT = 960/);
@@ -66,10 +74,11 @@ test('calendário é explicitamente excluído da conversão para cards', () => {
   assert.match(visual, /table\.closest\('\.calendar-card'\)/);
 });
 
-test('breakpoints preservam quatro, duas e uma colunas para KPIs', () => {
+test('breakpoints de KPI mantêm densidade 4 desktop, 2 mobile e 1 em telas muito estreitas', () => {
   assert.match(design, /\.metrics\{grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/);
-  assert.match(design, /@media\(max-width:960px\)[\s\S]*\.metrics\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/);
-  assert.match(design, /@media\(max-width:430px\)[\s\S]*\.metrics\{grid-template-columns:1fr!important/);
+  assert.match(mediaBlock(960), /\.metrics\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/);
+  assert.match(mediaBlock(430), /\.metrics\{grid-template-columns:1fr 1fr!important/);
+  assert.match(mediaBlock(350), /\.metrics\{grid-template-columns:1fr!important/);
 });
 
 test('conteúdo desktop possui limite e sidebar não cresce com o viewport', () => {
@@ -89,5 +98,5 @@ test('design respeita foco, redução de movimento e alvos confortáveis', () =>
 });
 
 test('formulários mobile usam 16px para evitar zoom automático no iOS', () => {
-  assert.match(design, /@media\(max-width:700px\)[\s\S]*\.field input,\.field select,\.field textarea\{font-size:16px!important\}/);
+  assert.match(mediaBlock(700), /\.field input,\.field select,\.field textarea\{font-size:16px!important\}/);
 });
