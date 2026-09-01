@@ -1,0 +1,16 @@
+/* Final accessibility overrides. Loaded after every visual stylesheet. */
+@media (prefers-reduced-motion: reduce){
+  .sidebar,
+  .mobile-nav-backdrop,
+  .mobile-nav-toggle,
+  .btn,
+  .icon-btn,
+  .metric,
+  .panel,
+  .condo-card,
+  .modal-card,
+  .modal-backdrop{
+    transition:none!important;
+    animation:none!important;
+  }
+}
