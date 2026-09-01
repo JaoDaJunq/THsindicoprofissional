@@ -2,6 +2,20 @@
   'use strict';
 
   const TABLE_BREAKPOINT = 700;
+  const NAV_BREAKPOINT = 960;
+  let navigationEventsBound = false;
+  let scheduled = false;
+
+  function closeMenu() {
+    document.body.classList.remove('nav-open');
+    document.querySelector('.mobile-nav-toggle')?.setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleMenu() {
+    const next = !document.body.classList.contains('nav-open');
+    document.body.classList.toggle('nav-open', next);
+    document.querySelector('.mobile-nav-toggle')?.setAttribute('aria-expanded', String(next));
+  }
 
   function ensureMobileNavigation() {
     if (!document.querySelector('.sidebar')) return;
@@ -14,20 +28,6 @@
       document.body.appendChild(backdrop);
     }
 
-    function closeMenu() {
-      document.body.classList.remove('nav-open');
-      const button = document.querySelector('.mobile-nav-toggle');
-      button?.setAttribute('aria-expanded', 'false');
-    }
-
-    function toggleMenu() {
-      const next = !document.body.classList.contains('nav-open');
-      document.body.classList.toggle('nav-open', next);
-      document.querySelector('.mobile-nav-toggle')?.setAttribute('aria-expanded', String(next));
-    }
-
-    backdrop.onclick = closeMenu;
-
     const mount = document.querySelector('.mobile-top') || document.querySelector('.topbar');
     if (mount && !mount.querySelector('.mobile-nav-toggle')) {
       const button = document.createElement('button');
@@ -36,8 +36,16 @@
       button.setAttribute('aria-label', 'Abrir menu de navegação');
       button.setAttribute('aria-expanded', 'false');
       button.innerHTML = '<span aria-hidden="true">☰</span>';
-      button.onclick = toggleMenu;
+      button.addEventListener('click', toggleMenu);
       mount.prepend(button);
+    }
+
+    if (!navigationEventsBound) {
+      backdrop.addEventListener('click', closeMenu);
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeMenu();
+      });
+      navigationEventsBound = true;
     }
 
     document.querySelectorAll('.sidebar a').forEach(link => {
@@ -45,23 +53,22 @@
       link.dataset.mobileNavBound = 'true';
       link.addEventListener('click', closeMenu);
     });
-
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') closeMenu();
-    }, { passive: true });
   }
 
   function enhanceTable(table) {
-    if (!table || table.dataset.mobileEnhanced === 'true') return;
+    if (!table) return;
     if (table.classList.contains('calendar') || table.closest('.calendar-card')) return;
 
     const headers = [...table.querySelectorAll('thead th')].map(th => th.textContent.trim());
     if (!headers.length) return;
 
+    // Run for every refresh, not only the first one. Existing rows keep their
+    // labels and rows inserted later receive them as well.
     table.querySelectorAll('tbody tr').forEach(row => {
       [...row.children].forEach((cell, index) => {
         if (cell.tagName !== 'TD') return;
-        if (!cell.dataset.label) cell.dataset.label = headers[index] || 'Detalhe';
+        const label = headers[index] || 'Detalhe';
+        if (cell.dataset.label !== label) cell.dataset.label = label;
       });
     });
 
@@ -75,15 +82,10 @@
   }
 
   function syncResponsiveState() {
-    if (window.innerWidth > 960) {
-      document.body.classList.remove('nav-open');
-      document.querySelector('.mobile-nav-toggle')?.setAttribute('aria-expanded', 'false');
-    }
-
+    if (window.innerWidth > NAV_BREAKPOINT) closeMenu();
     document.body.classList.toggle('compact-data-cards', window.innerWidth <= TABLE_BREAKPOINT);
   }
 
-  let scheduled = false;
   function refresh() {
     if (scheduled) return;
     scheduled = true;
