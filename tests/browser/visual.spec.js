@@ -40,21 +40,30 @@ test.describe('responsive design system', () => {
     await noHorizontalOverflow(page);
 
     const toggle = page.locator('.mobile-nav-toggle');
+    const sidebar = page.locator('.sidebar');
     await expect(toggle).toBeVisible();
     const toggleBox = await toggle.boundingBox();
     expect(toggleBox.width).toBeGreaterThanOrEqual(44);
     expect(toggleBox.height).toBeGreaterThanOrEqual(44);
 
-    const hiddenX = await page.locator('.sidebar').evaluate(el => el.getBoundingClientRect().x);
+    const reducedMotionState = await sidebar.evaluate(el => ({
+      requested: matchMedia('(prefers-reduced-motion: reduce)').matches,
+      transitionDuration: getComputedStyle(el).transitionDuration,
+      transitionProperty: getComputedStyle(el).transitionProperty
+    }));
+    expect(reducedMotionState.requested).toBe(true);
+    expect(['0s', '0ms']).toContain(reducedMotionState.transitionDuration);
+
+    const hiddenX = await sidebar.evaluate(el => el.getBoundingClientRect().x);
     expect(hiddenX).toBeLessThan(0);
 
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    const openX = await page.locator('.sidebar').evaluate(el => Math.round(el.getBoundingClientRect().x));
-    expect(openX).toBe(0);
+    await expect.poll(async () => Math.round(await sidebar.evaluate(el => el.getBoundingClientRect().x))).toBe(0);
 
     await page.keyboard.press('Escape');
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect.poll(async () => await sidebar.evaluate(el => el.getBoundingClientRect().x)).toBeLessThan(0);
 
     await expect(page.locator('#maintenance-table thead')).toHaveCSS('display', 'none');
     const firstCell = page.locator('#maintenance-table tbody tr').first().locator('td').first();
