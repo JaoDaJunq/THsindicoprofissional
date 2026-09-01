@@ -20,6 +20,10 @@ async function metricColumns(page) {
   return page.locator('.metrics').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
 }
 
+function closeEnough(a, b, tolerance = 4) {
+  return Math.abs(a - b) <= tolerance;
+}
+
 test.describe('responsive design system', () => {
   test('desktop keeps readable content, fixed sidebar and no horizontal overflow', async ({ page }) => {
     await openFixture(page, 1440, 900);
@@ -41,16 +45,28 @@ test.describe('responsive design system', () => {
     await page.screenshot({ path: 'test-results/desktop-maintenance.png', fullPage: true });
   });
 
-  test('phone uses off-canvas navigation, two compact KPIs per row and stacked data cards', async ({ page }) => {
+  test('phone uses aligned header, off-canvas navigation, compact KPIs and stacked data cards', async ({ page }) => {
     await openFixture(page, 390, 844);
     await noHorizontalOverflow(page);
 
     const toggle = page.locator('.mobile-nav-toggle');
     const sidebar = page.locator('.sidebar');
+    const mobileBrand = page.locator('.mobile-top .brand');
+    const mobileBrandTitle = page.locator('.mobile-top .brand strong');
     await expect(toggle).toBeVisible();
+    await expect(mobileBrand).toBeVisible();
+    await expect(mobileBrandTitle).toBeVisible();
+
     const toggleBox = await toggle.boundingBox();
+    const brandBox = await mobileBrand.boundingBox();
     expect(toggleBox.width).toBeGreaterThanOrEqual(44);
     expect(toggleBox.height).toBeGreaterThanOrEqual(44);
+    expect(brandBox.x).toBeGreaterThan(toggleBox.x + toggleBox.width);
+    expect(closeEnough(toggleBox.y + toggleBox.height / 2, brandBox.y + brandBox.height / 2, 8)).toBe(true);
+
+    const brandColor = await mobileBrandTitle.evaluate(el => getComputedStyle(el).color);
+    expect(brandColor).not.toBe('rgb(247, 248, 251)');
+    expect(brandColor).not.toBe('rgba(0, 0, 0, 0)');
 
     const reducedMotionState = await sidebar.evaluate(el => ({
       requested: matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -65,14 +81,24 @@ test.describe('responsive design system', () => {
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await expect.poll(async () => Math.round(await sidebar.evaluate(el => el.getBoundingClientRect().x))).toBe(0);
-
     await page.keyboard.press('Escape');
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await expect.poll(async () => await sidebar.evaluate(el => el.getBoundingClientRect().x)).toBeLessThan(0);
 
+    const iconBox = await page.locator('.top-actions .icon-btn').boundingBox();
+    const avatarBox = await page.locator('.top-actions .avatar').boundingBox();
+    expect(closeEnough(iconBox.y, avatarBox.y, 3)).toBe(true);
+
     await expect(page.locator('#maintenance-table thead')).toHaveCSS('display', 'none');
-    const firstCell = page.locator('#maintenance-table tbody tr').first().locator('td').first();
+    const firstRow = page.locator('#maintenance-table tbody tr').first();
+    const firstCell = firstRow.locator('td').first();
     await expect(firstCell).toHaveAttribute('data-label', 'Manutenção');
+    await expect(firstCell).toHaveCSS('text-align', 'left');
+
+    const actionButtons = firstRow.locator('.row-actions .btn');
+    const firstActionBox = await actionButtons.nth(0).boundingBox();
+    const secondActionBox = await actionButtons.nth(1).boundingBox();
+    expect(closeEnough(firstActionBox.y, secondActionBox.y, 3)).toBe(true);
     expect(await metricColumns(page)).toBe(2);
 
     await noHorizontalOverflow(page);
