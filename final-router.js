@@ -8,9 +8,37 @@
   const params = () => { const raw=(location.hash||'').split('?')[1]||''; const p=new URLSearchParams(raw); return {start:p.get('start')||null,end:p.get('end')||null}; };
   const consolidatedFinance = () => window.financeConsolidatedPage || window.financeOverviewPage;
 
+  const managementTopRoutes = new Set(['nao-migrado','auditoria','relatorios','integracoes','notificacoes','financeiro']);
+  const managementCondoRoutes = new Set(['auditoria','relatorios','gas','comunicados','assembleias','moradores','financeiro']);
+
+  function accessSnapshot() {
+    try { return window.CondoAccess?.getSnapshot?.() || null; }
+    catch (_) { return null; }
+  }
+
+  function hasManagementAccess() {
+    try { return Boolean(window.CondoAccess?.hasAnyManagementRole?.()); }
+    catch (_) { return false; }
+  }
+
+  function isManagementOnlyRoute(parts) {
+    if (managementTopRoutes.has(parts[0])) return true;
+    return parts[0] === 'condominio' && managementCondoRoutes.has(parts[2]);
+  }
+
+  function hasAuthenticatedAccessSnapshot() {
+    return Boolean(accessSnapshot()?.user);
+  }
+
   route = function(){
     const p = path();
     const rp=params();
+
+    // These handlers sit in front of the legacy auth router. Never let a direct
+    // hash entry bypass the login/resident decision just because the page
+    // function exists. RLS remains the backend boundary; this is the UI boundary.
+    if (isManagementOnlyRoute(p) && !hasManagementAccess()) return previousRoute();
+    if (p[0] === 'morador' && !hasAuthenticatedAccessSnapshot()) return previousRoute();
 
     if (p[0] === 'nao-migrado' && typeof window.legacyMigrationPage === 'function') return window.legacyMigrationPage();
     if (p[0] === 'auditoria' && typeof window.auditPage === 'function') return window.auditPage();
