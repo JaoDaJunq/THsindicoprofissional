@@ -2,6 +2,7 @@
   'use strict';
 
   let scheduled = false;
+  let integrationsConfirmAdapted = false;
   const state = () => typeof data !== 'undefined' ? data : null;
   const clean = value => String(value || '').replace(/\s+/g,' ').trim();
   const normalize = value => clean(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -200,6 +201,42 @@
 
   window.GCUI = { skeleton, empty, error, confirm: confirmDialog };
 
+  function enhanceLegacyStates() {
+    document.querySelectorAll('.panel-body > .empty,.condo-grid > .empty,.resident-grid > .empty').forEach(node => {
+      if (node.dataset.uxState === 'true') return;
+      const message = clean(node.textContent);
+      node.dataset.uxState = 'true';
+      if (/^carregando/i.test(message)) {
+        node.classList.add('ux-loading-legacy');
+        node.innerHTML = skeleton(4);
+        node.setAttribute('aria-label', message || 'Carregando');
+      } else {
+        node.classList.add('ux-empty-enhanced');
+        node.innerHTML = `<span class="ux-empty-icon">${window.GCNavigation?.icons.documents || ''}</span><strong>${message || 'Nada por aqui'}</strong><small>Esta área será atualizada quando houver novos dados.</small>`;
+      }
+    });
+  }
+
+  function adaptIntegrationConfirmation() {
+    if (integrationsConfirmAdapted || typeof window.rotateCalendarFeed !== 'function') return;
+    const original = window.rotateCalendarFeed;
+    window.rotateCalendarFeed = async function(cid) {
+      const ok = await confirmDialog({
+        title:'Gerar novo link?',
+        message:'O link atual deixará de funcionar e precisará ser substituído nos calendários conectados.',
+        confirmText:'Gerar novo link',
+        cancelText:'Cancelar',
+        danger:true
+      });
+      if (!ok) return;
+      const nativeConfirm = window.confirm;
+      window.confirm = () => true;
+      try { return await original(cid); }
+      finally { window.confirm = nativeConfirm; }
+    };
+    integrationsConfirmAdapted = true;
+  }
+
   function refresh() {
     if (scheduled) return;
     scheduled = true;
@@ -209,6 +246,8 @@
       renderContextBar();
       renderGenericSearch();
       simplifyWorkspaceTables();
+      enhanceLegacyStates();
+      adaptIntegrationConfirmation();
     });
   }
 
