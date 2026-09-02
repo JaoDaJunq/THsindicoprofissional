@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="../../mobile-dock.css">
   <link rel="stylesheet" href="../../mobile-more-sheet.css">
   <link rel="stylesheet" href="../../ux-v2.css">
+  <link rel="stylesheet" href="../../ux-v2-icons.css">
   <link rel="stylesheet" href="../../design-system-accessibility.css">
 </head>
 <body data-view="tasks">
@@ -20,6 +21,10 @@
     <main class="main">
       <div class="mobile-top"><div class="brand"><div class="brand-mark">SG</div><div><strong>Gestão Condominial</strong><span>Portal do Síndico</span></div></div></div>
       <header class="topbar"><div><div class="eyebrow">Operação</div><h1>Tarefas</h1><div class="muted small">Pendências do condomínio.</div></div></header>
+      <section class="metrics">
+        <article class="metric"><div class="metric-top"><div><span>Chamados abertos</span><strong>4</strong></div><div class="icon orange">🎫</div></div></article>
+        <article class="metric"><div class="metric-top"><div><span>Manutenções em 7 dias</span><strong>2</strong></div><div class="icon red">⚒</div></div></article>
+      </section>
       <article class="panel"><div class="panel-body">
         <div class="table-wrap"><table class="table"><thead><tr><th>Tarefa</th><th>Condomínio</th><th>Status</th></tr></thead><tbody>
           <tr><td>Revisar portão</td><td>Ed. Ametista</td><td>Pendente</td></tr>
@@ -46,5 +51,6 @@ if(!location.hash) location.hash='#/condominio/c1/tarefas';
 <script src="../../mobile-more-sheet.js"></script>
 <script src="../../navigation-registry.js"></script>
 <script src="../../ux-v2.js"></script>
+<script src="../../ux-v2-icons.js"></script>
 </body>
 </html>
