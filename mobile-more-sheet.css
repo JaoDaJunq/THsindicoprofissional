@@ -1,8 +1,12 @@
-/* Mobile "Mais" bottom sheet. Keeps the full sidebar for the hamburger menu. */
+/* Mobile navigation sheets + stronger main/workspace context. */
 .mobile-more-backdrop,
 .mobile-more-sheet{display:none}
 
-@media(max-width:700px){
+@media(max-width:960px){
+  /* The old off-canvas sidebar is now only a data source on mobile/tablet. */
+  body.nav-open .sidebar{transform:translateX(-104%)!important}
+  .mobile-nav-backdrop{opacity:0!important;pointer-events:none!important}
+
   .mobile-more-backdrop{
     display:block;
     position:fixed;
@@ -23,32 +27,39 @@
     right:8px;
     bottom:calc(8px + env(safe-area-inset-bottom));
     z-index:140;
-    max-height:min(72dvh,620px);
+    height:min(68dvh,620px);
     padding:10px 10px 14px;
     border:1px solid rgba(220,224,232,.94);
     border-radius:24px;
-    background:rgba(255,255,255,.98);
+    background:rgba(255,255,255,.985);
     box-shadow:0 28px 80px rgba(15,23,42,.24),0 4px 16px rgba(15,23,42,.08);
     flex-direction:column;
     transform:translateY(calc(100% + 28px));
     opacity:0;
     pointer-events:none;
-    transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .18s ease;
+    transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .18s ease,height .22s cubic-bezier(.2,.8,.2,1);
     overflow:hidden;
   }
+
+  .mobile-more-sheet[data-mode="all"]{height:min(78dvh,720px)}
+  .mobile-more-sheet.is-expanded{height:calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+  .mobile-more-sheet.is-dragging{transition:none!important}
 
   body.mobile-more-open{overflow:hidden!important}
   body.mobile-more-open .mobile-more-backdrop{opacity:1;pointer-events:auto}
   body.mobile-more-open .mobile-more-sheet{transform:translateY(0);opacity:1;pointer-events:auto}
 
   .mobile-more-handle{
-    width:42px;
-    height:4px;
-    margin:2px auto 9px;
+    width:54px;
+    height:5px;
+    margin:1px auto 9px;
     border-radius:999px;
-    background:#d9dde5;
+    background:#d5d9e1;
     flex:0 0 auto;
+    cursor:grab;
+    touch-action:none;
   }
+  .mobile-more-handle:active{cursor:grabbing}
 
   .mobile-more-head{
     display:flex;
@@ -59,7 +70,6 @@
     border-bottom:1px solid #edf0f4;
     flex:0 0 auto;
   }
-
   .mobile-more-title-wrap{min-width:0}
   .mobile-more-kicker{
     display:block;
@@ -105,6 +115,16 @@
     overscroll-behavior:contain;
     -webkit-overflow-scrolling:touch;
   }
+  .mobile-more-group{display:flex;flex-direction:column;gap:4px}
+  .mobile-more-group+.mobile-more-group{margin-top:10px;padding-top:10px;border-top:1px solid #edf0f4}
+  .mobile-more-group-title{
+    padding:3px 10px 5px;
+    color:#8992a1;
+    font-size:9px;
+    font-weight:850;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
 
   .mobile-more-item{
     display:grid;
@@ -128,7 +148,6 @@
     background:linear-gradient(135deg,#f2f4ff,#f8f9ff);
     color:#3146c4;
   }
-
   .mobile-more-icon{
     display:grid;
     place-items:center;
@@ -141,7 +160,6 @@
     font-weight:800;
   }
   .mobile-more-item.active .mobile-more-icon{background:#e7ebff;color:#465bf0}
-
   .mobile-more-label{
     min-width:0;
     overflow:hidden;
@@ -153,6 +171,44 @@
   }
   .mobile-more-chevron{color:#a2a9b5;font-size:18px;text-align:right}
   .mobile-more-empty{padding:24px 14px;text-align:center;color:#7a8392;font-size:13px}
+
+  /* Remove the old square shortcut beside the brand. */
+  .mobile-top>.icon-btn{display:none!important}
+
+  /* Stronger wayfinding between the global product and a condo workspace. */
+  body.context-main .mobile-top{
+    padding-bottom:8px!important;
+    border-bottom:1px solid rgba(226,230,236,.72);
+  }
+  body.context-workspace .mobile-top{
+    margin:0 -4px 20px!important;
+    padding:10px 12px!important;
+    border:1px solid #e2e6ff!important;
+    border-radius:16px!important;
+    background:linear-gradient(135deg,#f5f7ff,#eef2ff)!important;
+    box-shadow:0 8px 24px rgba(73,97,242,.07)!important;
+  }
+  body.context-workspace .mobile-top .brand-mark{
+    background:linear-gradient(145deg,#6579ff,#465bea 65%,#384bcf)!important;
+    box-shadow:0 8px 20px rgba(70,91,234,.20)!important;
+  }
+  body.context-workspace .mobile-top .brand strong{color:#273579!important;font-size:14px!important}
+  body.context-workspace .mobile-top .brand span{color:#6f79a6!important;font-size:10px!important}
+  body.context-workspace .mobile-nav-toggle{
+    border-color:#dce2ff!important;
+    background:#fff!important;
+    color:#4255d0!important;
+  }
+
+  body.context-workspace .mobile-bottom-dock{
+    border-color:#dce2ff!important;
+    box-shadow:0 16px 42px rgba(58,76,190,.16),0 2px 8px rgba(15,23,42,.06)!important;
+  }
+}
+
+@media(max-width:700px){
+  .mobile-more-sheet{height:min(72dvh,620px)}
+  .mobile-more-sheet[data-mode="all"]{height:min(82dvh,720px)}
 }
 
 @media(max-width:350px){
