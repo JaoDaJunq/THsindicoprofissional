@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <link rel="stylesheet" href="../../design-system.css">
+  <link rel="stylesheet" href="../../ux-v2.css">
+</head>
+<body data-view="tasks">
+<div id="app">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">SG</div><div><strong>Gestão Condominial</strong><span>Portal do Síndico</span></div></div>
+      <div class="nav-section">Antigo</div><nav class="nav"><a href="#/">⌂ Antigo</a></nav>
+      <div class="sidebar-footer"><small>Sessão atual</small><strong>Teste</strong></div>
+    </aside>
+    <main class="main">
+      <div class="mobile-top"><div class="brand"><div class="brand-mark">SG</div><div><strong>Gestão Condominial</strong><span>Portal do Síndico</span></div></div></div>
+      <header class="topbar"><div><div class="eyebrow">Operação</div><h1>Tarefas</h1><div class="muted small">Pendências do condomínio.</div></div></header>
+      <article class="panel"><div class="panel-body">
+        <div class="table-wrap"><table class="table"><thead><tr><th>Tarefa</th><th>Condomínio</th><th>Status</th></tr></thead><tbody>
+          <tr><td>Revisar portão</td><td>Ed. Ametista</td><td>Pendente</td></tr>
+          <tr><td>Limpar caixa d'água</td><td>Ed. Ametista</td><td>Em andamento</td></tr>
+          <tr><td>Testar alarme</td><td>Ed. Ametista</td><td>Pendente</td></tr>
+        </tbody></table></div>
+      </div></article>
+    </main>
+  </div>
+</div>
+<script>
+let data={condos:[{id:'c1',name:'Ed. Ametista'},{id:'c2',name:'Monte Belo'}]};
+window.CondoAccess={
+  getSnapshot:()=>({memberships:[{condominium_id:'c1'},{condominium_id:'c2'}]}),
+  canAccessCondo:()=>true,
+  can:(cap,cid)=>{
+    const allowed=['operations.review','operations.manage','documents.manage','finance.review','team.manage','residents.manage','communications.manage','assemblies.manage'];
+    return allowed.includes(cap)&&['c1','c2'].includes(cid);
+  }
+};
+if(!location.hash) location.hash='#/condominio/c1/tarefas';
+</script>
+<script src="../../navigation-registry.js"></script>
+<script src="../../ux-v2.js"></script>
+</body>
+</html>
