@@ -1,5 +1,6 @@
 /* Remaining management views: shared visual language for legacy and newer modules. */
 
+.view-filter-hidden{display:none!important}
 .view-filterbar{
   display:flex;
   align-items:center;
@@ -69,6 +70,8 @@ body[data-view="calls"] .table tbody tr[data-status="resolved"] td:nth-child(5){
   background:#fff!important;
   box-shadow:var(--ui-shadow-xs)!important;
 }
+body[data-view="team"] .panel,body[data-view="residents"] .panel{overflow:hidden}
+body[data-view="team"] .table tbody tr:hover,body[data-view="residents"] .table tbody tr:hover{background:#fafbff!important}
 
 /* File library */
 body[data-view="files"] .file-grid{
