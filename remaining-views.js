@@ -130,7 +130,7 @@
       const matchPriority = !priority || rowPriority === priority || (priority === 'urgente' && rowPriority === 'urgent') || (priority === 'alta' && rowPriority === 'high') || (priority === 'baixa' && rowPriority === 'low');
       const matchStatus = !status || normalize(row.dataset.status) === status;
       const show = matchSearch && matchPriority && matchStatus;
-      row.hidden = !show;
+      row.classList.toggle('view-filter-hidden', !show);
       if (show) visible += 1;
     });
     const count = toolbar.querySelector('[data-filter-count="calls"]');
@@ -175,11 +175,11 @@
     let visible = 0;
     [...grid.querySelectorAll('.file-card')].forEach(card => {
       const show = !query || String(card.dataset.viewSearch || normalize(card.textContent)).includes(query);
-      card.hidden = !show;
+      card.classList.toggle('view-filter-hidden', !show);
       if (show) visible += 1;
     });
     const count = toolbar.querySelector('[data-filter-count="files"]');
-    if (count) count.textContent = `${visible} item${visible === 1 ? '' : 's'}`;
+    if (count) count.textContent = visible === 1 ? '1 item' : `${visible} itens`;
   }
 
   function normalizeLegacyTables() {
