@@ -1,0 +1,113 @@
+/* Prevent legacy/intermediate route renders from flashing during initial boot. */
+#gc-boot-screen{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  display:grid;
+  place-items:center;
+  padding:24px;
+  background:linear-gradient(145deg,#f6f7fb 0%,#eef1f8 100%);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .16s ease,visibility .16s ease;
+}
+
+.gc-boot-card{
+  width:min(360px,100%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  gap:12px;
+}
+
+.gc-boot-mark{
+  width:58px;
+  height:58px;
+  display:grid;
+  place-items:center;
+  border-radius:18px;
+  background:linear-gradient(145deg,#5d70ff,#3650df);
+  color:#fff;
+  font-size:19px;
+  font-weight:850;
+  box-shadow:0 14px 34px rgba(54,80,223,.24);
+}
+
+.gc-boot-card strong{
+  color:#171c27;
+  font-size:16px;
+  letter-spacing:-.02em;
+}
+
+.gc-boot-card p{
+  margin:0;
+  max-width:300px;
+  color:#7d8594;
+  font-size:11px;
+  line-height:1.5;
+}
+
+.gc-boot-progress{
+  position:relative;
+  width:150px;
+  height:4px;
+  overflow:hidden;
+  border-radius:999px;
+  background:#dfe3ec;
+}
+
+.gc-boot-progress::after{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 -45%;
+  width:45%;
+  border-radius:inherit;
+  background:#5268f4;
+  animation:gcBootProgress 1s ease-in-out infinite;
+}
+
+.gc-boot-retry{
+  display:none;
+  min-height:42px;
+  padding:0 16px;
+  border:1px solid #d7dce8;
+  border-radius:12px;
+  background:#fff;
+  color:#313946;
+  font:inherit;
+  font-size:12px;
+  font-weight:800;
+  box-shadow:0 7px 18px rgba(15,23,42,.06);
+}
+
+body.gc-booting{
+  overflow:hidden!important;
+}
+
+body.gc-booting #app{
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+body.gc-booting #gc-boot-screen{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+
+#gc-boot-screen.is-error .gc-boot-progress{display:none}
+#gc-boot-screen.is-error .gc-boot-retry{display:inline-flex;align-items:center;justify-content:center}
+
+@keyframes gcBootProgress{
+  0%{left:-45%}
+  55%{left:48%}
+  100%{left:105%}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #gc-boot-screen{transition:none}
+  .gc-boot-progress::after{animation:none;left:28%}
+}
