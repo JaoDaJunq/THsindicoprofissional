@@ -126,6 +126,24 @@ test.describe('responsive design system', () => {
     await page.screenshot({ path: 'test-results/mobile-maintenance.png', fullPage: true });
   });
 
+  test('open mobile drawer is safely reset when viewport becomes desktop', async ({ page }) => {
+    await openFixture(page, 390, 844);
+    const dock = page.locator('.mobile-bottom-dock');
+    const sidebar = page.locator('.sidebar');
+    const toggle = page.locator('.mobile-nav-toggle');
+
+    await dock.locator('.mobile-dock-more').click();
+    await expect(page.locator('body')).toHaveClass(/nav-open/);
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+    await page.setViewportSize({ width: 1200, height: 800 });
+    await expect.poll(async () => page.locator('body').evaluate(el => el.classList.contains('nav-open'))).toBe(false);
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(sidebar).toBeVisible();
+    await expect(dock).toHaveCSS('display', 'none');
+    await noHorizontalOverflow(page);
+  });
+
   test('very narrow phone keeps dock usable and falls back to one KPI per row', async ({ page }) => {
     await openFixture(page, 320, 700);
     expect(await metricColumns(page)).toBe(1);
