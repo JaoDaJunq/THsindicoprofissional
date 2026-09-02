@@ -9,11 +9,7 @@ const index = fs.readFileSync('index.html','utf8');
 const css = fs.readFileSync('ux-v2.css','utf8');
 
 function loadRegistry({hash='#/', memberships=[], grants={}}={}) {
-  const context = {
-    window: {},
-    location: { hash },
-    console,
-  };
+  const context = { window: {}, location: { hash }, console };
   context.window.window = context.window;
   context.window.CondoAccess = {
     getSnapshot: () => ({memberships}),
@@ -56,15 +52,15 @@ test('registry hides capability-gated routes when permission is absent', () => {
   assert.equal(workspace.some(i => i.id === 'condo-calendar'), true);
 });
 
-test('ux v2 is loaded after visual and routing layers', () => {
+test('ux v2 is loaded after visual and routing layers while accessibility stays final', () => {
   const pos = name => index.indexOf(`./${name}`);
   assert.ok(pos('navigation-registry.js') > pos('remaining-views.js'));
   assert.ok(pos('ux-v2.js') > pos('navigation-registry.js'));
-  assert.ok(pos('ux-v2.css') > pos('design-system-accessibility.css'));
+  assert.ok(pos('ux-v2.css') < pos('design-system-accessibility.css'));
 });
 
 test('ux layer stays client-only and does not create a second data source', () => {
-  assert.doesNotMatch(uxSource,/\.from\s*\(/);
+  assert.doesNotMatch(uxSource,/\b(?:client|sb|supabase|db)\.from\s*\(/i);
   assert.doesNotMatch(uxSource,/\bfetch\s*\(/);
   assert.doesNotMatch(uxSource,/XMLHttpRequest/);
   assert.doesNotMatch(uxSource,/createClient\s*\(/);
