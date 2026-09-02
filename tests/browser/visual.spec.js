@@ -25,7 +25,7 @@ function closeEnough(a, b, tolerance = 4) {
 }
 
 test.describe('responsive design system', () => {
-  test('desktop keeps readable content, fixed sidebar and no horizontal overflow', async ({ page }) => {
+  test('desktop keeps readable content, fixed sidebar and no mobile dock', async ({ page }) => {
     await openFixture(page, 1440, 900);
     await noHorizontalOverflow(page);
 
@@ -38,6 +38,7 @@ test.describe('responsive design system', () => {
     expect(await main.evaluate(el => el.getBoundingClientRect().left)).toBeGreaterThanOrEqual(239);
     expect(await metrics.count()).toBe(4);
     expect(await metricColumns(page)).toBe(4);
+    await expect(page.locator('.mobile-bottom-dock')).toHaveCSS('display', 'none');
 
     const primaryHeight = await page.locator('.btn-primary').first().evaluate(el => el.getBoundingClientRect().height);
     expect(primaryHeight).toBeGreaterThanOrEqual(42);
@@ -45,7 +46,7 @@ test.describe('responsive design system', () => {
     await page.screenshot({ path: 'test-results/desktop-maintenance.png', fullPage: true });
   });
 
-  test('phone uses aligned header, off-canvas navigation, compact KPIs and stacked data cards', async ({ page }) => {
+  test('phone uses bottom dock, aligned header, off-canvas navigation, compact KPIs and stacked cards', async ({ page }) => {
     await openFixture(page, 390, 844);
     await noHorizontalOverflow(page);
 
@@ -53,9 +54,18 @@ test.describe('responsive design system', () => {
     const sidebar = page.locator('.sidebar');
     const mobileBrand = page.locator('.mobile-top .brand');
     const mobileBrandTitle = page.locator('.mobile-top .brand strong');
+    const dock = page.locator('.mobile-bottom-dock');
+
     await expect(toggle).toBeVisible();
     await expect(mobileBrand).toBeVisible();
     await expect(mobileBrandTitle).toBeVisible();
+    await expect(dock).toBeVisible();
+    expect(await dock.locator('.mobile-dock-item').count()).toBe(5);
+
+    const activeDockItem = dock.locator('.mobile-dock-item.active');
+    await expect(activeDockItem).toHaveCount(1);
+    await expect(activeDockItem).toContainText('Manutenções');
+    await expect(activeDockItem).toHaveAttribute('aria-current', 'page');
 
     const toggleBox = await toggle.boundingBox();
     const brandBox = await mobileBrand.boundingBox();
@@ -78,7 +88,7 @@ test.describe('responsive design system', () => {
     const hiddenX = await sidebar.evaluate(el => el.getBoundingClientRect().x);
     expect(hiddenX).toBeLessThan(0);
 
-    await toggle.click();
+    await dock.locator('.mobile-dock-more').click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await expect.poll(async () => Math.round(await sidebar.evaluate(el => el.getBoundingClientRect().x))).toBe(0);
     await page.keyboard.press('Escape');
@@ -101,18 +111,25 @@ test.describe('responsive design system', () => {
     expect(closeEnough(firstActionBox.y, secondActionBox.y, 3)).toBe(true);
     expect(await metricColumns(page)).toBe(2);
 
+    const dockBox = await dock.boundingBox();
+    expect(dockBox.x).toBeGreaterThanOrEqual(5);
+    expect(dockBox.x + dockBox.width).toBeLessThanOrEqual(385);
+
     await noHorizontalOverflow(page);
     await page.screenshot({ path: 'test-results/mobile-maintenance.png', fullPage: true });
   });
 
-  test('very narrow phone falls back to one KPI per row without overflow', async ({ page }) => {
+  test('very narrow phone keeps dock usable and falls back to one KPI per row', async ({ page }) => {
     await openFixture(page, 320, 700);
     expect(await metricColumns(page)).toBe(1);
+    await expect(page.locator('.mobile-bottom-dock')).toBeVisible();
+    const labels = page.locator('.mobile-dock-label');
+    expect(await labels.count()).toBe(5);
     await noHorizontalOverflow(page);
     await page.screenshot({ path: 'test-results/narrow-mobile-maintenance.png', fullPage: true });
   });
 
-  test('dynamically inserted table rows are enhanced without duplicating navigation', async ({ page }) => {
+  test('dynamically inserted rows are enhanced without duplicating navigation or dock', async ({ page }) => {
     await openFixture(page, 390, 844);
 
     await page.evaluate(() => {
@@ -128,5 +145,6 @@ test.describe('responsive design system', () => {
     await expect(lastRow.locator('td').nth(6)).toHaveAttribute('data-label', 'Ações');
     expect(await page.locator('.mobile-nav-toggle').count()).toBe(1);
     expect(await page.locator('.mobile-nav-backdrop').count()).toBe(1);
+    expect(await page.locator('.mobile-bottom-dock').count()).toBe(1);
   });
 });
