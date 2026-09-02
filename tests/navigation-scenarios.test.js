@@ -9,6 +9,9 @@ const vm = require('node:vm');
 const ROOT = path.join(__dirname, '..');
 const FINAL_ROUTER = fs.readFileSync(path.join(ROOT, 'final-router.js'), 'utf8');
 const ACCESS_GUARD = fs.readFileSync(path.join(ROOT, 'route-access-guard.js'), 'utf8');
+const MANAGEMENT_ROUTER = fs.readFileSync(path.join(ROOT, 'management-role-router.js'), 'utf8');
+const NAVIGATION_INTEGRITY = fs.readFileSync(path.join(ROOT, 'navigation-integrity.js'), 'utf8');
+const INDEX = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 
 function runFinalRouter({ hash, user = null, management = false }) {
   const calls = [];
@@ -141,4 +144,104 @@ test('guard ignora resposta antiga de permissão após navegação rápida', asy
   await Promise.resolve();
   assert.equal(previousCalls, 1, 'somente a navegação mais recente deve continuar');
   assert.equal(denied, 0);
+});
+
+test('rotas diretas sensíveis são reavaliadas quando CondoAccess termina de carregar', () => {
+  const listeners = new Map();
+  let routeCalls = 0;
+  const access = {
+    getSnapshot: () => ({ user: { id: 'u1' }, memberships: [], loadedAt: 'ready' }),
+    hasAnyManagementRole: () => true,
+    canAccessCondo: () => true,
+    canCreateCondo: () => true,
+    can: () => true,
+    refresh: async () => {}
+  };
+  const window = {
+    CondoAccess: access,
+    financeConsolidatedPage: () => {},
+    addEventListener(type, fn) { listeners.set(type, fn); },
+    removeEventListener() {}
+  };
+  const context = {
+    window,
+    location: { hash: '#/financeiro' },
+    route: () => { routeCalls += 1; },
+    document: { body: { classList: { remove() {} } }, querySelectorAll: () => [] },
+    dashboard: () => {}, condosPage: () => {}, calendarPage: () => {}, maintenancesPage: () => {}, tasksPage: () => {}, callsPage: () => {},
+    URLSearchParams,
+    console,
+    Promise,
+    Set,
+    setTimeout: fn => { fn(); return 1; }
+  };
+
+  vm.runInNewContext(MANAGEMENT_ROUTER, context, { filename: 'management-role-router.js' });
+  const ready = listeners.get('condo-access-ready');
+  assert.equal(typeof ready, 'function');
+  const before = routeCalls;
+  ready();
+  assert.equal(routeCalls, before + 1, 'financeiro deve ser reavaliado quando acesso fica pronto');
+});
+
+test('camada de integridade restaura rota atual quando render assíncrono termina atrasado', async () => {
+  let hash = '#/chamados';
+  let resolveOld;
+  let routeCalls = 0;
+  const listeners = new Map();
+  const oldRenderer = () => new Promise(resolve => { resolveOld = resolve; });
+
+  const window = {
+    callsPage: oldRenderer,
+    addEventListener(type, fn) { listeners.set(type, fn); }
+  };
+  const context = {
+    window,
+    location: { get hash() { return hash; }, pathname: '/app/' },
+    route: () => { routeCalls += 1; },
+    queueMicrotask,
+    Promise,
+    Object,
+    console
+  };
+
+  vm.runInNewContext(NAVIGATION_INTEGRITY, context, { filename: 'navigation-integrity.js' });
+  assert.notEqual(window.callsPage, oldRenderer, 'callsPage deve ser envolvida pela proteção');
+
+  const pendingRender = window.callsPage();
+  hash = '#/manutencoes';
+  resolveOld();
+  await pendingRender;
+  await new Promise(resolve => queueMicrotask(resolve));
+
+  assert.equal(routeCalls, 1, 'a rota atual deve ser reconstruída após resposta atrasada');
+});
+
+test('camada de integridade não força rerender quando o hash continua igual', async () => {
+  let routeCalls = 0;
+  const window = { callsPage: async () => {}, addEventListener() {} };
+  const context = {
+    window,
+    location: { hash: '#/chamados', pathname: '/app/' },
+    route: () => { routeCalls += 1; },
+    queueMicrotask,
+    Promise,
+    Object,
+    console
+  };
+  vm.runInNewContext(NAVIGATION_INTEGRITY, context, { filename: 'navigation-integrity.js' });
+  await window.callsPage();
+  await new Promise(resolve => queueMicrotask(resolve));
+  assert.equal(routeCalls, 0);
+});
+
+test('navigation-integrity carrega depois dos módulos e antes dos roteadores', () => {
+  const pos = name => {
+    const index = INDEX.indexOf(`./${name}`);
+    assert.notEqual(index, -1, `${name} deve existir no index`);
+    return index;
+  };
+  assert.ok(pos('navigation-integrity.js') > pos('structural-integrity-fixes.js'));
+  assert.ok(pos('navigation-integrity.js') < pos('final-router.js'));
+  assert.ok(pos('navigation-integrity.js') < pos('management-role-router.js'));
 });
