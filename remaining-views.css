@@ -1,6 +1,8 @@
 /* Remaining management views: shared visual language for legacy and newer modules. */
 
-.view-filter-hidden{display:none!important}
+.view-filter-hidden,
+body .table tbody tr.view-filter-hidden,
+body .file-grid .file-card.view-filter-hidden{display:none!important}
 .view-filterbar{
   display:flex;
   align-items:center;
