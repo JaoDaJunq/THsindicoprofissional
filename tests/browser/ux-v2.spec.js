@@ -1,0 +1,54 @@
+const { test, expect } = require('@playwright/test');
+
+async function open(page, viewport={width:1440,height:900}) {
+  await page.setViewportSize(viewport);
+  await page.goto('/tests/browser/ux-v2-fixture.html#/condominio/c1/tarefas');
+  await page.waitForSelector('.ux-contextbar');
+}
+
+test('desktop uses registry sidebar and workspace breadcrumb', async ({page}) => {
+  await open(page);
+  await expect(page.locator('.sidebar [data-nav-group="main"] .ux-icon').first()).toBeVisible();
+  await expect(page.locator('.sidebar [data-nav-group="workspace"]')).toBeVisible();
+  await expect(page.locator('.ux-breadcrumb')).toContainText('Ed. Ametista');
+  await expect(page.locator('.ux-breadcrumb')).toContainText('Tarefas');
+  await expect(page.locator('.ux-condo-switch select')).toHaveValue('c1');
+  await expect(page.locator('.sidebar a.active')).toContainText('Tarefas');
+});
+
+test('condominium switch preserves the current workspace subroute', async ({page}) => {
+  await open(page);
+  await page.locator('.ux-condo-switch select').selectOption('c2');
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe('#/condominio/c2/tarefas');
+});
+
+test('mobile hides redundant condominium field and search filters rows', async ({page}) => {
+  await open(page,{width:390,height:844});
+  await expect(page.locator('[data-ux-search="tasks"]')).toBeVisible();
+  await expect(page.locator('.ux-redundant-condo').first()).toBeHidden();
+  await page.locator('[data-ux-search="tasks"] input').fill('alarme');
+  await expect(page.locator('tbody tr:not(.ux-filter-hidden)')).toHaveCount(1);
+  await expect(page.locator('tbody tr:not(.ux-filter-hidden)')).toContainText('Testar alarme');
+  await expect(page.locator('.ux-filter-count')).toHaveText('1 resultado');
+});
+
+test('sidebar rendering stays stable after unrelated DOM mutations', async ({page}) => {
+  await open(page);
+  const before = await page.locator('.sidebar .nav a').count();
+  await page.evaluate(() => {
+    const x=document.createElement('div');x.textContent='mutation';document.querySelector('.panel-body').appendChild(x);
+  });
+  await page.waitForTimeout(100);
+  const after = await page.locator('.sidebar .nav a').count();
+  expect(after).toBe(before);
+  await expect(page.locator('.sidebar [data-nav-id="condo-tasks"]')).toHaveCount(1);
+});
+
+test('custom confirmation closes with escape', async ({page}) => {
+  await open(page,{width:390,height:844});
+  await page.evaluate(() => { window.__confirmResult = null; GCUI.confirm({title:'Excluir?',message:'Teste',danger:true}).then(v=>window.__confirmResult=v); });
+  await expect(page.locator('.ux-confirm-overlay')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.ux-confirm-overlay')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => window.__confirmResult)).toBe(false);
+});
