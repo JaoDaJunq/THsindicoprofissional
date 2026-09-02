@@ -175,7 +175,7 @@ test.describe('responsive design system', () => {
     await expect(insight).toHaveCount(1);
     await expect(insight).toContainText('Saúde operacional');
     await expect(insight.locator('.quick-action')).toHaveCount(4);
-    await expect(insight.locator('.quick-action')).toContainText('Financeiro');
+    await expect(insight.getByRole('link', { name: 'Financeiro', exact: true })).toBeVisible();
     await expect(page.locator('.mobile-bottom-dock')).toBeVisible();
     await noHorizontalOverflow(page);
     await page.screenshot({ path: 'test-results/mobile-condo-dashboard.png', fullPage: true });
