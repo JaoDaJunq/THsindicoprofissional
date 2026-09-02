@@ -2,7 +2,6 @@
   'use strict';
 
   let scheduled = false;
-  let lastHash = '';
   const state = () => typeof data !== 'undefined' ? data : null;
   const clean = value => String(value || '').replace(/\s+/g,' ').trim();
   const normalize = value => clean(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -23,7 +22,7 @@
   function renderSidebar() {
     const registry = window.GCNavigation;
     const sidebar = document.querySelector('.sidebar');
-    if (!registry || !sidebar || sidebar.dataset.uxRegistry === 'true') return;
+    if (!registry || !sidebar) return;
 
     const footer = sidebar.querySelector('.sidebar-footer');
     const brand = sidebar.querySelector('.brand');
@@ -31,8 +30,10 @@
     const groups = registry.groups();
     const allItems = groups.flatMap(group => group.items);
     const activeId = registry.activeId(allItems);
-    const fragment = document.createDocumentFragment();
+    const signature = `${location.hash}|${ctx.cid || ''}|${allItems.map(i => `${i.id}:${i.href}`).join('|')}`;
+    if (sidebar.dataset.uxSignature === signature) return;
 
+    const fragment = document.createDocumentFragment();
     groups.forEach(group => {
       if (!group.items.length) return;
       const section = document.createElement('div');
@@ -57,16 +58,14 @@
     });
     if (footer) sidebar.insertBefore(fragment, footer);
     else sidebar.appendChild(fragment);
-    sidebar.dataset.uxRegistry = 'true';
+    sidebar.dataset.uxSignature = signature;
   }
 
   function currentItem() {
     const registry = window.GCNavigation;
     if (!registry) return null;
-    const groups = registry.groups();
-    const items = groups.flatMap(group => group.items);
-    const active = registry.activeId(items);
-    return items.find(item => item.id === active) || null;
+    const items = registry.groups().flatMap(group => group.items);
+    return items.find(item => item.id === registry.activeId(items)) || null;
   }
 
   function targetForCondo(newCid) {
@@ -88,12 +87,10 @@
     bar.className = `ux-contextbar ${ctx.workspace ? 'is-workspace' : 'is-global'}`;
 
     if (ctx.workspace) {
-      const condos = accessibleCondos();
-      const options = condos.map(c => `<option value="${String(c.id)}" ${String(c.id) === String(ctx.cid) ? 'selected' : ''}>${clean(c.name)}</option>`).join('');
+      const options = accessibleCondos().map(c => `<option value="${String(c.id)}" ${String(c.id) === String(ctx.cid) ? 'selected' : ''}>${clean(c.name)}</option>`).join('');
       bar.innerHTML = `<nav class="ux-breadcrumb" aria-label="Localização"><a href="#/">Visão geral</a><span>${registry.icons.chevron}</span><a href="#/condominios">Condomínios</a><span>${registry.icons.chevron}</span><strong>${clean(condoName(ctx.cid))}</strong>${item && item.id !== 'condo-overview' ? `<span>${registry.icons.chevron}</span><em>${clean(item.label)}</em>` : ''}</nav><label class="ux-condo-switch"><span>Condomínio</span><select aria-label="Trocar condomínio">${options}</select></label>`;
       bar.querySelector('select')?.addEventListener('change', event => {
-        const cid = event.target.value;
-        if (cid) location.hash = targetForCondo(cid);
+        if (event.target.value) location.hash = targetForCondo(event.target.value);
       });
     } else {
       bar.innerHTML = `<nav class="ux-breadcrumb" aria-label="Localização"><a href="#/">Visão geral</a>${item && item.id !== 'dashboard' ? `<span>${registry.icons.chevron}</span><strong>${clean(item.label)}</strong>` : ''}</nav>`;
@@ -102,25 +99,20 @@
   }
 
   const genericSearchRoutes = {
-    maintenance: 'Buscar manutenção...',
-    tasks: 'Buscar tarefa...',
-    documents: 'Buscar documento...',
-    residents: 'Buscar morador ou unidade...',
-    audit: 'Buscar evento de auditoria...',
-    condominiums: 'Buscar condomínio...'
+    maintenance: 'Buscar manutenção...', tasks: 'Buscar tarefa...', documents: 'Buscar documento...',
+    residents: 'Buscar morador ou unidade...', audit: 'Buscar evento de auditoria...', condominiums: 'Buscar condomínio...'
   };
 
   function currentView() {
-    return document.body.dataset.view || (() => {
-      const p = (location.hash || '#/').replace(/^#\//,'').split('?')[0];
-      if (p === 'condominios') return 'condominiums';
-      if (p === 'manutencoes' || /\/manutencoes$/.test(p)) return 'maintenance';
-      if (p === 'tarefas' || /\/tarefas$/.test(p)) return 'tasks';
-      if (/\/documentos$/.test(p)) return 'documents';
-      if (/\/moradores$/.test(p)) return 'residents';
-      if (p === 'auditoria' || /\/auditoria$/.test(p)) return 'audit';
-      return '';
-    })();
+    if (document.body.dataset.view) return document.body.dataset.view;
+    const p = (location.hash || '#/').replace(/^#\//,'').split('?')[0];
+    if (p === 'condominios') return 'condominiums';
+    if (p === 'manutencoes' || /\/manutencoes$/.test(p)) return 'maintenance';
+    if (p === 'tarefas' || /\/tarefas$/.test(p)) return 'tasks';
+    if (/\/documentos$/.test(p)) return 'documents';
+    if (/\/moradores$/.test(p)) return 'residents';
+    if (p === 'auditoria' || /\/auditoria$/.test(p)) return 'audit';
+    return '';
   }
 
   function searchableItems(view) {
@@ -148,9 +140,8 @@
     const view = currentView();
     const placeholder = genericSearchRoutes[view];
     if (!placeholder || document.querySelector('.view-filterbar,[data-ux-search]')) return;
-    const items = searchableItems(view);
-    if (items.length < 2) return;
-    const anchor = document.querySelector('.table-wrap,.condo-grid,.resident-grid,.panel-body');
+    if (searchableItems(view).length < 2) return;
+    const anchor = document.querySelector('.table-wrap,.condo-grid,.resident-grid');
     if (!anchor) return;
     const toolbar = document.createElement('div');
     toolbar.className = 'ux-list-tools';
@@ -169,19 +160,17 @@
       const index = headers.findIndex(th => normalize(th.textContent) === 'condominio');
       if (index < 0) return;
       table.classList.add('ux-hide-condo-column');
-      table.querySelectorAll('tbody tr').forEach(row => row.children[index]?.classList.add('ux-redundant-condo'));
       headers[index]?.classList.add('ux-redundant-condo');
+      table.querySelectorAll('tbody tr').forEach(row => row.children[index]?.classList.add('ux-redundant-condo'));
     });
   }
 
   function skeleton(lines=3) {
     return `<div class="ux-skeleton" aria-hidden="true">${Array.from({length:lines},(_,i)=>`<span style="--w:${i===0?'68%':i===lines-1?'48%':'88%'}"></span>`).join('')}</div>`;
   }
-
   function empty(title='Nada por aqui', text='Quando houver informações, elas aparecerão aqui.', action='') {
     return `<div class="ux-state ux-state-empty"><div class="ux-state-icon">${window.GCNavigation?.icons.documents || ''}</div><strong>${title}</strong><p>${text}</p>${action}</div>`;
   }
-
   function error(title='Não foi possível carregar', text='Tente novamente em alguns instantes.', retry='') {
     return `<div class="ux-state ux-state-error"><div class="ux-state-icon">!</div><strong>${title}</strong><p>${text}</p>${retry ? `<button class="btn" onclick="${retry}">Tentar novamente</button>` : ''}</div>`;
   }
@@ -191,11 +180,19 @@
       const overlay = document.createElement('div');
       overlay.className = 'ux-confirm-overlay';
       overlay.innerHTML = `<section class="ux-confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="ux-confirm-title"><div class="ux-confirm-icon ${danger?'danger':''}">!</div><h2 id="ux-confirm-title">${title}</h2><p>${message}</p><div class="ux-confirm-actions"><button class="btn" data-confirm-cancel>${cancelText}</button><button class="btn ${danger?'ux-danger':'btn-primary'}" data-confirm-ok>${confirmText}</button></div></section>`;
-      const finish = value => { overlay.remove(); resolve(value); };
+      let done = false;
+      const escHandler = e => { if (e.key === 'Escape') finish(false); };
+      const finish = value => {
+        if (done) return;
+        done = true;
+        document.removeEventListener('keydown', escHandler);
+        overlay.remove();
+        resolve(value);
+      };
       overlay.querySelector('[data-confirm-cancel]').onclick = () => finish(false);
       overlay.querySelector('[data-confirm-ok]').onclick = () => finish(true);
       overlay.addEventListener('click', e => { if (e.target === overlay) finish(false); });
-      document.addEventListener('keydown', function escHandler(e){ if(e.key==='Escape'){document.removeEventListener('keydown',escHandler);finish(false);} }, {once:false});
+      document.addEventListener('keydown', escHandler);
       document.body.appendChild(overlay);
       overlay.querySelector('[data-confirm-ok]')?.focus();
     });
@@ -208,8 +205,6 @@
     scheduled = true;
     requestAnimationFrame(() => {
       scheduled = false;
-      const hash = location.hash || '#/';
-      if (hash !== lastHash) lastHash = hash;
       renderSidebar();
       renderContextBar();
       renderGenericSearch();
@@ -217,15 +212,7 @@
     });
   }
 
-  function resetRenderMarkers() {
-    document.querySelector('.sidebar')?.removeAttribute('data-ux-registry');
-  }
-
-  const observer = new MutationObserver(() => {
-    resetRenderMarkers();
-    refresh();
-  });
-
+  const observer = new MutationObserver(refresh);
   function start() {
     refresh();
     observer.observe(document.getElementById('app') || document.body,{childList:true,subtree:true});
