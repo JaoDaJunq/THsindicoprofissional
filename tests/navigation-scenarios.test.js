@@ -148,7 +148,8 @@ test('guard ignora resposta antiga de permissão após navegação rápida', asy
 
 test('rotas diretas sensíveis são reavaliadas quando CondoAccess termina de carregar', () => {
   const listeners = new Map();
-  let routeCalls = 0;
+  let fallbackCalls = 0;
+  let financeRenders = 0;
   const access = {
     getSnapshot: () => ({ user: { id: 'u1' }, memberships: [], loadedAt: 'ready' }),
     hasAnyManagementRole: () => true,
@@ -159,14 +160,14 @@ test('rotas diretas sensíveis são reavaliadas quando CondoAccess termina de ca
   };
   const window = {
     CondoAccess: access,
-    financeConsolidatedPage: () => {},
+    financeConsolidatedPage: () => { financeRenders += 1; },
     addEventListener(type, fn) { listeners.set(type, fn); },
     removeEventListener() {}
   };
   const context = {
     window,
     location: { hash: '#/financeiro' },
-    route: () => { routeCalls += 1; },
+    route: () => { fallbackCalls += 1; },
     document: { body: { classList: { remove() {} } }, querySelectorAll: () => [] },
     dashboard: () => {}, condosPage: () => {}, calendarPage: () => {}, maintenancesPage: () => {}, tasksPage: () => {}, callsPage: () => {},
     URLSearchParams,
@@ -179,9 +180,11 @@ test('rotas diretas sensíveis são reavaliadas quando CondoAccess termina de ca
   vm.runInNewContext(MANAGEMENT_ROUTER, context, { filename: 'management-role-router.js' });
   const ready = listeners.get('condo-access-ready');
   assert.equal(typeof ready, 'function');
-  const before = routeCalls;
+  const beforeFinance = financeRenders;
+  const beforeFallback = fallbackCalls;
   ready();
-  assert.equal(routeCalls, before + 1, 'financeiro deve ser reavaliado quando acesso fica pronto');
+  assert.equal(financeRenders, beforeFinance + 1, 'financeiro deve ser renderizado quando acesso fica pronto');
+  assert.equal(fallbackCalls, beforeFallback, 'rota sensível já resolvida não deve cair no fallback antigo');
 });
 
 test('camada de integridade restaura rota atual quando render assíncrono termina atrasado', async () => {
