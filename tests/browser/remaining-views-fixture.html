@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Remaining views fixture</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="stylesheet" href="../../ui-refresh.css">
+  <link rel="stylesheet" href="../../mobile-fixes.css">
+  <link rel="stylesheet" href="../../design-system.css">
+  <link rel="stylesheet" href="../../design-system-polish.css">
+  <link rel="stylesheet" href="../../mobile-dock.css">
+  <link rel="stylesheet" href="../../dashboard-insights.css">
+  <link rel="stylesheet" href="../../dashboard-insights-polish.css">
+  <link rel="stylesheet" href="../../remaining-views.css">
+  <link rel="stylesheet" href="../../design-system-accessibility.css">
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const mode = params.get('mode') || 'calls';
+    const cid = 'condo-a';
+    const routeMap = {
+      calls:`#/condominio/${cid}/chamados`,
+      files:`#/condominio/${cid}/base-de-dados`,
+      assemblies:`#/condominio/${cid}/assembleias`,
+      integrations:`#/condominio/${cid}/integracoes`
+    };
+    location.hash = routeMap[mode] || routeMap.calls;
+
+    const nav = `<div class="nav-section">Workspace</div><div class="workspace-label">Ed. Ametista</div><nav class="nav">
+      <a href="#/condominio/${cid}"><span>⌂</span>Resumo</a>
+      <a href="#/condominio/${cid}/manutencoes"><span>⚒</span>Manutenções</a>
+      <a class="${mode==='calls'?'active':''}" href="#/condominio/${cid}/chamados"><span>◉</span>Chamados</a>
+      <a class="${mode==='files'?'active':''}" href="#/condominio/${cid}/base-de-dados"><span>▤</span>Base de dados</a>
+      <a class="${mode==='assemblies'?'active':''}" href="#/condominio/${cid}/assembleias"><span>⌂</span>Assembleias</a>
+      <a class="${mode==='integrations'?'active':''}" href="#/condominio/${cid}/integracoes"><span>↔</span>Integrações</a>
+    </nav>`;
+
+    const shell = content => `<div class="app-shell"><aside class="sidebar"><div class="brand"><div class="brand-mark">SG</div><div><strong>Gestão Condominial</strong><span>Portal do Síndico</span></div></div>${nav}</aside><main class="main"><div class="mobile-top"><div class="brand"><div class="brand-mark">SG</div><div><strong>Gestão Condominial</strong><span>Ed. Ametista</span></div></div></div>${content}</main></div>`;
+    const head = (title,subtitle,action='') => `<header class="topbar"><div><div class="eyebrow">Workspace</div><h1>${title}</h1><div class="muted small">${subtitle}</div></div><div class="top-actions">${action}<button class="icon-btn">🔔</button><div class="avatar">TG</div></div></header>`;
+    const metric = (label,value,tone='blue') => `<article class="metric"><div class="metric-top"><div><span>${label}</span><strong>${value}</strong></div><div class="icon ${tone}">•</div></div></article>`;
+
+    function calls(){
+      return shell(`${head('Chamados','Acompanhe solicitações e responsáveis.','<button class="btn btn-primary">+ Novo chamado</button>')}<section class="metrics">${metric('Abertos','4','orange')}${metric('Urgentes','1','red')}${metric('Em andamento','2','blue')}</section><article class="panel"><div class="panel-head"><div><h2>Fila de chamados</h2><div class="muted small">Itens atuais da operação.</div></div></div><div class="panel-body"><div class="table-wrap"><table class="table"><thead><tr><th>Chamado</th><th>Condomínio</th><th>Local</th><th>Prioridade</th><th>Status</th><th>Responsável</th><th>Ações</th></tr></thead><tbody>
+        <tr><td><strong>Portão travando</strong></td><td>Ed. Ametista</td><td>Garagem</td><td>Urgente</td><td>Aberto</td><td>Thiago</td><td><button class="btn">Abrir</button></td></tr>
+        <tr><td><strong>Lâmpada queimada</strong></td><td>Ed. Ametista</td><td>Hall</td><td>Normal</td><td>Em andamento</td><td>João</td><td><button class="btn">Abrir</button></td></tr>
+        <tr><td><strong>Ruído no elevador</strong></td><td>Ed. Ametista</td><td>Torre A</td><td>Alta</td><td>Em andamento</td><td>Thiago</td><td><button class="btn">Abrir</button></td></tr>
+        <tr><td><strong>Interfone bloco B</strong></td><td>Ed. Ametista</td><td>Bloco B</td><td>Baixa</td><td>Resolvido</td><td>João</td><td><button class="btn">Abrir</button></td></tr>
+      </tbody></table></div></div></article>`);
+    }
+
+    function files(){
+      const card=(name,type='file')=>`<article class="file-card ${type==='folder'?'folder-card':''}"><div class="file-icon">${type==='folder'?'📁':'📄'}</div><div class="file-name">${name}</div><div class="muted small">${type==='folder'?'Pasta':'PDF • 1,2 MB'}</div><div class="file-actions"><button class="btn btn-soft">Abrir</button></div></article>`;
+      return shell(`${head('Base de dados','Pastas e documentos do condomínio.','<button class="btn btn-primary">+ Arquivo</button>')}<article class="panel"><div class="panel-head"><div><h2>Arquivos do condomínio</h2><div class="breadcrumbs"><button class="btn btn-soft">Início</button><span>›</span><span>Documentos Gerais</span></div></div></div><div class="panel-body"><div class="file-grid">${card('Documentos Gerais','folder')}${card('Manutenções','folder')}${card('Seguro Predial 2026.pdf')}${card('Ata Assembleia Março.pdf')}${card('Laudo PPCI.pdf')}</div></div></article>`);
+    }
+
+    function assemblies(){
+      const card=(title,date,status)=>`<article class="card"><div class="row-actions" style="justify-content:space-between"><div><strong>${title}</strong><div class="list-sub">${date} • Salão de festas</div></div><span class="badge attention">${status}</span></div><p class="muted small">Pauta, presença e votação centralizadas.</p><div class="row-actions"><button class="btn btn-soft">Abrir workspace</button></div></article>`;
+      return shell(`${head('Assembleias','Organize pautas, presença e votações.','<button class="btn btn-primary">+ Nova assembleia</button>')}<article class="panel"><div class="panel-head"><div><h2>Próximas e recentes</h2><div class="muted small">Governança do condomínio.</div></div></div><div class="panel-body">${card('Assembleia Ordinária','18/09/2026','Agendada')}${card('Prestação de contas','12/08/2026','Encerrada')}${card('Revisão do regimento','05/07/2026','Encerrada')}</div></article>`);
+    }
+
+    function integrations(){
+      const card=(title,text,button)=>`<article class="integration-card"><div class="eyebrow">Integração</div><h2>${title}</h2><p class="muted small">${text}</p><div class="integration-url">https://example.test/integracao/token-publico</div><div class="row-actions" style="margin-top:12px"><button class="btn btn-soft">${button}</button></div></article>`;
+      return shell(`${head('Integrações','Conecte calendário, push e serviços externos.')}<section class="integration-grid">${card('Google Calendar','Sincronização de agenda operacional.','Configurar')}${card('Calendário público','Link protegido para consulta externa.','Copiar link')}${card('Notificações push','Preferências de alertas por dispositivo.','Preferências')}${card('Discord Bridge','Entrega técnica de eventos internos.','Status')}</section>`);
+    }
+
+    document.getElementById('app').innerHTML = mode==='files'?files():mode==='assemblies'?assemblies():mode==='integrations'?integrations():calls();
+  </script>
+  <script src="../../visual-system.js"></script>
+  <script src="../../remaining-views.js"></script>
+</body>
+</html>

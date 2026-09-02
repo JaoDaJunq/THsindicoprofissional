@@ -1,0 +1,114 @@
+/* Data-driven dashboard components. Values come from the rendered product metrics. */
+.dashboard-insight-strip{
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);
+  gap:18px;
+  margin:18px 0 20px;
+}
+.insight-card{
+  position:relative;
+  overflow:hidden;
+  padding:20px 22px;
+  border:1px solid var(--ui-line);
+  border-radius:var(--ui-radius-lg);
+  background:linear-gradient(145deg,#fff 0%,#f8f9ff 100%);
+  box-shadow:var(--ui-shadow-xs);
+}
+.insight-card::after{
+  content:"";
+  position:absolute;
+  width:180px;
+  height:180px;
+  right:-90px;
+  top:-105px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(73,97,242,.11),rgba(73,97,242,0) 68%);
+  pointer-events:none;
+}
+.insight-card--soft{background:linear-gradient(145deg,#f8f9ff 0%,#f3f5ff 100%)}
+.insight-head{position:relative;z-index:1;margin-bottom:17px}
+.insight-kicker{
+  display:block;
+  margin-bottom:5px;
+  color:var(--ui-primary);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.insight-head h2{margin:0;font-size:17px!important;letter-spacing:-.025em!important}
+.insight-head p{margin:5px 0 0;color:var(--ui-muted);font-size:11px;line-height:1.45}
+.pulse-list{position:relative;z-index:1;display:grid;gap:13px}
+.pulse-row{display:grid;grid-template-columns:minmax(118px,.8fr) minmax(120px,1.4fr) auto;align-items:center;gap:12px}
+.pulse-meta{min-width:0}
+.pulse-meta strong{display:block;color:#313744;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pulse-meta span{display:block;margin-top:2px;color:var(--ui-muted);font-size:9px}
+.pulse-track{height:7px;overflow:hidden;border-radius:999px;background:#e9edf4}
+.pulse-fill{width:var(--pulse,0%);height:100%;min-width:4px;border-radius:inherit;background:linear-gradient(90deg,var(--pulse-color,#6677f4),#8996ff);transition:width .28s ease}
+.pulse-row[data-tone="warning"] .pulse-fill{--pulse-color:#d9902b;background:linear-gradient(90deg,#d9902b,#f0b55c)}
+.pulse-row[data-tone="danger"] .pulse-fill{--pulse-color:#d75757;background:linear-gradient(90deg,#d75757,#ef8585)}
+.pulse-row[data-tone="success"] .pulse-fill{--pulse-color:#28916d;background:linear-gradient(90deg,#28916d,#60b895)}
+.pulse-value{min-width:42px;text-align:right;color:var(--ui-text);font-size:16px;font-weight:800;letter-spacing:-.03em}
+.pulse-row[href]{text-decoration:none;color:inherit;border-radius:9px}
+.pulse-row[href]:hover .pulse-meta strong{color:var(--ui-primary)}
+
+.quick-action-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.quick-action{
+  display:flex;
+  min-height:68px;
+  padding:11px;
+  border:1px solid rgba(218,223,234,.9);
+  border-radius:13px;
+  background:rgba(255,255,255,.76);
+  text-decoration:none;
+  color:var(--ui-text);
+  flex-direction:column;
+  justify-content:space-between;
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease,background .15s ease;
+}
+.quick-action:hover{transform:translateY(-2px);border-color:#cbd2ff;background:#fff;box-shadow:0 10px 22px rgba(15,23,42,.07)}
+.quick-action-icon{display:grid;width:30px;height:30px;border-radius:9px;background:var(--ui-primary-soft);place-items:center;color:var(--ui-primary);font-size:14px;font-weight:850}
+.quick-action strong{font-size:10.5px;line-height:1.2}
+
+.finance-insight-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.7fr);gap:18px;margin:18px 0 20px}
+.finance-flow-card{padding:20px 22px;border:1px solid var(--ui-line);border-radius:var(--ui-radius-lg);background:#fff;box-shadow:var(--ui-shadow-xs)}
+.finance-flow-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:17px}
+.finance-flow-head h2{font-size:17px!important;margin:0}
+.finance-flow-head p{margin:4px 0 0;color:var(--ui-muted);font-size:11px}
+.finance-flow-balance{font-size:18px;font-weight:850;letter-spacing:-.04em;text-align:right}
+.finance-flow-balance small{display:block;margin-top:2px;color:var(--ui-muted);font-size:9px;font-weight:650;letter-spacing:0}
+.finance-progress-list{display:grid;gap:14px}
+.finance-progress-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;font-size:10.5px}
+.finance-progress-head strong{font-size:11px}
+.finance-progress-head span{color:var(--ui-muted);font-size:9px}
+.finance-progress-track{height:9px;border-radius:999px;background:#edf0f4;overflow:hidden}
+.finance-progress-fill{height:100%;width:var(--progress,0%);border-radius:inherit;background:linear-gradient(90deg,#5369f5,#8190ff)}
+.finance-progress-row[data-kind="expense"] .finance-progress-fill{background:linear-gradient(90deg,#e19a3b,#f0ba6c)}
+.finance-progress-row[data-kind="overdue"] .finance-progress-fill{background:linear-gradient(90deg,#d65353,#ef8585)}
+.finance-summary-card{display:grid;align-content:center;padding:20px 22px;border-radius:var(--ui-radius-lg);background:linear-gradient(145deg,#171c27,#222a3a);color:#fff;box-shadow:0 18px 38px rgba(15,23,42,.16)}
+.finance-summary-card span{font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9ba7bc}
+.finance-summary-card strong{margin:8px 0 5px;font-size:26px;line-height:1;font-weight:850;letter-spacing:-.045em}
+.finance-summary-card p{margin:0;color:#aeb8c8;font-size:10px;line-height:1.45}
+
+@media(max-width:960px){
+  .dashboard-insight-strip,.finance-insight-grid{grid-template-columns:1fr}
+  .quick-action-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  .dashboard-insight-strip,.finance-insight-grid{gap:12px;margin:14px 0 16px}
+  .insight-card,.finance-flow-card,.finance-summary-card{padding:16px}
+  .pulse-row{grid-template-columns:minmax(105px,.9fr) minmax(70px,1fr) auto;gap:8px}
+  .pulse-value{font-size:14px}
+  .quick-action-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .quick-action{min-height:62px}
+  .finance-flow-head{display:block}
+  .finance-flow-balance{margin-top:10px;text-align:left}
+}
+@media(max-width:350px){
+  .pulse-row{grid-template-columns:1fr auto}
+  .pulse-track{grid-column:1/-1;grid-row:2}
+  .quick-action-grid{gap:7px}
+}
+@media(prefers-reduced-motion:reduce){
+  .pulse-fill,.quick-action{transition:none!important}
+}

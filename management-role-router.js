@@ -8,6 +8,7 @@
   const parts = () => (location.hash || '#/').replace(/^#\//, '').split('?')[0].split('/').filter(Boolean);
   const reportParams = () => { const raw=(location.hash||'').split('?')[1]||''; const p=new URLSearchParams(raw); return {start:p.get('start')||undefined,end:p.get('end')||undefined}; };
   const consolidatedFinance = () => window.financeConsolidatedPage || window.financeOverviewPage;
+  const accessReadyRoutes = new Set(['condominio','relatorios','auditoria','nao-migrado','financeiro','integracoes','notificacoes']);
 
   function applyRestrictions(cid = null) {
     const access = window.CondoAccess;
@@ -111,8 +112,15 @@
 
   window.addEventListener('condo-access-ready', () => {
     const p = parts();
-    if (window.CondoAccess?.hasAnyManagementRole() && (p.length === 0 || p[0] === 'condominio' || p[0] === 'relatorios' || p[0] === 'auditoria' || p[0] === 'nao-migrado')) {
-      setTimeout(() => applyRestrictions(p[0] === 'condominio' ? p[1] : null), 0);
+    const cid = p[0] === 'condominio' ? p[1] : null;
+    if (accessReadyRoutes.has(p[0] || '')) {
+      // A direct hash may have arrived before FoundationAccess finished. Re-run
+      // the current route now that the user/roles snapshot is authoritative.
+      setTimeout(() => route(), 0);
+      return;
+    }
+    if (window.CondoAccess?.hasAnyManagementRole() && p.length === 0) {
+      setTimeout(() => applyRestrictions(cid), 0);
     }
   });
 })();

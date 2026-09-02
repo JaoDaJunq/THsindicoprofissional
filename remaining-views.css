@@ -1,0 +1,195 @@
+/* Remaining management views: shared visual language for legacy and newer modules. */
+
+.view-filter-hidden,
+body .table tbody tr.view-filter-hidden,
+body .file-grid .file-card.view-filter-hidden{display:none!important}
+.view-filterbar{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  flex-wrap:wrap;
+  margin:0 0 14px;
+  padding:10px;
+  border:1px solid var(--ui-line);
+  border-radius:12px;
+  background:rgba(255,255,255,.88);
+  box-shadow:var(--ui-shadow-xs);
+}
+.view-filterbar .view-search{flex:1 1 240px;min-width:180px}
+.view-filterbar input,.view-filterbar select{
+  min-height:42px;
+  padding:9px 11px;
+  border:1px solid var(--ui-line-strong);
+  border-radius:9px;
+  background:#fff;
+  color:var(--ui-text);
+  font:inherit;
+  font-size:12px;
+}
+.view-filterbar input:focus,.view-filterbar select:focus{border-color:var(--ui-primary);outline:3px solid rgba(73,97,242,.11);outline-offset:0}
+.view-filter-count{margin-left:auto;color:var(--ui-muted);font-size:10px;font-weight:750;white-space:nowrap}
+
+/* Calls */
+body[data-view="calls"] .metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+body[data-view="calls"] .table tbody tr{cursor:pointer}
+body[data-view="calls"] .table tbody tr[data-priority="urgente"] td:nth-child(4),
+body[data-view="calls"] .table tbody tr[data-priority="urgent"] td:nth-child(4){color:#b52f2f;font-weight:800}
+body[data-view="calls"] .table tbody tr[data-priority="alta"] td:nth-child(4),
+body[data-view="calls"] .table tbody tr[data-priority="high"] td:nth-child(4){color:#a45e13;font-weight:800}
+body[data-view="calls"] .table tbody tr[data-status="resolvido"] td:nth-child(5),
+body[data-view="calls"] .table tbody tr[data-status="resolved"] td:nth-child(5){color:var(--ui-success);font-weight:800}
+
+/* Older resident/team statistics now speak the same language as KPI cards. */
+.stats-grid,.transition-kpis,.kpi-strip{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:14px!important;
+  margin:0 0 20px!important;
+}
+.stat-card,.transition-kpi,.kpi-pill{
+  min-width:0!important;
+  min-height:112px!important;
+  padding:16px!important;
+  border:1px solid var(--ui-line)!important;
+  border-radius:var(--ui-radius)!important;
+  background:#fff!important;
+  box-shadow:var(--ui-shadow-xs)!important;
+}
+.stat-card .stat-value,.transition-kpi strong,.kpi-pill strong{
+  display:block!important;
+  margin-top:12px!important;
+  color:var(--ui-text)!important;
+  font-size:25px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:-.04em!important;
+}
+.stat-card .stat-label,.transition-kpi span,.kpi-pill span{color:var(--ui-muted)!important;font-size:10px!important;font-weight:750!important}
+.cards-grid,.resident-grid{gap:13px!important}
+.unit-card,.resident-card{
+  border:1px solid var(--ui-line)!important;
+  border-radius:var(--ui-radius)!important;
+  background:#fff!important;
+  box-shadow:var(--ui-shadow-xs)!important;
+}
+body[data-view="team"] .panel,body[data-view="residents"] .panel{overflow:hidden}
+body[data-view="team"] .table tbody tr:hover,body[data-view="residents"] .table tbody tr:hover{background:#fafbff!important}
+
+/* File library */
+body[data-view="files"] .file-grid{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr))!important;
+  gap:12px!important;
+}
+body[data-view="files"] .file-card{
+  min-width:0!important;
+  min-height:142px!important;
+  padding:16px!important;
+  border:1px solid var(--ui-line)!important;
+  border-radius:14px!important;
+  background:#fff!important;
+  box-shadow:var(--ui-shadow-xs)!important;
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease!important;
+}
+body[data-view="files"] .file-card:hover{transform:translateY(-2px)!important;border-color:#ccd3e0!important;box-shadow:var(--ui-shadow-sm)!important}
+body[data-view="files"] .folder-card{background:linear-gradient(145deg,#fff 0%,#f6f7ff 100%)!important}
+body[data-view="files"] .file-icon{display:grid!important;width:40px!important;height:40px!important;place-items:center!important;border-radius:11px!important;background:var(--ui-primary-soft)!important;font-size:19px!important}
+body[data-view="files"] .file-name{font-size:12px!important;line-height:1.35!important;font-weight:800!important}
+body[data-view="files"] .file-actions{display:flex!important;gap:6px!important;flex-wrap:wrap!important;margin-top:auto!important}
+body[data-view="files"] .breadcrumbs{display:flex!important;align-items:center!important;gap:5px!important;flex-wrap:wrap!important;margin-bottom:12px!important;color:var(--ui-muted)!important;font-size:11px!important}
+body[data-view="files"] .breadcrumbs button,body[data-view="files"] .breadcrumbs a{min-height:34px!important;padding:6px 9px!important;border-radius:8px!important}
+
+/* Assembly and communication feeds */
+body[data-view="assemblies"] .panel-body>.card,
+body[data-view="announcements"] .panel-body>.card{
+  position:relative;
+  margin-bottom:10px!important;
+  padding:17px 18px!important;
+  border:1px solid var(--ui-line)!important;
+  border-radius:13px!important;
+  background:#fff!important;
+  box-shadow:var(--ui-shadow-xs)!important;
+  text-align:left!important;
+}
+body[data-view="assemblies"] .panel-body>.card::before,
+body[data-view="announcements"] .panel-body>.card::before{
+  content:"";position:absolute;left:0;top:15px;bottom:15px;width:3px;border-radius:99px;background:#dfe4ff;
+}
+body[data-view="announcements"] .panel-body>.card p{max-width:78ch;line-height:1.55!important}
+body[data-view="assemblies"] .grid-2{align-items:start}
+body[data-view="assemblies"] .row-actions{margin-top:8px}
+
+/* Audit/filter-heavy screens */
+body[data-view="audit"] .panel-head .row-actions,
+body[data-view="documents"] .panel-head .row-actions{
+  padding:8px!important;
+  border:1px solid #e7eaf0!important;
+  border-radius:11px!important;
+  background:#f8f9fb!important;
+}
+body[data-view="audit"] .panel-head input,
+body[data-view="audit"] .panel-head select,
+body[data-view="documents"] .panel-head input,
+body[data-view="documents"] .panel-head select{min-height:38px!important;border-radius:8px!important}
+
+/* Integrations and notifications override module-local legacy CSS. */
+body[data-view="integrations"] .integration-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:14px!important;
+}
+body[data-view="integrations"] .integration-card,
+body[data-view="notifications"] .notification-card{
+  border:1px solid var(--ui-line)!important;
+  border-radius:14px!important;
+  background:linear-gradient(145deg,#fff,#fafbff)!important;
+  box-shadow:var(--ui-shadow-xs)!important;
+}
+body[data-view="integrations"] .integration-card{padding:18px!important}
+body[data-view="integrations"] .integration-url{padding:10px 11px!important;border:1px solid var(--ui-line)!important;border-radius:9px!important;background:#f7f8fb!important;font-size:11px!important;word-break:break-all!important}
+body[data-view="integrations"] .push-pref-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))!important;gap:9px!important}
+body[data-view="integrations"] .push-pref-grid label{padding:11px!important;border:1px solid var(--ui-line)!important;border-radius:10px!important;background:#fff!important}
+body[data-view="notifications"] .notification-card{padding:15px 16px!important;margin-bottom:9px!important}
+
+/* Legacy transition screens */
+body[data-view="tasks"] .transition-kpi,
+body[data-view="gas"] .transition-kpi{min-height:106px!important}
+body[data-view="tasks"] .database-explainer,
+body[data-view="gas"] .database-explainer{border-radius:13px!important;border:1px solid #e4e8ef!important;box-shadow:none!important}
+body[data-view="gas"] .gas-status{display:inline-flex!important;align-items:center!important;min-height:28px!important;padding:5px 9px!important;border-radius:999px!important;font-size:10px!important;font-weight:800!important}
+
+/* Global condominium cards get a stronger information hierarchy. */
+body[data-view="condominiums"] .condo-card{position:relative;overflow:hidden}
+body[data-view="condominiums"] .condo-card::after{content:"";position:absolute;right:-26px;top:-34px;width:88px;height:88px;border-radius:50%;background:radial-gradient(circle,rgba(73,97,242,.09),rgba(73,97,242,0) 68%);pointer-events:none}
+
+@media(max-width:960px){
+  .stats-grid,.transition-kpis,.kpi-strip{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  body[data-view="integrations"] .integration-grid{grid-template-columns:1fr!important}
+}
+
+@media(max-width:700px){
+  .view-filterbar{display:grid;grid-template-columns:1fr 1fr;padding:9px;gap:7px}
+  .view-filterbar .view-search{grid-column:1/-1;min-width:0;width:100%}
+  .view-filterbar input,.view-filterbar select{width:100%;font-size:16px}
+  .view-filter-count{grid-column:1/-1;margin-left:0;text-align:right}
+  body[data-view="calls"] .metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  body[data-view="files"] .file-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+  body[data-view="files"] .file-card{min-height:128px!important;padding:13px!important}
+  body[data-view="audit"] .panel-head .row-actions,
+  body[data-view="documents"] .panel-head .row-actions{display:grid!important;grid-template-columns:1fr!important;width:100%!important}
+  body[data-view="audit"] .panel-head input,
+  body[data-view="audit"] .panel-head select,
+  body[data-view="documents"] .panel-head input,
+  body[data-view="documents"] .panel-head select{width:100%!important;max-width:none!important;font-size:16px!important}
+  body[data-view="assemblies"] .panel-body>.card,
+  body[data-view="announcements"] .panel-body>.card{padding:15px!important}
+}
+
+@media(max-width:350px){
+  .stats-grid,.transition-kpis,.kpi-strip,body[data-view="calls"] .metrics{grid-template-columns:1fr!important}
+  body[data-view="files"] .file-grid{grid-template-columns:1fr!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  body[data-view="files"] .file-card{transition:none!important}
+}
