@@ -40,7 +40,7 @@
     align-items:center;
     justify-content:center;
     flex-direction:column;
-    gap:3px;
+    gap:2px;
     font:inherit;
     cursor:pointer;
     isolation:isolate;
@@ -52,13 +52,13 @@
     position:absolute;
     left:50%;
     top:50%;
-    width:46px;
-    height:46px;
-    border-radius:15px;
-    background:var(--ui-primary-soft,#eef1ff);
-    box-shadow:0 7px 18px rgba(73,97,242,.16);
+    width:calc(100% - 5px);
+    height:52px;
+    border-radius:17px;
+    background:linear-gradient(180deg,#f0f2ff 0%,#e9edff 100%);
+    box-shadow:0 7px 18px rgba(73,97,242,.13),inset 0 0 0 1px rgba(91,108,241,.08);
     opacity:0;
-    transform:translate(-50%,-42%) scale(.72);
+    transform:translate(-50%,-50%) scale(.78);
     transition:transform .2s cubic-bezier(.2,.8,.2,1),opacity .16s ease;
     z-index:-1;
   }
@@ -67,7 +67,7 @@
     display:grid;
     place-items:center;
     min-width:28px;
-    height:28px;
+    height:27px;
     font-size:18px;
     line-height:1;
     font-weight:800;
@@ -82,38 +82,22 @@
     text-overflow:ellipsis;
     white-space:nowrap;
     text-align:center;
-    font-size:9px;
-    line-height:1.15;
-    font-weight:750;
-    letter-spacing:-.01em;
+    font-size:8.7px;
+    line-height:1.1;
+    font-weight:760;
+    letter-spacing:-.015em;
     transition:color .16s ease,transform .2s cubic-bezier(.2,.8,.2,1);
   }
 
-  .mobile-dock-item.active{
-    color:var(--ui-primary,#4961f2);
-  }
-  .mobile-dock-item.active::before{
-    opacity:1;
-    transform:translate(-50%,-53%) scale(1);
-  }
-  .mobile-dock-item.active .mobile-dock-icon{
-    transform:translateY(-5px) scale(1.08);
-  }
-  .mobile-dock-item.active .mobile-dock-label{
-    color:#3142b7;
-    transform:translateY(1px);
-  }
+  .mobile-dock-item.active{color:var(--ui-primary,#4961f2)}
+  .mobile-dock-item.active::before{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .mobile-dock-item.active .mobile-dock-icon{transform:translateY(-2px) scale(1.06)}
+  .mobile-dock-item.active .mobile-dock-label{color:#3142b7;transform:translateY(0)}
 
   .mobile-dock-item:active .mobile-dock-icon{transform:scale(.92)}
-  .mobile-dock-item.active:active .mobile-dock-icon{transform:translateY(-4px) scale(.96)}
+  .mobile-dock-item.active:active .mobile-dock-icon{transform:translateY(-1px) scale(.96)}
 
-  .mobile-dock-more .mobile-dock-icon{
-    font-size:14px;
-    letter-spacing:1px;
-  }
-
-  /* The dock becomes the primary navigation. The top hamburger remains as an
-     alternate entry point for the complete sidebar and contextual actions. */
+  .mobile-dock-more .mobile-dock-icon{font-size:14px;letter-spacing:1px}
   .mobile-nav-toggle{opacity:.82}
 }
 
@@ -128,7 +112,7 @@
     border-radius:18px;
   }
   .mobile-dock-item{min-height:54px}
-  .mobile-dock-item::before{width:41px;height:41px;border-radius:13px}
+  .mobile-dock-item::before{height:48px;border-radius:15px}
   .mobile-dock-icon{font-size:17px}
   .mobile-dock-label{font-size:8px}
 }
@@ -136,7 +120,5 @@
 @media(prefers-reduced-motion:reduce){
   .mobile-dock-item::before,
   .mobile-dock-icon,
-  .mobile-dock-label{
-    transition:none!important;
-  }
+  .mobile-dock-label{transition:none!important}
 }
