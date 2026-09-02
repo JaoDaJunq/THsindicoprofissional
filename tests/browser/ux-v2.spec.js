@@ -22,6 +22,13 @@ test('condominium switch preserves the current workspace subroute', async ({page
   await expect.poll(() => page.evaluate(() => location.hash)).toBe('#/condominio/c2/tarefas');
 });
 
+test('metric cards replace mixed emoji icons with registry svg', async ({page}) => {
+  await open(page);
+  await expect(page.locator('.metric .icon.ux-metric-icon svg.ux-icon')).toHaveCount(2);
+  await expect(page.locator('.metric').first().locator('.icon')).not.toContainText('🎫');
+  await expect(page.locator('.metric').nth(1).locator('.icon')).not.toContainText('⚒');
+});
+
 test('mobile hides redundant condominium field and search filters rows', async ({page}) => {
   await open(page,{width:390,height:844});
   await expect(page.locator('[data-ux-search="tasks"]')).toBeVisible();
