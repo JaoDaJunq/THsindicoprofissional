@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 const fixture = '/tests/browser/visual-fixture.html';
+const insightFixture = '/tests/browser/dashboard-insights-fixture.html';
 
 async function noHorizontalOverflow(page) {
   const overflow = await page.evaluate(() => ({
@@ -14,6 +15,12 @@ async function openFixture(page, width, height) {
   await page.setViewportSize({ width, height });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(fixture);
+}
+
+async function openInsightFixture(page, mode, width=1440, height=900) {
+  await page.setViewportSize({ width, height });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(`${insightFixture}?mode=${mode}`);
 }
 
 async function metricColumns(page) {
@@ -146,5 +153,48 @@ test.describe('responsive design system', () => {
     expect(await page.locator('.mobile-nav-toggle').count()).toBe(1);
     expect(await page.locator('.mobile-nav-backdrop').count()).toBe(1);
     expect(await page.locator('.mobile-bottom-dock').count()).toBe(1);
+  });
+
+  test('general dashboard builds live operational pulse once and stays responsive', async ({ page }) => {
+    await openInsightFixture(page, 'general', 1440, 900);
+    const insight = page.locator('[data-dashboard-insight="general"]');
+    await expect(insight).toHaveCount(1);
+    await expect(insight.locator('.pulse-row')).toHaveCount(4);
+    await expect(insight).toContainText('Chamados abertos');
+    await expect(insight).toContainText('7');
+    await expect(insight.locator('.quick-action')).toHaveCount(4);
+    await page.evaluate(() => document.getElementById('app').appendChild(document.createElement('div')));
+    await expect(page.locator('[data-dashboard-insight="general"]')).toHaveCount(1);
+    await noHorizontalOverflow(page);
+    await page.screenshot({ path: 'test-results/desktop-dashboard.png', fullPage: true });
+  });
+
+  test('condominium overview creates contextual pulse and finance shortcut from access', async ({ page }) => {
+    await openInsightFixture(page, 'condo', 390, 844);
+    const insight = page.locator('[data-dashboard-insight="condo"]');
+    await expect(insight).toHaveCount(1);
+    await expect(insight).toContainText('Saúde operacional');
+    await expect(insight.locator('.quick-action')).toHaveCount(4);
+    await expect(insight.locator('.quick-action')).toContainText('Financeiro');
+    await expect(page.locator('.mobile-bottom-dock')).toBeVisible();
+    await noHorizontalOverflow(page);
+    await page.screenshot({ path: 'test-results/mobile-condo-dashboard.png', fullPage: true });
+  });
+
+  test('finance insight uses rendered money values and progress never exceeds container', async ({ page }) => {
+    await openInsightFixture(page, 'finance', 1440, 900);
+    const insight = page.locator('[data-dashboard-insight="finance-global"]');
+    await expect(insight).toHaveCount(1);
+    await expect(insight).toContainText('R$ 6.300,00');
+    await expect(insight).toContainText('R$ 1.200,00');
+    const fills = insight.locator('.finance-progress-fill');
+    expect(await fills.count()).toBe(3);
+    for(let i=0;i<await fills.count();i++){
+      const width = await fills.nth(i).evaluate(el => el.getBoundingClientRect().width);
+      const parent = await fills.nth(i).evaluate(el => el.parentElement.getBoundingClientRect().width);
+      expect(width).toBeLessThanOrEqual(parent + 1);
+    }
+    await noHorizontalOverflow(page);
+    await page.screenshot({ path: 'test-results/desktop-finance.png', fullPage: true });
   });
 });
