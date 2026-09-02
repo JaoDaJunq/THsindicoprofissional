@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Boot stability fixture</title>
+  <link rel="stylesheet" href="../../boot-stability.css">
+  <style>
+    body{margin:0;font-family:Arial,sans-serif;background:#fff}
+    #app{min-height:100vh;padding:32px}
+  </style>
+</head>
+<body>
+  <div id="app"><main data-screen="legacy">TELA LEGADA NÃO DEVE APARECER</main></div>
+  <script src="../../boot-stability.js"></script>
+  <script>
+    window.__bootFixture = {
+      access: { loadedAt: null },
+      finalRenders: 0,
+      intermediateRenders: 0,
+      renderIntermediate(){
+        this.intermediateRenders++;
+        document.querySelector('#app').innerHTML='<main data-screen="intermediate">TELA INTERMEDIÁRIA</main>';
+      },
+      release(){
+        window.route = () => {
+          this.finalRenders++;
+          document.querySelector('#app').innerHTML='<main data-screen="final">TELA FINAL</main>';
+        };
+        window.CondoAccess = {
+          getSnapshot: () => ({ user:{id:'demo'}, memberships:[], loadedAt:this.access.loadedAt })
+        };
+        this.access.loadedAt = new Date().toISOString();
+        window.dispatchEvent(new CustomEvent('condo-access-ready'));
+      }
+    };
+  </script>
+</body>
+</html>
