@@ -30,31 +30,50 @@ test('aprimoramentos restantes são estritamente client-side', () => {
   assert.doesNotMatch(js, /XMLHttpRequest/);
 });
 
-test('rotas principais recebem contexto visual explícito', () => {
+test('rotas principais recebem contexto visual explícito no runtime', () => {
   for (const view of ['condominiums','calls','documents','files','assemblies','team','residents','announcements','audit','integrations','notifications','tasks','gas']) {
     assert.match(js, new RegExp(`return '${view}'`), view);
-    assert.match(css, new RegExp(`data-view=\\"${view}\\"|data-view="${view}"|data-view='${view}'`), view);
   }
+  assert.match(js, /document\.body\.dataset\.view\s*=\s*view/);
 });
 
-test('chamados possui busca, prioridade, status e contador sem nova query', () => {
-  assert.match(js, /data\.viewFilter = 'calls'/);
-  assert.match(js, /data\.filterSearch = 'calls'/);
-  assert.match(js, /data\.filterPriority = 'calls'/);
-  assert.match(js, /data\.filterStatus = 'calls'/);
+test('famílias de layout restantes possuem cobertura visual', () => {
+  assert.match(css, /body\[data-view="calls"\]/);
+  assert.match(css, /body\[data-view="files"\]/);
+  assert.match(css, /body\[data-view="assemblies"\]/);
+  assert.match(css, /body\[data-view="announcements"\]/);
+  assert.match(css, /body\[data-view="documents"\]/);
+  assert.match(css, /body\[data-view="audit"\]/);
+  assert.match(css, /body\[data-view="integrations"\]/);
+  assert.match(css, /body\[data-view="notifications"\]/);
+  assert.match(css, /body\[data-view="tasks"\]/);
+  assert.match(css, /body\[data-view="gas"\]/);
+  assert.match(css, /body\[data-view="condominiums"\]/);
+  assert.match(css, /body\[data-view="team"\]/);
+  assert.match(css, /body\[data-view="residents"\]/);
+});
+
+test('chamados possui busca, prioridade, status, contador e ocultação forte', () => {
+  assert.match(js, /dataset\.viewFilter\s*=\s*'calls'/);
+  assert.match(js, /dataset\.filterSearch\s*=\s*'calls'/);
+  assert.match(js, /dataset\.filterPriority\s*=\s*'calls'/);
+  assert.match(js, /dataset\.filterStatus\s*=\s*'calls'/);
   assert.match(js, /function filterCalls\(\)/);
-  assert.match(css, /\.view-filterbar/);
+  assert.match(js, /classList\.toggle\('view-filter-hidden'/);
+  assert.match(css, /\.view-filter-hidden\{display:none!important\}/);
 });
 
-test('base de dados possui busca local e grid responsivo', () => {
-  assert.match(js, /data\.viewFilter = 'files'/);
+test('base de dados possui busca local, plural correto e grid responsivo', () => {
+  assert.match(js, /dataset\.viewFilter\s*=\s*'files'/);
   assert.match(js, /function filterFiles\(\)/);
+  assert.match(js, /'1 item'/);
+  assert.match(js, /`\$\{visible\} itens`/);
   assert.match(css, /body\[data-view="files"\] \.file-grid/);
   assert.match(css, /repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(css, /@media\(max-width:350px\)[\s\S]*body\[data-view="files"\] \.file-grid\{grid-template-columns:1fr!important\}/);
 });
 
-test('camada cobre os quatro padrões estruturais restantes', () => {
+test('camada cobre tabela, grid, feed, filtros e módulos legados', () => {
   assert.match(css, /body\[data-view="assemblies"\] \.panel-body>\.card/);
   assert.match(css, /body\[data-view="integrations"\] \.integration-grid/);
   assert.match(css, /body\[data-view="audit"\] \.panel-head \.row-actions/);
