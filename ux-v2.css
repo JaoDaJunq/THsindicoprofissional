@@ -24,6 +24,7 @@
 .ux-skeleton{display:grid;gap:10px;padding:4px 0}.ux-skeleton span{height:13px;width:var(--w,80%);border-radius:999px;background:linear-gradient(90deg,#eef0f4 25%,#f7f8fa 45%,#eef0f4 65%);background-size:220% 100%;animation:uxShimmer 1.35s linear infinite}
 @keyframes uxShimmer{to{background-position:-220% 0}}
 .ux-state{min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;border:1px dashed #dfe3e9;border-radius:14px;background:#fbfcfd;color:#6f7888}
+.ux-state-empty{background:linear-gradient(180deg,#fcfdff,#f8f9fb)}
 .ux-state-icon{width:44px;height:44px;display:grid;place-items:center;margin-bottom:11px;border-radius:13px;background:#f0f2f7;color:#687284}.ux-state-icon .ux-icon{width:20px;height:20px}
 .ux-state strong{color:#2d3440;font-size:14px}.ux-state p{max-width:360px;margin:5px 0 12px;font-size:11px;line-height:1.5}.ux-state-error{border-color:#f0d5d5;background:#fffafa}.ux-state-error .ux-state-icon{background:#fff0f0;color:#c94343;font-weight:900}
 
