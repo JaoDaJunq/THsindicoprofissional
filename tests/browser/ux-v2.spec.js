@@ -32,6 +32,24 @@ test('mobile hides redundant condominium field and search filters rows', async (
   await expect(page.locator('.ux-filter-count')).toHaveText('1 resultado');
 });
 
+test('mobile dock and more sheet inherit registry svg icons', async ({page}) => {
+  await open(page,{width:390,height:844});
+  await expect(page.locator('.mobile-bottom-dock')).toBeVisible();
+  await expect.poll(async () => page.locator('.mobile-bottom-dock .mobile-dock-icon svg.ux-icon').count()).toBeGreaterThanOrEqual(4);
+  await page.locator('.mobile-dock-more').click();
+  await expect(page.locator('.mobile-more-sheet')).toBeVisible();
+  await expect.poll(async () => page.locator('.mobile-more-sheet .mobile-more-icon svg.ux-icon').count()).toBeGreaterThan(0);
+  await expect(page.locator('.mobile-more-sheet .mobile-more-icon').first()).not.toHaveText('•');
+});
+
+test('hamburger complete navigation also uses registry icons', async ({page}) => {
+  await open(page,{width:390,height:844});
+  await expect(page.locator('.mobile-nav-toggle')).toBeVisible();
+  await page.locator('.mobile-nav-toggle').click();
+  await expect(page.locator('.mobile-more-sheet[data-mode="all"]')).toBeVisible();
+  await expect.poll(async () => page.locator('.mobile-more-sheet .mobile-more-icon svg.ux-icon').count()).toBeGreaterThanOrEqual(5);
+});
+
 test('sidebar rendering stays stable after unrelated DOM mutations', async ({page}) => {
   await open(page);
   const before = await page.locator('.sidebar .nav a').count();
