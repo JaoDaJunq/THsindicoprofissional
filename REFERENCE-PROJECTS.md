@@ -22,6 +22,43 @@ License: BSD-2-Clause
 Use for: multi-tenant Supabase/RBAC patterns, tenant isolation, role modelling, RLS concepts.
 Policy: strong technical reference for security; adapt to our condominium_members model instead of transplanting schema blindly.
 
+## Visual system / dashboard UX
+
+### tabler/tabler
+License: MIT
+Use for: dense but readable admin dashboards, sidebar hierarchy, table spacing, cards, badges, empty states and responsive dashboard proportions.
+Policy: visual/product reference. Prefer our own CSS implementation rather than importing the framework into the current vanilla application.
+
+### TailAdmin/free-react-tailwind-admin-dashboard
+License: MIT
+Use for: modern dashboard hierarchy, KPI cards, header actions, responsive sidebar/drawer behavior and table/card composition.
+Policy: visual/product reference. Do not introduce React or Tailwind only to reproduce a visual pattern that can be implemented in the current stack.
+
+### tremorlabs/tremor
+License: Apache-2.0
+Use for: analytics hierarchy, KPI/chart composition and report/dashboard information density.
+Policy: concepts primarily. Do not add charts without real data or a clear operational decision supported by the chart.
+
+### saadeghi/daisyui
+License: MIT
+Use for: mobile dock/bottom-navigation ergonomics, safe-area handling and compact responsive component ideas.
+Policy: visual/product reference. The Gestão Condominial mobile dock is an original implementation generated from the existing sidebar routes rather than copied component code.
+
+### Public curved/blob bottom-navigation demos
+License: varies / sometimes unspecified
+Use for: motion and active-tab shape inspiration only.
+Policy: CONCEPTS ONLY when a clear permissive license is absent. Reimplement interactions from scratch and keep reduced-motion support.
+
+For the current visual-refresh branch, preferred concepts are:
+- desktop sidebar remains compact and secondary to the content;
+- KPI cards emphasize the number first, label second;
+- tables remain tables on wide screens and become readable cards on phones;
+- mobile uses a persistent bottom dock for high-frequency routes plus a complete drawer for the long tail;
+- active mobile navigation gets a restrained pill/blob treatment and small vertical lift;
+- visual effects must never hide current route state or reduce accessibility;
+- no decorative charts with fake data;
+- responsive behavior is verified in Chrome at 1440px, 390px and 320px widths.
+
 ## Maintenance
 
 ### Grashjs/cmms (Atlas CMMS)
@@ -90,4 +127,5 @@ Policy: use Playwright itself or equivalent patterns when automated browser test
 8. Finance: Actual Budget + MicroRealEstate
 9. Assemblies/voting: next-supabase-vote concepts + condominium-specific rules
 10. Audit: Supa Audit concepts + native Postgres triggers/history
-11. Final E2E testing: Playwright
+11. Visual dashboard system: Tabler + TailAdmin + Tremor concepts; daisyUI for mobile dock ergonomics
+12. Final E2E testing: Playwright
