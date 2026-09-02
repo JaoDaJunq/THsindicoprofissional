@@ -1,0 +1,7 @@
+.metric .icon.ux-metric-icon{display:grid!important;place-items:center!important;font-size:0!important}
+.metric .icon.ux-metric-icon .ux-icon{width:19px;height:19px}
+.metric .icon.ux-metric-icon.blue{color:#4961f2!important}
+.metric .icon.ux-metric-icon.orange{color:#b46816!important}
+.metric .icon.ux-metric-icon.red{color:#c94343!important}
+.metric .icon.ux-metric-icon.green{color:#177a57!important}
+@media(max-width:700px){.metric .icon.ux-metric-icon .ux-icon{width:18px;height:18px}}
