@@ -9,6 +9,8 @@ on:
       - '**/*.css'
       - 'index.html'
       - 'visual-system.js'
+      - 'dashboard-insights.js'
+      - 'remaining-views.js'
       - 'tests/browser/**'
       - '.github/workflows/visual-regression.yml'
   pull_request:
@@ -18,6 +20,8 @@ on:
       - '**/*.css'
       - 'index.html'
       - 'visual-system.js'
+      - 'dashboard-insights.js'
+      - 'remaining-views.js'
       - 'tests/browser/**'
       - '.github/workflows/visual-regression.yml'
   workflow_dispatch:
@@ -49,7 +53,7 @@ jobs:
       - name: Run responsive browser tests
         env:
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
-        run: npx playwright test tests/browser/visual.spec.js --config=tests/browser/playwright.config.js --reporter=line
+        run: npx playwright test tests/browser/*.spec.js --config=tests/browser/playwright.config.js --reporter=line
 
       - name: Upload visual evidence
         if: always()
