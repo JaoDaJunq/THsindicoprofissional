@@ -109,6 +109,7 @@ body[data-view="announcements"] .panel-body>.card{
   border-radius:13px!important;
   background:#fff!important;
   box-shadow:var(--ui-shadow-xs)!important;
+  text-align:left!important;
 }
 body[data-view="assemblies"] .panel-body>.card::before,
 body[data-view="announcements"] .panel-body>.card::before{
@@ -171,7 +172,7 @@ body[data-view="condominiums"] .condo-card::after{content:"";position:absolute;r
   .view-filterbar .view-search{grid-column:1/-1;min-width:0;width:100%}
   .view-filterbar input,.view-filterbar select{width:100%;font-size:16px}
   .view-filter-count{grid-column:1/-1;margin-left:0;text-align:right}
-  body[data-view="calls"] .metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  body[data-view="calls"] .metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important}
   body[data-view="files"] .file-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
   body[data-view="files"] .file-card{min-height:128px!important;padding:13px!important}
   body[data-view="audit"] .panel-head .row-actions,
