@@ -9,6 +9,7 @@ const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const design = fs.readFileSync(path.join(root, 'design-system.css'), 'utf8');
 const polish = fs.readFileSync(path.join(root, 'design-system-polish.css'), 'utf8');
+const dock = fs.readFileSync(path.join(root, 'mobile-dock.css'), 'utf8');
 const accessibility = fs.readFileSync(path.join(root, 'design-system-accessibility.css'), 'utf8');
 const visual = fs.readFileSync(path.join(root, 'visual-system.js'), 'utf8');
 const legacyMobile = fs.readFileSync(path.join(root, 'mobile-fixes.css'), 'utf8');
@@ -34,7 +35,8 @@ function mediaBlock(maxWidth) {
 test('camadas visuais sobrescrevem o legado na ordem correta', () => {
   assert.ok(positionOf(html, './design-system.css') > positionOf(html, './mobile-fixes.css'));
   assert.ok(positionOf(html, './design-system-polish.css') > positionOf(html, './design-system.css'));
-  assert.ok(positionOf(html, './design-system-accessibility.css') > positionOf(html, './design-system-polish.css'));
+  assert.ok(positionOf(html, './mobile-dock.css') > positionOf(html, './design-system-polish.css'));
+  assert.ok(positionOf(html, './design-system-accessibility.css') > positionOf(html, './mobile-dock.css'));
   const localStyles = [...html.matchAll(/<link[^>]+href=["']\.\/([^"']+\.css)["']/g)].map(match => match[1]);
   assert.equal(localStyles.at(-1), 'design-system-accessibility.css');
 });
@@ -44,7 +46,7 @@ test('visual-system executa depois dos roteadores de estabilidade e antes do PWA
   assert.ok(positionOf(html, './visual-system.js') < positionOf(html, './pwa.js'));
 });
 
-test('mobile usa navegação off-canvas e sobrescreve a sidebar horizontal antiga', () => {
+test('mobile usa drawer off-canvas como navegação completa', () => {
   assert.match(legacyMobile, /\.sidebar\{[\s\S]*position:sticky!important/);
   const tablet = mediaBlock(960);
   assert.match(tablet, /\.sidebar\{[\s\S]*position:fixed!important/);
@@ -53,6 +55,19 @@ test('mobile usa navegação off-canvas e sobrescreve a sidebar horizontal antig
   assert.match(visual, /mobile-nav-toggle/);
   assert.match(visual, /mobile-nav-backdrop/);
   assert.match(visual, /const NAV_BREAKPOINT = 960/);
+});
+
+test('dock mobile deriva as rotas da sidebar em vez de duplicar configuração', () => {
+  assert.match(visual, /function dockSource\(\)/);
+  assert.match(visual, /document\.querySelectorAll\('\.sidebar \.nav'\)/);
+  assert.match(visual, /function preferredDockLinks\(source\)/);
+  assert.match(visual, /\['Resumo', 'Manutenções', 'Chamados', 'Documentos'\]/);
+  assert.match(visual, /\['Visão geral', 'Condomínios', 'Manutenções', 'Chamados'\]/);
+  assert.match(visual, /mobile-dock-more/);
+  assert.match(visual, /syncBottomDockState/);
+  assert.match(dock, /grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/);
+  assert.match(dock, /bottom:calc\(8px \+ env\(safe-area-inset-bottom\)\)/);
+  assert.match(dock, /\.mobile-dock-item\.active::before/);
 });
 
 test('eventos globais do menu são vinculados uma única vez', () => {
@@ -100,6 +115,7 @@ test('conteúdo desktop possui limite e sidebar não cresce com o viewport', () 
 test('design respeita foco, redução de movimento e alvos confortáveis', () => {
   assert.match(design, /:focus-visible/);
   assert.match(design, /prefers-reduced-motion:reduce/);
+  assert.match(dock, /prefers-reduced-motion:reduce/);
   assert.match(accessibility, /prefers-reduced-motion: reduce/);
   assert.match(accessibility, /\.sidebar[\s\S]*transition:none!important/);
   assert.match(design, /min-height:42px!important/);
