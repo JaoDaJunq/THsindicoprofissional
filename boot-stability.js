@@ -43,12 +43,16 @@
   }) : null;
   observer?.observe(app, { childList: true, subtree: true, attributes: false, characterData: false });
 
-  function snapshotReady() {
+  function accessSnapshot() {
     try {
-      return Boolean(window.CondoAccess?.getSnapshot?.()?.loadedAt);
+      return window.CondoAccess?.getSnapshot?.() || null;
     } catch (_) {
-      return false;
+      return null;
     }
+  }
+
+  function snapshotReady() {
+    return Boolean(accessSnapshot()?.loadedAt);
   }
 
   function routeReady() {
@@ -65,6 +69,28 @@
     }
   }
 
+  function screenMatchesAccess() {
+    const snap = accessSnapshot();
+    if (!snap?.loadedAt || !app) return false;
+
+    // No authenticated session: the login screen is authoritative.
+    if (!snap.user) return Boolean(app.querySelector('#cloud-login, .auth-page'));
+
+    // Auth can lag a few milliseconds behind FoundationAccess. If the access
+    // snapshot already has a user, never reveal a transient login form.
+    if (app.querySelector('#cloud-login')) return false;
+
+    const memberships = Array.isArray(snap.memberships) ? snap.memberships : [];
+    if (memberships.length && app.querySelector('.onboarding-page, .cloud-onboarding')) return false;
+
+    try {
+      if (window.CondoAccess?.isResidentOnly?.() && app.querySelector('.app-shell') && !app.querySelector('.resident-app')) return false;
+      if (window.CondoAccess?.hasAnyManagementRole?.() && app.querySelector('.resident-app')) return false;
+    } catch (_) {}
+
+    return app.childElementCount > 0;
+  }
+
   function reveal() {
     if (state.released) return;
     state.released = true;
@@ -79,6 +105,13 @@
     window.dispatchEvent(new CustomEvent('gc-boot-ready'));
   }
 
+  function retryFinalRoute() {
+    if (state.released) return;
+    state.releaseScheduled = false;
+    state.lastMutationAt = Date.now();
+    setTimeout(maybeRelease, 55);
+  }
+
   function waitForQuietAndReveal() {
     if (state.released || state.releaseScheduled) return;
     state.releaseScheduled = true;
@@ -86,10 +119,19 @@
     const started = Date.now();
     const check = () => {
       if (state.released) return;
+
+      if (!screenMatchesAccess()) {
+        retryFinalRoute();
+        return;
+      }
+
       const quietFor = Date.now() - state.lastMutationAt;
       const waited = Date.now() - started;
-      if (quietFor >= 90 || waited >= 450) {
-        requestAnimationFrame(() => requestAnimationFrame(reveal));
+      if (quietFor >= 110 || waited >= 520) {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          if (!screenMatchesAccess()) return retryFinalRoute();
+          reveal();
+        }));
         return;
       }
       setTimeout(check, 35);
@@ -98,7 +140,7 @@
   }
 
   function maybeRelease() {
-    if (state.released) return;
+    if (state.released || state.releaseScheduled) return;
     state.accessReady = state.accessReady || snapshotReady();
     if (!state.scriptsReady || !state.accessReady || !routeReady()) return;
 
@@ -145,6 +187,7 @@
 
   window.__GC_BOOT_STABILITY__ = Object.freeze({
     getState: () => ({ ...state }),
-    maybeRelease
+    maybeRelease,
+    screenMatchesAccess
   });
 })();
