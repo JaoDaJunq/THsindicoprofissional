@@ -73,7 +73,7 @@
       priority.setAttribute('aria-label', 'Filtrar por prioridade');
       priority.dataset.filterPriority = 'calls';
       priority.append(
-        option('', 'Todas as prioridades'),
+        option('', 'Prioridade: todas'),
         option('urgente', 'Urgente'),
         option('alta', 'Alta'),
         option('normal', 'Normal'),
@@ -83,7 +83,7 @@
       const status = document.createElement('select');
       status.setAttribute('aria-label', 'Filtrar por status');
       status.dataset.filterStatus = 'calls';
-      status.append(option('', 'Todos os status'));
+      status.append(option('', 'Status: todos'));
 
       const count = document.createElement('span');
       count.className = 'view-filter-count';
