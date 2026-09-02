@@ -23,6 +23,11 @@ test.describe('remaining management views', () => {
     await expect(page.locator('[data-view-filter="calls"]')).toBeVisible();
     await expect(page.locator('.mobile-bottom-dock')).toBeVisible();
 
+    const metricColumns = await page.locator('.metrics').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+    expect(metricColumns).toBe(3);
+    await expect(page.locator('[data-filter-priority="calls"] option').first()).toHaveText('Prioridade: todas');
+    await expect(page.locator('[data-filter-status="calls"] option').first()).toHaveText('Status: todos');
+
     const rows = page.locator('tbody tr');
     await expect(rows).toHaveCount(4);
     await expect(page.locator('[data-filter-count="calls"]')).toContainText('4 chamados');
@@ -78,6 +83,7 @@ test.describe('remaining management views', () => {
     await expect(cards).toHaveCount(3);
     const width = await cards.first().evaluate(el => el.getBoundingClientRect().width);
     expect(width).toBeLessThanOrEqual(390);
+    await expect(cards.first()).toHaveCSS('text-align', 'left');
     await noHorizontalOverflow(page);
     await page.screenshot({ path: 'test-results/mobile-assemblies.png', fullPage: true });
   });
