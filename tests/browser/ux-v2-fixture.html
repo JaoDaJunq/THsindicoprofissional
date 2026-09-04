@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../../mobile-more-sheet.css">
   <link rel="stylesheet" href="../../ux-v2.css">
   <link rel="stylesheet" href="../../ux-v2-icons.css">
+  <link rel="stylesheet" href="../../ux-command-center.css">
   <link rel="stylesheet" href="../../design-system-accessibility.css">
 </head>
 <body data-view="tasks">
@@ -20,7 +21,7 @@
     </aside>
     <main class="main">
       <div class="mobile-top"><div class="brand"><div class="brand-mark">SG</div><div><strong>Gestão Condominial</strong><span>Portal do Síndico</span></div></div></div>
-      <header class="topbar"><div><div class="eyebrow">Operação</div><h1>Tarefas</h1><div class="muted small">Pendências do condomínio.</div></div></header>
+      <header class="topbar"><div><div class="eyebrow">Operação</div><h1>Tarefas</h1><div class="muted small">Pendências do condomínio.</div></div><div class="top-actions"></div></header>
       <section class="metrics">
         <article class="metric"><div class="metric-top"><div><span>Chamados abertos</span><strong>4</strong></div><div class="icon orange">🎫</div></div></article>
         <article class="metric"><div class="metric-top"><div><span>Manutenções em 7 dias</span><strong>2</strong></div><div class="icon red">⚒</div></div></article>
@@ -36,7 +37,20 @@
   </div>
 </div>
 <script>
-let data={condos:[{id:'c1',name:'Ed. Ametista'},{id:'c2',name:'Monte Belo'}]};
+let data={
+  condos:[{id:'c1',name:'Ed. Ametista'},{id:'c2',name:'Monte Belo'}],
+  tasks:[{id:'t1',condoId:'c1',title:'Revisar portão',description:'Portão da garagem',responsible:'Síndico',status:'pending'}],
+  maintenances:[{id:'m1',condoId:'c1',title:'Teste do Nobreak',category:'Elétrica',responsible:'Thi'}],
+  calls:[{id:'r1',condoId:'c1',title:'Vazamento no hall',description:'Segundo andar',category:'Hidráulica'}],
+  documents:[{id:'d1',condoId:'c1',title:'AVCB',category:'Licenças'}],
+  files:[],assemblies:[]
+};
+window.__created=[];
+window.openTaskModal=cid=>window.__created.push(['task',cid]);
+window.openMaintenanceModal=cid=>window.__created.push(['maintenance',cid]);
+window.openCallModal=cid=>window.__created.push(['call',cid]);
+window.openDocumentModal=cid=>window.__created.push(['document',cid]);
+window.openAnnouncementModal=cid=>window.__created.push(['announcement',cid]);
 window.CondoAccess={
   getSnapshot:()=>({memberships:[{condominium_id:'c1'},{condominium_id:'c2'}]}),
   canAccessCondo:()=>true,
@@ -52,5 +66,6 @@ if(!location.hash) location.hash='#/condominio/c1/tarefas';
 <script src="../../navigation-registry.js"></script>
 <script src="../../ux-v2.js"></script>
 <script src="../../ux-v2-icons.js"></script>
+<script src="../../ux-command-center.js"></script>
 </body>
 </html>
