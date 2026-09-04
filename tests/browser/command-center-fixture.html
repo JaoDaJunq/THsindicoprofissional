@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../../design-system.css">
+<link rel="stylesheet" href="../../mobile-dock.css">
+<link rel="stylesheet" href="../../ux-v2.css">
+<link rel="stylesheet" href="../../ux-command-center.css">
+<link rel="stylesheet" href="../../design-system-accessibility.css">
+</head>
+<body>
+<div id="app"><div class="app-shell"><aside class="sidebar"><div class="brand"><div class="brand-mark">SG</div><div><strong>Gestão Condominial</strong><span>Portal do Síndico</span></div></div><div class="sidebar-footer"><strong>Teste</strong></div></aside><main class="main"><div class="mobile-top"><div class="brand"><div class="brand-mark">SG</div><div><strong>Ed. Ametista</strong><span>Workspace do condomínio</span></div></div></div><header class="topbar"><div><div class="eyebrow">Operação</div><h1>Tarefas</h1></div><div class="top-actions"></div></header><article class="panel"><div class="panel-body">Conteúdo</div></article></main></div></div>
+<script>
+let data={
+ user:{name:'Teste',initials:'TG'},
+ condos:[{id:'c1',name:'Ed. Ametista'},{id:'c2',name:'Monte Belo'},{id:'secret',name:'Condomínio Secreto'}],
+ tasks:[{id:'t1',condoId:'c1',title:'Revisar portão',description:'Portão da garagem',status:'pending'},{id:'t2',condoId:'secret',title:'Tarefa secreta',status:'pending'}],
+ maintenances:[{id:'m1',condoId:'c1',title:'Teste de iluminação',category:'Elétrica'}],
+ calls:[{id:'r1',condoId:'c1',title:'Vazamento corredor',category:'Hidráulica'}],
+ documents:[{id:'d1',condoId:'c1',title:'AVCB',category:'Licenças'}],files:[],assemblies:[]
+};
+window.CondoAccess={
+ canAccessCondo:id=>id==='c1'||id==='c2',
+ getSnapshot:()=>({memberships:[{condominium_id:'c1'},{condominium_id:'c2'}]}),
+ can:(cap,cid)=>cid!=='secret'&&['operations.review','operations.manage','documents.manage','communications.manage','assemblies.manage'].includes(cap)
+};
+window.openTaskModal=cid=>window.__created=['task',cid];
+window.openMaintenanceModal=cid=>window.__created=['maintenance',cid];
+window.openCallModal=cid=>window.__created=['call',cid];
+window.openDocumentModal=cid=>window.__created=['document',cid];
+window.openAnnouncementModal=cid=>window.__created=['announcement',cid];
+window.route=()=>{};
+if(!location.hash)location.hash='#/condominio/c1/tarefas';
+</script>
+<script src="../../visual-system.js"></script>
+<script src="../../navigation-registry.js"></script>
+<script src="../../ux-v2.js"></script>
+<script src="../../ux-command-center.js"></script>
+</body></html>
