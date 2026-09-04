@@ -14,13 +14,15 @@ test('resident desktop keeps full sidebar with consistent svg icons', async ({pa
   await expect(page.locator('.resident-nav a.active')).toContainText('Início');
 });
 
-test('resident mobile uses app dock and hides legacy sidebar', async ({page}) => {
+test('resident mobile uses app dock and surfaces unread notifications on More', async ({page}) => {
   await open(page);
   await expect(page.locator('.resident-sidebar')).toBeHidden();
   await expect(page.locator('.resident-mobile-dock')).toBeVisible();
   await expect(page.locator('.resident-mobile-dock .resident-dock-item')).toHaveCount(5);
   await expect(page.locator('.resident-v2-mobile-brand')).toBeVisible();
   await expect(page.locator('.resident-mobile-dock .resident-dock-icon svg.ux-icon')).toHaveCount(4);
+  await expect(page.locator('.resident-dock-more > b')).toHaveText('3');
+  await expect(page.locator('.resident-dock-more')).toHaveAttribute('aria-label', /3 notificações não lidas/);
 });
 
 test('resident More sheet contains calendar unit and notifications', async ({page}) => {
