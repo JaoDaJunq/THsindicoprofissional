@@ -15,7 +15,7 @@
 
   function parseLabel(link) {
     const clone = link.cloneNode(true);
-    clone.querySelectorAll('svg,.ux-icon').forEach(node => node.remove());
+    clone.querySelectorAll('svg,.ux-icon,.resident-v2-badge').forEach(node => node.remove());
     return String(clone.textContent || '')
       .replace(/^[⌂📢🎫📅📄🏠🔔]\s*/u, '')
       .replace(/\s+/g, ' ')
@@ -30,8 +30,11 @@
   function links() {
     return [...document.querySelectorAll('.resident-nav a')].map(link => {
       const href = link.getAttribute('href') || '#/morador/home';
-      const label = parseLabel(link);
-      return { link, href, label: label.replace(/\s*\(\d+\)\s*$/, ''), count: notificationCount(label), active: link.classList.contains('active'), icon: iconFor(href) };
+      const rawLabel = parseLabel(link);
+      const storedCount = Number(link.dataset.notificationCount || link.querySelector('.resident-v2-badge')?.textContent || 0);
+      const count = storedCount || notificationCount(rawLabel);
+      const label = rawLabel.replace(/\s*\(\d+\)\s*$/, '').trim();
+      return { link, href, label, count, active: link.classList.contains('active'), icon: iconFor(href) };
     });
   }
 
@@ -39,6 +42,7 @@
     links().forEach(item => {
       if (item.link.dataset.residentV2 === 'true') return;
       item.link.dataset.residentV2 = 'true';
+      item.link.dataset.notificationCount = String(item.count || 0);
       item.link.innerHTML = `<span class="resident-v2-nav-icon">${item.icon}</span><span class="resident-v2-nav-label"></span>${item.count ? `<span class="resident-v2-badge">${item.count > 99 ? '99+' : item.count}</span>` : ''}`;
       item.link.querySelector('.resident-v2-nav-label').textContent = item.label;
     });
