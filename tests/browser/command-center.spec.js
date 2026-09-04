@@ -3,7 +3,8 @@ const { test, expect } = require('@playwright/test');
 async function open(page, viewport={width:1440,height:900}) {
   await page.setViewportSize(viewport);
   await page.goto('/tests/browser/command-center-fixture.html#/condominio/c1/tarefas');
-  await page.waitForSelector('.ux-command-trigger');
+  const trigger = viewport.width <= 700 ? '.ux-command-mobile' : '.ux-command-trigger';
+  await page.waitForSelector(trigger, { state:'visible' });
 }
 
 test('Ctrl K opens global search and filters visible data only', async ({page}) => {
