@@ -88,7 +88,9 @@
     if (!all.length) return;
     const preferred = ['home','announcements','calls','documents'];
     const picked = preferred.map(key => all.find(item => item.href.endsWith('/' + key))).filter(Boolean);
-    const signature = picked.map(item => `${item.href}:${item.active}:${item.count}`).join('|') + `|more:${all.some(item => item.active && !picked.includes(item))}`;
+    const unread = all.find(item => item.href.endsWith('/notifications'))?.count || 0;
+    const moreActive = all.some(item => item.active && !picked.includes(item));
+    const signature = picked.map(item => `${item.href}:${item.active}:${item.count}`).join('|') + `|more:${moreActive}|unread:${unread}`;
     let dock = document.querySelector('.resident-mobile-dock');
     if (dock?.dataset.signature === signature) return;
     dock?.remove();
@@ -105,12 +107,11 @@
       a.querySelector('.resident-dock-label').textContent = item.label.replace('Meus ', '');
       dock.appendChild(a);
     });
-    const moreActive = all.some(item => item.active && !picked.includes(item));
     const more = document.createElement('button');
     more.type = 'button';
     more.className = `resident-dock-item resident-dock-more${moreActive ? ' active' : ''}`;
-    more.setAttribute('aria-label','Abrir mais opções');
-    more.innerHTML = `<span class="resident-dock-icon"><i></i><i></i><i></i></span><span class="resident-dock-label">Mais</span>`;
+    more.setAttribute('aria-label', unread ? `Abrir mais opções, ${unread} notificação${unread === 1 ? '' : 'ões'} não lida${unread === 1 ? '' : 's'}` : 'Abrir mais opções');
+    more.innerHTML = `<span class="resident-dock-icon"><i></i><i></i><i></i></span><span class="resident-dock-label">Mais</span>${unread ? `<b>${unread > 9 ? '9+' : unread}</b>` : ''}`;
     more.addEventListener('click', openMore);
     dock.appendChild(more);
     document.body.appendChild(dock);
