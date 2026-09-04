@@ -110,7 +110,8 @@
     const more = document.createElement('button');
     more.type = 'button';
     more.className = `resident-dock-item resident-dock-more${moreActive ? ' active' : ''}`;
-    more.setAttribute('aria-label', unread ? `Abrir mais opções, ${unread} notificação${unread === 1 ? '' : 'ões'} não lida${unread === 1 ? '' : 's'}` : 'Abrir mais opções');
+    const unreadLabel = unread === 1 ? '1 notificação não lida' : `${unread} notificações não lidas`;
+    more.setAttribute('aria-label', unread ? `Abrir mais opções, ${unreadLabel}` : 'Abrir mais opções');
     more.innerHTML = `<span class="resident-dock-icon"><i></i><i></i><i></i></span><span class="resident-dock-label">Mais</span>${unread ? `<b>${unread > 9 ? '9+' : unread}</b>` : ''}`;
     more.addEventListener('click', openMore);
     dock.appendChild(more);
