@@ -7,12 +7,15 @@
   let contextFrame = 0;
 
   function linkParts(link) {
-    const icon = link.querySelector('span')?.textContent.trim() || '•';
+    const registryIcon = link.querySelector('.ux-nav-icon');
+    const registryLabel = link.querySelector('.ux-nav-label');
+    const legacySpan = link.querySelector('span');
+    const legacyIcon = legacySpan?.textContent.trim() || '•';
     const raw = link.textContent.trim();
     return {
       href: link.getAttribute('href') || '#/',
-      icon,
-      label: raw.startsWith(icon) ? raw.slice(icon.length).trim() : raw,
+      icon: registryIcon?.innerHTML || legacyIcon,
+      label: registryLabel?.textContent.trim() || (raw.startsWith(legacyIcon) ? raw.slice(legacyIcon.length).trim() : raw),
       active: link.classList.contains('active')
     };
   }
