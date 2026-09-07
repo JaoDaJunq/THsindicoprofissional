@@ -1,0 +1,44 @@
+/* UX V2: centralized navigation, context, search and states. */
+.ux-icon{width:18px;height:18px;display:block;flex:0 0 18px}
+.ux-nav-icon{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;color:inherit}
+.ux-nav-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sidebar .nav a{display:grid!important;grid-template-columns:30px minmax(0,1fr)!important;align-items:center!important;gap:8px!important}
+.sidebar .nav a.active .ux-nav-icon{background:rgba(108,124,255,.14);color:#cbd2ff}
+
+.ux-contextbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:-6px 0 18px;padding-bottom:14px;border-bottom:1px solid var(--ui-line,#e2e6ec)}
+.ux-breadcrumb{display:flex;align-items:center;gap:7px;min-width:0;color:#8a93a2;font-size:11px;font-weight:650}
+.ux-breadcrumb a{color:#687284;text-decoration:none}.ux-breadcrumb a:hover{color:#4054d4}
+.ux-breadcrumb strong,.ux-breadcrumb em{color:#303744;font-style:normal;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ux-breadcrumb>span{display:grid;place-items:center;color:#b0b7c2}.ux-breadcrumb>span .ux-icon{width:12px;height:12px}
+.ux-condo-switch{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.ux-condo-switch>span{font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:#8a93a2;font-weight:850}
+.ux-condo-switch select{min-height:38px;max-width:240px;padding:7px 30px 7px 10px;border:1px solid var(--ui-line,#e2e6ec);border-radius:10px;background:#fff;color:#303744;font-size:12px;font-weight:750}
+.ux-contextbar.is-workspace{margin-top:-2px;padding:10px 12px 12px;border:1px solid #e3e7ff;border-radius:14px;background:linear-gradient(135deg,#fafbff,#f4f6ff)}
+
+.ux-list-tools,.view-filterbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 12px;padding:9px;border:1px solid var(--ui-line,#e2e6ec);border-radius:12px;background:#fafbfc}
+.ux-search-field{display:flex;align-items:center;gap:8px;flex:1 1 260px;min-width:180px;min-height:40px;padding:0 11px;border:1px solid #dfe3ea;border-radius:10px;background:#fff;color:#8a93a2}
+.ux-search-field .ux-icon{width:16px;height:16px}.ux-search-field input{width:100%;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;padding:0!important;min-height:auto!important;font-size:13px!important;color:#303744}
+.ux-filter-count,.view-filter-count{margin-left:auto;color:#818998;font-size:10px;font-weight:750;white-space:nowrap}
+.ux-filter-hidden{display:none!important}
+
+.ux-skeleton{display:grid;gap:10px;padding:4px 0}.ux-skeleton span{height:13px;width:var(--w,80%);border-radius:999px;background:linear-gradient(90deg,#eef0f4 25%,#f7f8fa 45%,#eef0f4 65%);background-size:220% 100%;animation:uxShimmer 1.35s linear infinite}
+@keyframes uxShimmer{to{background-position:-220% 0}}
+.ux-state{min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;border:1px dashed #dfe3e9;border-radius:14px;background:#fbfcfd;color:#6f7888}
+.ux-state-empty{background:linear-gradient(180deg,#fcfdff,#f8f9fb)}
+.ux-state-icon{width:44px;height:44px;display:grid;place-items:center;margin-bottom:11px;border-radius:13px;background:#f0f2f7;color:#687284}.ux-state-icon .ux-icon{width:20px;height:20px}
+.ux-state strong{color:#2d3440;font-size:14px}.ux-state p{max-width:360px;margin:5px 0 12px;font-size:11px;line-height:1.5}.ux-state-error{border-color:#f0d5d5;background:#fffafa}.ux-state-error .ux-state-icon{background:#fff0f0;color:#c94343;font-weight:900}
+.ux-loading-legacy{min-height:110px!important;display:grid!important;align-content:center!important;padding:18px!important;background:#fbfcfd!important;border-radius:12px!important}
+.ux-empty-enhanced{min-height:130px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;text-align:center!important;padding:20px!important;border:1px dashed #dfe3e9!important;border-radius:12px!important;background:#fbfcfd!important;color:#788190!important}
+.ux-empty-enhanced .ux-empty-icon{width:38px;height:38px;display:grid;place-items:center;margin-bottom:4px;border-radius:11px;background:#f0f2f7;color:#778195}.ux-empty-enhanced .ux-empty-icon .ux-icon{width:18px;height:18px}.ux-empty-enhanced strong{color:#303744;font-size:13px}.ux-empty-enhanced small{max-width:320px;font-size:10px;line-height:1.45;color:#8a93a2}
+
+.ux-confirm-overlay{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:18px;background:rgba(10,15,25,.5);backdrop-filter:blur(5px)}
+.ux-confirm-card{width:min(420px,100%);padding:22px;border:1px solid rgba(255,255,255,.8);border-radius:18px;background:#fff;box-shadow:0 24px 70px rgba(15,23,42,.2);text-align:center}.ux-confirm-icon{width:44px;height:44px;display:grid;place-items:center;margin:0 auto 12px;border-radius:13px;background:#eef1ff;color:#4054d4;font-weight:900}.ux-confirm-icon.danger{background:#fff0f0;color:#c94343}.ux-confirm-card h2{margin:0 0 7px}.ux-confirm-card p{margin:0;color:#737c8b;font-size:12px;line-height:1.55}.ux-confirm-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}.btn.ux-danger{background:#c94343!important;border-color:#c94343!important;color:#fff!important}
+
+@media(max-width:700px){
+  .ux-contextbar{margin:0 0 14px;padding:8px 0 12px;align-items:stretch;flex-direction:column;gap:9px}.ux-contextbar.is-workspace{margin:0 0 14px;padding:10px}.ux-breadcrumb{font-size:10px;overflow:hidden}.ux-breadcrumb a:first-child{display:none}.ux-breadcrumb a:first-child+span{display:none}.ux-condo-switch{width:100%;justify-content:space-between}.ux-condo-switch select{flex:1;max-width:none;font-size:13px}
+  .ux-list-tools,.view-filterbar{display:grid;grid-template-columns:1fr;margin-bottom:10px;padding:8px}.ux-search-field{min-width:0;width:100%}.ux-filter-count,.view-filter-count{margin:0;padding:0 3px;text-align:right}
+  .ux-hide-condo-column .ux-redundant-condo{display:none!important}
+  .ux-confirm-overlay{place-items:end;padding:0}.ux-confirm-card{width:100%;border-radius:20px 20px 0 0;padding:22px 16px max(18px,env(safe-area-inset-bottom))}.ux-confirm-actions{grid-template-columns:1fr}
+}
+
+@media(prefers-reduced-motion:reduce){.ux-skeleton span{animation:none}}

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <link rel="stylesheet" href="../../design-system.css">
+  <link rel="stylesheet" href="../../resident-v2.css">
+  <link rel="stylesheet" href="../../design-system-accessibility.css">
+</head>
+<body>
+<div id="app">
+  <div class="resident-app">
+    <aside class="resident-sidebar">
+      <div class="brand"><div class="brand-mark">SG</div><div><strong>Portal do Morador</strong><span>Ed. Ametista</span></div></div>
+      <nav class="resident-nav">
+        <a href="#/morador/home" class="active">⌂ Início</a>
+        <a href="#/morador/announcements">📢 Comunicados</a>
+        <a href="#/morador/calls">🎫 Meus chamados</a>
+        <a href="#/morador/calendar">📅 Calendário</a>
+        <a href="#/morador/documents">📄 Documentos</a>
+        <a href="#/morador/unit">🏠 Minha unidade</a>
+        <a href="#/morador/notifications">🔔 Notificações (3)</a>
+      </nav>
+      <div class="sidebar-footer"><small>Bloco A / 302</small><strong>João Morador</strong></div>
+    </aside>
+    <main class="resident-main">
+      <header class="resident-top"><div><div class="eyebrow">Ed. Ametista</div><h1>Buenas, João 👋</h1><p class="muted">Rua das Flores • Lajeado • RS</p></div><div class="avatar">JM</div></header>
+      <section class="resident-grid">
+        <article class="resident-card resident-highlight"><span>🏠</span><div><strong>Ed. Ametista</strong><p>Bloco A / 302</p></div></article>
+        <article class="resident-card" onclick="location.hash='#/morador/announcements'" style="cursor:pointer"><span>📢</span><div><strong>2 comunicados</strong><p>Assembleia extraordinária</p></div></article>
+        <article class="resident-card" onclick="location.hash='#/morador/calls'" style="cursor:pointer"><span>🎫</span><div><strong>1 chamado em aberto</strong><p>Acompanhe suas solicitações.</p></div></article>
+        <article class="resident-card" onclick="location.hash='#/morador/calendar'" style="cursor:pointer"><span>📅</span><div><strong>Próximo evento</strong><p>Manutenção elevador</p></div></article>
+        <article class="resident-card" onclick="location.hash='#/morador/documents'" style="cursor:pointer"><span>📄</span><div><strong>4 documentos</strong><p>Documentos liberados pela gestão.</p></div></article>
+        <article class="resident-card" onclick="location.hash='#/morador/notifications'" style="cursor:pointer"><span>🔔</span><div><strong>3 não lidas</strong><p>Atualizações e avisos do condomínio.</p></div></article>
+      </section>
+    </main>
+  </div>
+</div>
+<script>
+window.GCNavigation={icons:{
+  home:'<svg class="ux-icon" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/></svg>',
+  announcements:'<svg class="ux-icon" viewBox="0 0 24 24"><path d="M3 11v2l10 4V7L3 11Z"/></svg>',
+  calls:'<svg class="ux-icon" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7"/></svg>',
+  calendar:'<svg class="ux-icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16"/></svg>',
+  documents:'<svg class="ux-icon" viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6Z"/></svg>',
+  condos:'<svg class="ux-icon" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18"/></svg>',
+  notifications:'<svg class="ux-icon" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0"/></svg>'
+}};
+if(!location.hash)location.hash='#/morador/home';
+</script>
+<script src="../../resident-v2.js"></script>
+</body>
+</html>
