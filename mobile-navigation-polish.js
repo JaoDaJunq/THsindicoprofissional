@@ -66,7 +66,7 @@
   const observer = new MutationObserver(refresh);
   function start() {
     refresh();
-    observer.observe(document.getElementById('app') || document.body,{childList:true,subtree:true});
+    observer.observe(document.body,{childList:true,subtree:true});
     window.addEventListener('hashchange',refresh,{passive:true});
     window.addEventListener('resize',refresh,{passive:true});
   }
