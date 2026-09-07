@@ -14,7 +14,7 @@
 
   function patchNavigationRegistry() {
     const registry = window.GCNavigation;
-    if (!registry || registry.__uxReviewPatched) return;
+    if (!registry || registry.__uxReviewPatched) return false;
 
     const baseGlobal = registry.global.bind(registry);
     const baseWorkspace = registry.workspace.bind(registry);
@@ -56,6 +56,7 @@
     };
 
     registry.__uxReviewPatched = true;
+    return true;
   }
 
   function targetForCondo(newCid) {
@@ -125,9 +126,18 @@
     scheduled = true;
     requestAnimationFrame(() => {
       scheduled = false;
-      patchNavigationRegistry();
+      const navigationPatched = patchNavigationRegistry();
       repairResidentAssemblies();
       improveConfirmFocusReturn();
+
+      // UX V2 já pode ter renderizado a sidebar antes desta camada carregar.
+      // Força apenas uma nova passada dos listeners existentes para refletir
+      // imediatamente as rotas adicionadas por permissão, sem duplicar UI.
+      if (navigationPatched) {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) delete sidebar.dataset.uxSignature;
+        window.dispatchEvent(new Event('resize'));
+      }
     });
   }
 
