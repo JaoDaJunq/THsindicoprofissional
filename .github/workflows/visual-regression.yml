@@ -2,44 +2,11 @@ name: Visual Regression Checks
 
 on:
   push:
-    branches:
-      - visual-refresh
-      - main
-    paths:
-      - '**/*.css'
-      - 'index.html'
-      - 'visual-system.js'
-      - 'dashboard-insights.js'
-      - 'remaining-views.js'
-      - 'boot-stability.js'
-      - 'navigation-integrity.js'
-      - 'final-router.js'
-      - 'route-access-guard.js'
-      - 'management-role-router.js'
-      - 'workspace-route-stability.js'
-      - 'foundation-access.js'
-      - 'auth-extension.js'
-      - 'tests/browser/**'
-      - '.github/workflows/visual-regression.yml'
+    branches: [main, visual-refresh, audit-ui-ux-2026-09]
+    paths: ['**/*.js', '**/*.css', '**/*.html', '.github/workflows/visual-regression.yml']
   pull_request:
-    branches:
-      - main
-    paths:
-      - '**/*.css'
-      - 'index.html'
-      - 'visual-system.js'
-      - 'dashboard-insights.js'
-      - 'remaining-views.js'
-      - 'boot-stability.js'
-      - 'navigation-integrity.js'
-      - 'final-router.js'
-      - 'route-access-guard.js'
-      - 'management-role-router.js'
-      - 'workspace-route-stability.js'
-      - 'foundation-access.js'
-      - 'auth-extension.js'
-      - 'tests/browser/**'
-      - '.github/workflows/visual-regression.yml'
+    branches: [main]
+    paths: ['**/*.js', '**/*.css', '**/*.html', '.github/workflows/visual-regression.yml']
   workflow_dispatch:
 
 jobs:

@@ -67,11 +67,30 @@
     return list.sort((a,b)=>a.rank-b.rank).slice(0,10);
   }
 
+  let renderVersion = 0;
+  function renderTicket() {
+    const version = ++renderVersion;
+    const hash = location.hash;
+    const userId = window.CondoAccess?.getSnapshot()?.user?.id;
+    return () => version === renderVersion && location.hash === hash && window.CondoAccess?.getSnapshot()?.user?.id === userId;
+  }
+  function loadError(title, retry) {
+    const body = document.querySelector('.main');
+    if (!body) return;
+    const section = document.createElement('section');
+    section.className = 'ux-state ux-state-error';
+    const heading = document.createElement('h2'); heading.textContent = title;
+    const text = document.createElement('p'); text.textContent = 'Verifique sua conexão e tente novamente.';
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'btn btn-primary'; button.textContent = 'Tentar novamente'; button.onclick = retry;
+    section.append(heading, text, button); body.replaceChildren(section);
+  }
+
   async function dashboard(){
+    const isCurrent = renderTicket();
     if(!window.CondoAccess?.hasAnyManagementRole())return;
     $('#app').innerHTML=shell(`${topbar('Visão geral','Carregando indicadores da sua gestão.','Painel de Gestão','<button class="btn" onclick="location.hash=\'#/relatorios\'">Relatórios</button>')}<article class="panel"><div class="panel-body"><div class="empty">Carregando dashboard...</div></div></article>`,'dashboard');
     try{
-      const d=await scope(),fs=financeStats(d.finance),alerts=attention(d);
+      const d=await scope(); if(!isCurrent()) return; const fs=financeStats(d.finance),alerts=attention(d);
       const open=d.calls.filter(openCall).length;
       const maint7=d.maint.filter(x=>activeMaintenance(x)&&daysUntil(x.next_date)!==null&&daysUntil(x.next_date)<=7).length;
       const overdueMaint=d.maint.filter(x=>activeMaintenance(x)&&daysUntil(x.next_date)!==null&&daysUntil(x.next_date)<0).length;
@@ -80,19 +99,20 @@
       const alertHtml=alerts.length?alerts.map(x=>`<a class="alert-card ${x.rank===0?'critical':x.rank===1?'soon':'watch'}" href="${x.href}" style="display:block;text-decoration:none"><div class="alert-head"><div><strong>${safe(x.title)}</strong><p>${safe(x.meta)}</p></div><span class="badge ${x.rank===0?'bad':x.rank===1?'warn':'attention'}">${safe(x.label)}</span></div></a>`).join(''):'<div class="empty">Nenhuma pendência crítica encontrada.</div>';
       const financeMetric=d.financeIds.length?`<article class="metric"><div class="metric-top"><div><span>Saldo realizado</span><strong>${brl(fs.balance)}</strong><small>${d.financeIds.length===d.ids.length?'Todos os condomínios':'Somente autorizados'}</small></div><div class="icon green">$</div></div></article>`:'';
       $('#app').innerHTML=shell(`${topbar('Visão geral','Indicadores consolidados da operação.','Painel de Gestão','<button class="btn" onclick="location.hash=\'#/relatorios\'">Relatórios</button>')}<section class="metrics"><article class="metric"><div class="metric-top"><div><span>Condomínios</span><strong>${d.ids.length}</strong><small>${d.units.length} unidades</small></div><div class="icon blue">🏢</div></div></article><article class="metric"><div class="metric-top"><div><span>Chamados abertos</span><strong>${open}</strong></div><div class="icon orange">🎫</div></div></article><article class="metric"><div class="metric-top"><div><span>Manutenções em 7 dias</span><strong>${maint7}</strong><small>${overdueMaint} vencida(s)</small></div><div class="icon red">⚒</div></div></article><article class="metric"><div class="metric-top"><div><span>Documentos em 30 dias</span><strong>${docs30}</strong></div><div class="icon orange">📄</div></div></article>${financeMetric}<article class="metric"><div class="metric-top"><div><span>Assembleias futuras</span><strong>${asm}</strong></div><div class="icon blue">🏛️</div></div></article></section><section class="grid-2" style="margin-top:18px"><article class="panel"><div class="panel-head"><div><h2>Condomínios</h2><div class="muted small">Resumo rápido por operação.</div></div></div><div class="panel-body"><div class="condo-grid">${cards(d)||'<div class="empty">Nenhum condomínio disponível.</div>'}</div></div></article><article class="panel"><div class="panel-head"><div><h2>Atenção necessária</h2><div class="muted small">Itens vencidos, urgentes ou próximos do prazo.</div></div></div><div class="panel-body">${alertHtml}</div></article></section>`,'dashboard');
-    }catch(err){flash(err.message||'Não foi possível carregar o dashboard.')}
+    }catch(err){if(isCurrent()) loadError('Não foi possível carregar a visão geral', dashboard);}
   }
 
   async function condoDashboard(cid){
+    const isCurrent = renderTicket();
     if(!window.CondoAccess?.canAccessCondo(cid)||!window.CondoAccess?.hasAnyManagementRole(cid))return;
     try{
-      const d=await scope(cid),c=d.condos[0],fs=financeStats(d.finance),open=d.calls.filter(openCall).length,urgent=d.calls.filter(x=>openCall(x)&&x.priority==='urgent').length;
+      const d=await scope(cid); if(!isCurrent()) return; const c=d.condos[0],fs=financeStats(d.finance),open=d.calls.filter(openCall).length,urgent=d.calls.filter(x=>openCall(x)&&x.priority==='urgent').length;
       const maint7=d.maint.filter(x=>activeMaintenance(x)&&daysUntil(x.next_date)!==null&&daysUntil(x.next_date)<=7).length;
       const docs30=d.docs.filter(x=>x.expiry_date&&daysUntil(x.expiry_date)!==null&&daysUntil(x.expiry_date)<=30).length;
       const nextMaint=d.maint.filter(activeMaintenance).sort((a,b)=>String(a.next_date||'9999').localeCompare(String(b.next_date||'9999'))).slice(0,5);
       const nextAsm=d.assemblies.filter(x=>!['held','cancelled'].includes(x.status)).sort((a,b)=>String(a.scheduled_at).localeCompare(String(b.scheduled_at))).slice(0,3);
       $('#app').innerHTML=shell(`${topbar(safe(c?.name||'Condomínio'),'Resumo operacional do condomínio.','Workspace',`<button class="btn" onclick="location.hash='#/condominio/${cid}/relatorios'">Relatório</button>`)}<section class="metrics"><article class="metric"><div class="metric-top"><div><span>Unidades</span><strong>${d.units.length}</strong></div><div class="icon blue">🏠</div></div></article><article class="metric"><div class="metric-top"><div><span>Chamados abertos</span><strong>${open}</strong><small>${urgent} urgente(s)</small></div><div class="icon orange">🎫</div></div></article><article class="metric"><div class="metric-top"><div><span>Manutenções em 7 dias</span><strong>${maint7}</strong></div><div class="icon red">⚒</div></div></article><article class="metric"><div class="metric-top"><div><span>Documentos em 30 dias</span><strong>${docs30}</strong></div><div class="icon orange">📄</div></div></article>${canFinance(cid)?`<article class="metric"><div class="metric-top"><div><span>Saldo realizado</span><strong>${brl(fs.balance)}</strong><small>Em atraso ${brl(fs.overdue)}</small></div><div class="icon green">$</div></div></article>`:''}</section><section class="grid-2" style="margin-top:18px"><article class="panel"><div class="panel-head"><h2>Próximas manutenções</h2></div><div class="panel-body">${nextMaint.length?nextMaint.map(x=>`<a class="list-row" href="#/condominio/${cid}/manutencoes"><div><strong>${safe(x.title)}</strong><div class="list-sub">${date(x.next_date)}</div></div></a>`).join(''):'<div class="empty">Nenhuma manutenção programada.</div>'}</div></article><article class="panel"><div class="panel-head"><h2>Próximas assembleias</h2></div><div class="panel-body">${nextAsm.length?nextAsm.map(x=>`<a class="list-row" href="#/condominio/${cid}/assembleias"><div><strong>${safe(x.title)}</strong><div class="list-sub">${date(String(x.scheduled_at).slice(0,10))}</div></div></a>`).join(''):'<div class="empty">Nenhuma assembleia futura.</div>'}</div></article></section>`,'condo-overview',cid);
-    }catch(err){flash(err.message||'Não foi possível carregar o condomínio.')}
+    }catch(err){if(isCurrent()) loadError('Não foi possível carregar o condomínio', () => condoDashboard(cid));}
   }
 
   function inPeriod(v,start,end){if(!v)return false;const d=String(v).slice(0,10);return d>=start&&d<=end}
@@ -104,10 +124,11 @@
   };
 
   async function reports(cid=null,start=firstDay(),end=today()){
+    const isCurrent = renderTicket();
     if(!window.CondoAccess?.hasAnyManagementRole())return;
     if(cid&&!window.CondoAccess?.hasAnyManagementRole(cid))return;
     try{
-      const d=await scope(cid),names=new Map(d.condos.map(x=>[x.id,x.name])),detail=[];
+      const d=await scope(cid); if(!isCurrent()) return; const names=new Map(d.condos.map(x=>[x.id,x.name])),detail=[];
       d.calls.filter(x=>inPeriod(x.created_at,start,end)).forEach(x=>detail.push({date:String(x.created_at).slice(0,10),condo:names.get(x.condominium_id)||'',type:'Chamado',description:x.title,status:x.status,value:''}));
       d.occ.filter(x=>inPeriod(x.completed_at||x.scheduled_for,start,end)).forEach(x=>detail.push({date:String(x.completed_at||x.scheduled_for).slice(0,10),condo:names.get(x.condominium_id)||'',type:'Manutenção concluída',description:'Ocorrência de manutenção',status:x.completion_type,value:''}));
       d.documents=d.docs;
@@ -121,7 +142,7 @@
       const body=detail.length?detail.slice(0,200).map(x=>`<tr><td>${date(x.date)}</td><td>${safe(x.condo)}</td><td>${safe(x.type)}</td><td>${safe(x.description)}</td><td>${safe(x.status)}</td><td>${safe(x.value)}</td></tr>`).join(''):'<tr><td colspan="6"><div class="empty">Nenhum evento no período.</div></td></tr>';
       $('#app').innerHTML=shell(`${topbar('Relatórios',`${cid?safe(names.get(cid)||'Condomínio'):'Gestão consolidada'} • ${date(start)} a ${date(end)}`,'Gestão',`<button class="btn" onclick="exportManagementReportCsv()">CSV</button><button class="btn" onclick="window.print()">Imprimir / PDF</button>`)}<article class="panel" style="margin-bottom:18px"><div class="panel-body"><form id="report-period" class="row-actions"><label>De <input type="date" name="start" value="${safe(start)}"></label><label>Até <input type="date" name="end" value="${safe(end)}"></label><button class="btn btn-primary">Aplicar</button></form></div></article><section class="metrics"><article class="metric"><div class="metric-top"><div><span>Chamados criados</span><strong>${callCount}</strong></div></div></article><article class="metric"><div class="metric-top"><div><span>Manutenções concluídas</span><strong>${occCount}</strong></div></div></article><article class="metric"><div class="metric-top"><div><span>Docs no prazo</span><strong>${docCount}</strong></div></div></article><article class="metric"><div class="metric-top"><div><span>Assembleias</span><strong>${asmCount}</strong></div></div></article>${d.financeIds.length?`<article class="metric"><div class="metric-top"><div><span>Realizado</span><strong>${brl(finIn-finOut)}</strong><small>Previsto líquido ${brl(finExpectedIn-finExpectedOut)}</small></div></div></article>`:''}</section><article class="panel" style="margin-top:18px"><div class="panel-head"><div><h2>Detalhamento</h2><div class="muted small">Até 200 linhas na tela. O CSV contém todo o período carregado.</div></div></div><div class="panel-body"><div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Condomínio</th><th>Tipo</th><th>Descrição</th><th>Status</th><th>Valor</th></tr></thead><tbody>${body}</tbody></table></div></div></article>`,'reports',cid);
       const form=document.querySelector('#report-period');if(form)form.onsubmit=e=>{e.preventDefault();const f=new FormData(form),s=f.get('start'),en=f.get('end');if(!s||!en||s>en)return flash('Revise o período informado.');location.hash=cid?`#/condominio/${cid}/relatorios?start=${s}&end=${en}`:`#/relatorios?start=${s}&end=${en}`};
-    }catch(err){flash(err.message||'Não foi possível gerar o relatório.')}
+    }catch(err){if(isCurrent()) loadError('Não foi possível gerar o relatório', () => reports(cid,start,end));}
   }
 
   window.managementDashboard=dashboard;

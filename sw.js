@@ -1,4 +1,4 @@
-const CACHE_NAME='gestao-condominial-shell-v2';
+const CACHE_NAME='gestao-condominial-shell-v3';
 const APP_SHELL=[
   './',
   './index.html',
@@ -15,7 +15,7 @@ self.addEventListener('install',event=>{
 
 self.addEventListener('activate',event=>{
   event.waitUntil(
-    caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k))))
+    caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('gestao-condominial-shell-')&&k!==CACHE_NAME).map(k=>caches.delete(k))))
       .then(()=>self.clients.claim())
   );
 });
@@ -26,15 +26,31 @@ self.addEventListener('fetch',event=>{
   const url=new URL(req.url);
   if(url.origin!==self.location.origin)return;
 
-  event.respondWith(
-    fetch(req).then(response=>{
-      if(response && response.ok){
-        const copy=response.clone();
-        caches.open(CACHE_NAME).then(cache=>cache.put(req,copy)).catch(()=>{});
+  const scope = new URL(self.registration.scope);
+  if (!url.pathname.startsWith(scope.pathname)) return;
+  const isNavigation = req.mode === 'navigate';
+  const isAsset = /\.(?:js|css|svg|png|ico|webmanifest)$/.test(url.pathname);
+  if (!isNavigation && !isAsset) return;
+  event.respondWith((async()=>{
+    const cache = await caches.open(CACHE_NAME);
+    try {
+      const response = await fetch(req);
+      if(response && response.ok && response.type !== 'opaque'){
+        const copy = response.clone();
+        event.waitUntil(cache.put(req,copy).catch(()=>{}));
       }
       return response;
-    }).catch(()=>caches.match(req).then(cached=>cached||caches.match('./index.html')))
-  );
+    } catch (_) {
+      const cached = await cache.match(req);
+      if(cached) return cached;
+      // HTML fallback is only meaningful for a page, never for scripts or styles.
+      if(isNavigation){
+        const shell = await cache.match('./index.html');
+        if(shell) return shell;
+      }
+      return Response.error();
+    }
+  })());
 });
 
 self.addEventListener('push',event=>{

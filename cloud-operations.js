@@ -3,7 +3,7 @@
   const URL='https://tckvzlizcqdxzgavjwie.supabase.co';
   const KEY='sb_publishable_MRtiWP-ErwVKXqNbGFrW_g_FwEHsob3';
   const cloud=window.supabase.createClient(URL,KEY);
-  let applying=false, syncTimer=null;
+  let applying=false, syncTimer=null, refreshVersion=0;
   const uuid=v=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||''));
   const currentUser=async()=>{const {data:{session}}=await cloud.auth.getSession();return session?.user||null};
   const asDate=v=>v?String(v).slice(0,10):null;
@@ -17,6 +17,7 @@
   function mapEvent(x){return{id:x.id,condoId:x.condominium_id,title:x.title,description:x.description||'',type:x.event_type,date:asDate(x.starts_at),startsAt:x.starts_at,visibility:x.visibility,reminders:x.reminders||[2],sourceType:x.source_type,sourceId:x.source_id,syncStatus:x.sync_status,googleEventId:x.google_event_id}}
 
   async function refreshOperations(render=true){
+    const version=++refreshVersion;
     const user=await currentUser(); if(!user||typeof data==='undefined')return;
     const allowed=new Set((data.condos||[]).map(c=>c.id));
     const [m,t,c,d,a,tl,e,n]=await Promise.all([
@@ -29,7 +30,14 @@
       cloud.from('events').select('*').order('starts_at',{ascending:true}),
       cloud.from('notifications').select('*').eq('user_id',user.id).order('created_at',{ascending:false})
     ]);
-    [m,t,c,d,a,tl,e,n].forEach(r=>{if(r.error)console.warn('Supabase operational sync',r.error)});
+    const sessionUser=await currentUser();
+    if(version!==refreshVersion || sessionUser?.id!==user.id) return;
+    const failed=[m,t,c,d,a,tl,e,n].some(r=>r.error);
+    if(failed){
+      console.warn('Supabase operational sync: consulta incompleta');
+      if(typeof flash==='function') flash('Não foi possível atualizar todos os dados. Tente novamente em instantes.');
+      return; // An error is not an empty database. Preserve the last complete snapshot.
+    }
     applying=true;
     data.maintenances=(m.data||[]).filter(x=>allowed.has(x.condominium_id)).map(mapMaintenance);
     data.tasks=(t.data||[]).filter(x=>allowed.has(x.condominium_id)).map(mapTask);
@@ -41,7 +49,7 @@
     data.notifications=(n.data||[]).map(x=>({id:x.id,condoId:x.condominium_id,eventId:x.event_id,title:x.title,message:x.message||'',channel:x.channel,status:x.status,scheduledAt:x.scheduled_at,sentAt:x.sent_at,readAt:x.read_at}));
     try{originalSave(data)}catch(err){console.warn(err)}
     applying=false;
-    if(render&&typeof route==='function')route();
+    if(render&&typeof route==='function' && !document.querySelector('#modal:not(.hidden),.ux-command-overlay,.ux-confirm-overlay') && !document.activeElement?.matches('input,textarea,select'))route();
   }
 
   async function pushLocal(d){
@@ -105,6 +113,6 @@
   };
 
   async function init(){const user=await currentUser();if(!user)return;setTimeout(()=>refreshOperations(true).catch(console.warn),700)}
-  cloud.auth.onAuthStateChange((event,session)=>{if(session?.user&&event!=='SIGNED_OUT')setTimeout(()=>refreshOperations(true).catch(console.warn),700)});
+  cloud.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){refreshVersion++;return;}if(session?.user&&event==='SIGNED_IN')setTimeout(()=>refreshOperations(true).catch(console.warn),700)});
   init();
 })();

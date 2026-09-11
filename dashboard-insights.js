@@ -73,7 +73,7 @@
 
     if (!pulse.length) return;
 
-    insertAfterMetrics(`<section class="dashboard-insight-strip"><article class="insight-card"><div class="insight-head"><span class="insight-kicker">Pulso operacional</span><h2>O que merece atenção agora</h2><p>Comparação relativa entre os principais volumes da operação, usando os indicadores atuais.</p></div><div class="pulse-list">${pulseMarkup(pulse)}</div></article><article class="insight-card insight-card--soft"><div class="insight-head"><span class="insight-kicker">Acesso rápido</span><h2>Ir direto ao trabalho</h2><p>Atalhos para as áreas mais usadas no dia a dia.</p></div><div class="quick-action-grid">${actionMarkup([
+    insertAfterMetrics(`<section class="dashboard-insight-strip"><article class="insight-card"><div class="insight-head"><span class="insight-kicker">Pulso operacional</span><h2>O que merece atenção agora</h2><p>Pendências e próximos compromissos para organizar o dia.</p></div><div class="pulse-list">${pulseMarkup(pulse)}</div></article><article class="insight-card insight-card--soft"><div class="insight-head"><span class="insight-kicker">Acesso rápido</span><h2>Ir direto ao trabalho</h2><p>Atalhos para as áreas mais usadas no dia a dia.</p></div><div class="quick-action-grid">${actionMarkup([
       {label:'Condomínios',href:'#/condominios',icon:'▦'},
       {label:'Manutenções',href:'#/manutencoes',icon:'⚒'},
       {label:'Chamados',href:'#/chamados',icon:'◉'},
@@ -107,7 +107,7 @@
     ];
     if (window.CondoAccess?.can('finance.review', cid)) actions[3] = {label:'Financeiro',href:`#/condominio/${cid}/financeiro`,icon:'$'};
 
-    insertAfterMetrics(`<section class="dashboard-insight-strip"><article class="insight-card"><div class="insight-head"><span class="insight-kicker">Saúde operacional</span><h2>Resumo do condomínio</h2><p>Os principais volumes do Workspace em uma leitura rápida.</p></div><div class="pulse-list">${pulseMarkup(pulse)}</div></article><article class="insight-card insight-card--soft"><div class="insight-head"><span class="insight-kicker">Atalhos do Workspace</span><h2>Continuar a operação</h2><p>${finance ? `Saldo realizado atual: ${finance.value}.` : 'Acesse rapidamente as rotinas deste condomínio.'}</p></div><div class="quick-action-grid">${actionMarkup(actions)}</div></article></section>`, 'condo');
+    insertAfterMetrics(`<section class="dashboard-insight-strip"><article class="insight-card"><div class="insight-head"><span class="insight-kicker">Saúde operacional</span><h2>Resumo do condomínio</h2><p>Acompanhe chamados, prazos e rotinas deste condomínio.</p></div><div class="pulse-list">${pulseMarkup(pulse)}</div></article><article class="insight-card insight-card--soft"><div class="insight-head"><span class="insight-kicker">Rotinas do condomínio</span><h2>Continuar a operação</h2><p>${finance ? `Saldo realizado atual: ${finance.value}.` : 'Acesse rapidamente as rotinas deste condomínio.'}</p></div><div class="quick-action-grid">${actionMarkup(actions)}</div></article></section>`, 'condo');
   }
 
   function expectedFromSmall(item) {

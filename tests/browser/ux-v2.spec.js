@@ -69,7 +69,7 @@ test('mobile hides redundant condominium field and search filters rows', async (
   await page.locator('[data-ux-search="tasks"] input').fill('alarme');
   await expect(page.locator('tbody tr:not(.ux-filter-hidden)')).toHaveCount(1);
   await expect(page.locator('tbody tr:not(.ux-filter-hidden)')).toContainText('Testar alarme');
-  await expect(page.locator('.ux-filter-count')).toHaveText('1 resultado');
+  await expect(page.locator('.ux-filter-count')).toHaveText(/1 de \d+ resultados/);
 });
 
 test('mobile command center is accessible from header and floating quick create', async ({page}) => {
