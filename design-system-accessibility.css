@@ -72,3 +72,27 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+/* Final reading scale, including legacy pages that use compact component rules. */
+body{font-size:1rem}
+.field label,.metric-top span,.quick-action strong,.table td,.list-title,
+.alert-card strong,.alert-card p,.badge,.condo-id strong,.btn,
+.mobile-card-table .row-actions .btn{font-size:.875rem!important;line-height:1.5!important}
+.small,.list-sub,.table .list-sub,.metric-top small,.mini span,.condo-id small,
+.insight-head p,.pulse-meta span,.file-card span,.sidebar .nav-section,
+.mobile-card-table .table td::before{font-size:.75rem!important;line-height:1.5!important}
+.field input,.field select,.field textarea,.ux-search-field input,
+.view-filterbar input,.view-filterbar select{font-size:1rem!important}
+.topbar .muted.small,.panel-head .muted.small,.alert-card p,
+.condo-id small,.mini span,.metric small{color:#566274!important}
+.badge.good{color:#137653!important;background:#eaf8f2!important}
+.badge.warn,.badge.attention{color:#8a510c!important;background:#fff4e6!important}
+.badge.bad{color:#b4232d!important;background:#fff0f0!important}
+.ux-confirm-card p{font-size:1rem!important;color:#566274!important}
+.btn,.icon-btn{min-height:44px!important}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid #4961f2!important;outline-offset:3px!important;
+}
+@media(max-width:700px){
+  .flash{bottom:calc(144px + env(safe-area-inset-bottom))!important}
+}

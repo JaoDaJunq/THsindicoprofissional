@@ -3,7 +3,7 @@
    Keeps routes, permissions, data flows and DOM contracts untouched. */
 
 :root{
-  --ui-bg:#f3f6fb;
+  --ui-bg:#f4f6fa;
   --ui-surface:#ffffff;
   --ui-surface-soft:#f8faff;
   --ui-text:#111827;
@@ -26,15 +26,12 @@
   --v3-violet:#735cf6;
   --v3-ink:#101827;
   --v3-soft-blue:#f1f3ff;
-  --v3-card-shadow:0 10px 30px rgba(36,48,80,.055);
+  --v3-card-shadow:0 1px 3px rgba(16,24,40,.04);
 }
 
 html{background:var(--ui-bg)!important}
 body{
-  background:
-    radial-gradient(circle at 78% -10%,rgba(79,95,246,.09),transparent 28rem),
-    radial-gradient(circle at 18% 16%,rgba(115,92,246,.04),transparent 24rem),
-    var(--ui-bg)!important;
+  background:var(--ui-bg)!important;
   color:var(--ui-text)!important;
 }
 
@@ -59,10 +56,10 @@ body{
 .sidebar .brand strong{color:#f7f9ff!important;font-weight:780!important;letter-spacing:-.02em!important}
 .sidebar .brand span{color:#8f9bae!important}
 .sidebar .nav-section{
-  color:#657188!important;
-  font-size:8.5px!important;
+  color:#aab4c5!important;
+  font-size:.75rem!important;
   letter-spacing:.16em!important;
-  font-weight:850!important;
+  font-weight:600!important;
 }
 .sidebar .workspace-label{
   margin:3px 6px 6px!important;
@@ -78,7 +75,7 @@ body{
   border:1px solid transparent!important;
   border-radius:12px!important;
   color:#9ca8bb!important;
-  font-weight:690!important;
+  font-weight:600!important;
 }
 .sidebar .nav a:hover{
   background:rgba(255,255,255,.055)!important;
@@ -102,7 +99,7 @@ body{
   color:#dbe0ff!important;
 }
 .sidebar-footer{
-  margin-top:22px!important;
+  margin-top:auto!important;
   padding:14px 10px!important;
   border-top:1px solid rgba(255,255,255,.07)!important;
 }
@@ -159,15 +156,15 @@ body{
 }
 .eyebrow{
   color:#6373db!important;
-  font-weight:880!important;
+  font-weight:600!important;
   letter-spacing:.14em!important;
 }
 h1{
   color:#101828!important;
-  font-weight:820!important;
-  letter-spacing:-.048em!important;
+  font-weight:700!important;
+  letter-spacing:-.03em!important;
 }
-h2{color:#172033!important;font-weight:790!important;letter-spacing:-.025em!important}
+h2{color:#172033!important;font-weight:650!important;letter-spacing:-.025em!important}
 .topbar .muted.small{color:#7c8798!important}
 
 /* Buttons */
@@ -225,7 +222,7 @@ h2{color:#172033!important;font-weight:790!important;letter-spacing:-.025em!impo
   top:0;
   height:2px;
   border-radius:0 0 999px 999px;
-  background:linear-gradient(90deg,rgba(79,95,246,.85),rgba(115,92,246,.55));
+  background:var(--ui-line);
   opacity:.85;
 }
 .metric::after{
@@ -244,7 +241,7 @@ h2{color:#172033!important;font-weight:790!important;letter-spacing:-.025em!impo
   margin-top:17px!important;
   color:#111827!important;
   font-size:31px!important;
-  font-weight:830!important;
+  font-weight:700!important;
 }
 .metric small{color:#8a95a6!important}
 .metric .icon{
@@ -291,7 +288,7 @@ h2{color:#172033!important;font-weight:790!important;letter-spacing:-.025em!impo
   bottom:17px;
   width:3px;
   border-radius:0 999px 999px 0;
-  background:linear-gradient(180deg,var(--v3-blue),var(--v3-violet));
+  background:var(--ui-line-strong);
   opacity:.7;
 }
 .condo-card:hover{
@@ -334,7 +331,7 @@ h2{color:#172033!important;font-weight:790!important;letter-spacing:-.025em!impo
   box-shadow:var(--v3-card-shadow)!important;
 }
 .insight-card--soft{
-  background:linear-gradient(145deg,#f8f9ff 0%,#f1f3ff 100%)!important;
+  background:#f8faff!important;
   border-color:#e0e4ff!important;
 }
 .insight-card::after{background:radial-gradient(circle,rgba(79,95,246,.12),rgba(79,95,246,0) 68%)!important}
@@ -473,9 +470,7 @@ h2{color:#172033!important;font-weight:790!important;letter-spacing:-.025em!impo
 
 @media(max-width:700px){
   body{
-    background:
-      radial-gradient(circle at 85% 0%,rgba(79,95,246,.08),transparent 20rem),
-      #f4f7fb!important;
+    background:var(--ui-bg)!important;
   }
   .main,.resident-main{padding:10px 10px 42px!important}
   .mobile-top{
@@ -606,4 +601,49 @@ h2{color:#172033!important;font-weight:790!important;letter-spacing:-.025em!impo
 
 @media(prefers-reduced-motion:reduce){
   .sidebar,.mobile-top,.mobile-bottom-dock,.metric,.panel,.condo-card,.quick-action{transition:none!important}
+}
+
+/* Operational meaning must win over the brand color. */
+.pulse-row[data-tone="warning"] .pulse-fill{background:#a66310!important}
+.pulse-row[data-tone="danger"] .pulse-fill{background:#bd3333!important}
+.pulse-row[data-tone="success"] .pulse-fill{background:#137653!important}
+.ux-confirm-icon.danger{background:#fff0f0!important;color:#b4232d!important}
+.btn.ux-danger,.btn.ux-danger:hover{background:#b4232d!important;border-color:#b4232d!important;color:#fff!important}
+.icon-btn.danger-icon{color:#b4232d!important}
+
+/* Shared rhythm, with room for real condominium names and monetary values. */
+:root{--v3-space-1:.5rem;--v3-space-2:1rem;--v3-space-3:1.5rem}
+.main{line-height:1.5}
+.topbar::after{display:none}
+.topbar{padding-bottom:0!important}
+.sidebar .nav a{font-size:.875rem!important}
+.sidebar .brand span,.sidebar-footer small{font-size:.75rem!important;color:#adb9cc!important}
+.metric-top>div:first-child,.condo-id,.condo-id>div:last-child{min-width:0}
+.metric strong{font-variant-numeric:tabular-nums;overflow-wrap:anywhere;line-height:1.2!important}
+.metric .icon,.building{flex-shrink:0}
+.condo-top{flex-wrap:wrap}
+.condo-id{flex:1 1 10rem}
+.condo-id strong{display:block;overflow-wrap:anywhere;line-height:1.45!important}
+.condo-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr))!important}
+.condo-card:hover{transform:none!important}
+.insight-card::after{display:none}
+.panel-head{gap:var(--v3-space-2)!important;flex-wrap:wrap}
+.panel-head h2{margin:0!important}
+.ux-list-tools,.view-filterbar{box-shadow:none!important;flex-wrap:wrap}
+.view-filterbar input,.view-filterbar select,.ux-search-field{min-width:0!important;max-width:100%}
+.table th{text-transform:none!important;letter-spacing:normal!important;font-weight:600!important}
+.table td{vertical-align:middle}
+
+@media(max-width:700px){
+  .mobile-dock-label{white-space:normal!important;overflow:visible!important;line-height:1.2!important;overflow-wrap:anywhere}
+  .mobile-dock-item{min-width:0!important;gap:4px!important;padding:6px 1px!important;min-height:66px!important;color:#566274!important}
+  .mobile-dock-item::before{height:calc(100% - 4px)!important}
+  .mobile-bottom-dock{align-items:stretch!important}
+  body.has-mobile-dock .main,body.has-mobile-dock .resident-main{padding-bottom:calc(152px + env(safe-area-inset-bottom))!important}
+  .mobile-top .brand strong{font-size:.875rem!important;white-space:normal!important;line-height:1.3!important}
+  .mobile-top .brand span{font-size:.75rem!important;color:#566274!important}
+  .mobile-top .brand{min-width:0!important}
+  .mobile-top .brand-mark{display:none!important}
+  .top-actions{flex-wrap:wrap}
+  .metric-top{gap:8px!important;flex-wrap:wrap}
 }
