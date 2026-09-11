@@ -17,6 +17,7 @@ function setup(failure){
 test('failed operational query preserves existing snapshot',async()=>{const t=setup(true);await t.ctx.window.testRefresh();assert.equal(t.data.tasks[0].id,'old');assert.equal(t.saved(),0);assert.equal(t.rendered(),0);});
 test('successful operational refresh maps the returned records',async()=>{const t=setup(false);await t.ctx.window.testRefresh();assert.equal(t.data.tasks[0].id,'new');assert.equal(t.saved(),1);assert.equal(t.rendered(),1);});
 test('operational refresh does not rerender while a form is open',async()=>{const t=setup(false);t.ctx.document.querySelector=()=>({});await t.ctx.window.testRefresh();assert.equal(t.data.tasks[0].id,'new');assert.equal(t.rendered(),0);});
+test('operational refresh does not rerender while confirmation is open',async()=>{const t=setup(false);t.ctx.document.querySelector=selector=>selector.includes('.ux-confirm-overlay')?{}:null;await t.ctx.window.testRefresh();assert.equal(t.data.tasks[0].id,'new');assert.equal(t.rendered(),0);});
 const dashboard=fs.readFileSync('dashboard-reporting-v2.js','utf8');
 const tickets=dashboard.slice(dashboard.indexOf('  let renderVersion = 0;'),dashboard.indexOf('  function loadError'));
 test('dashboard render tickets reject stale requests, changed routes and changed users',()=>{
