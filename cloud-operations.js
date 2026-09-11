@@ -49,7 +49,7 @@
     data.notifications=(n.data||[]).map(x=>({id:x.id,condoId:x.condominium_id,eventId:x.event_id,title:x.title,message:x.message||'',channel:x.channel,status:x.status,scheduledAt:x.scheduled_at,sentAt:x.sent_at,readAt:x.read_at}));
     try{originalSave(data)}catch(err){console.warn(err)}
     applying=false;
-    if(render&&typeof route==='function' && !document.querySelector('#modal:not(.hidden),.ux-command-overlay') && !document.activeElement?.matches('input,textarea,select'))route();
+    if(render&&typeof route==='function' && !document.querySelector('#modal:not(.hidden),.ux-command-overlay,.ux-confirm-overlay') && !document.activeElement?.matches('input,textarea,select'))route();
   }
 
   async function pushLocal(d){
