@@ -10,12 +10,32 @@ async function noHorizontalOverflow(page) {
   expect(size.scroll).toBeLessThanOrEqual(size.viewport + 1);
 }
 
+async function productionStyles(page) {
+  const html = await (await page.request.get('/index.html')).text();
+  return [...html.matchAll(/<link[^>]+href=["']\.\/([^"']+\.css)["']/g)].map(match => match[1]);
+}
+
 test.describe('visual redesign v3', () => {
-  test('fixture mirrors production visual cascade and keeps accessibility last', async ({ page }) => {
+  test('fixture mirrors the complete production visual cascade', async ({ page }) => {
     await page.goto(fixture);
-    const styles = await page.locator('link[rel="stylesheet"]').evaluateAll(nodes => nodes.map(node => node.getAttribute('href')));
-    expect(styles.at(-2)).toBe('../../visual-redesign-v3.css');
-    expect(styles.at(-1)).toBe('../../design-system-accessibility.css');
+    const fixtureStyles = await page.locator('link[rel="stylesheet"]').evaluateAll(nodes => nodes.map(node => {
+      const href = node.getAttribute('href') || '';
+      return href.replace(/^\.\.\/\.\.\//, '');
+    }));
+    const liveStyles = await productionStyles(page);
+    expect(fixtureStyles).toEqual(liveStyles);
+    expect(fixtureStyles.at(-2)).toBe('visual-redesign-v3.css');
+    expect(fixtureStyles.at(-1)).toBe('design-system-accessibility.css');
+  });
+
+  test('global fixture does not leak workspace context into the overview', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(fixture);
+    await expect(page.locator('.ux-contextbar')).toHaveClass(/is-global/);
+    await expect(page.locator('.ux-condo-switch')).toHaveCount(0);
+    await expect(page.locator('.sidebar .workspace-label')).toHaveCount(0);
+    const labels = await page.locator('.mobile-bottom-dock .mobile-dock-label').allTextContents();
+    expect(labels).toEqual(['Visão geral', 'Condomínios', 'Manutenções', 'Chamados', 'Mais']);
   });
 
   test('desktop applies the new product language without changing the shell contract', async ({ page }) => {
