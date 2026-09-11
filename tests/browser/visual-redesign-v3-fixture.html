@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Visual Redesign V3</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="stylesheet" href="../../ui-refresh.css">
+  <link rel="stylesheet" href="../../mobile-fixes.css">
+  <link rel="stylesheet" href="../../design-system.css">
+  <link rel="stylesheet" href="../../design-system-polish.css">
+  <link rel="stylesheet" href="../../mobile-dock.css">
+  <link rel="stylesheet" href="../../dashboard-insights.css">
+  <link rel="stylesheet" href="../../ux-v2.css">
+  <link rel="stylesheet" href="../../mobile-navigation-polish.css">
+  <link rel="stylesheet" href="../../design-system-accessibility.css">
+  <link rel="stylesheet" href="../../visual-redesign-v3.css">
+</head>
+<body class="has-mobile-dock">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">SG</div><div><strong>Gestão Condominial</strong><span>Portal do Síndico</span></div></div>
+      <div class="nav-section">Principal</div>
+      <nav class="nav">
+        <a class="active" href="#/"><span class="ux-nav-icon">⌂</span><span class="ux-nav-label">Visão geral</span></a>
+        <a href="#/condominios"><span class="ux-nav-icon">▦</span><span class="ux-nav-label">Condomínios</span></a>
+        <a href="#/manutencoes"><span class="ux-nav-icon">⚒</span><span class="ux-nav-label">Manutenções</span></a>
+        <a href="#/chamados"><span class="ux-nav-icon">◉</span><span class="ux-nav-label">Chamados</span></a>
+      </nav>
+      <div class="nav-section">Workspace</div>
+      <div class="workspace-label">Pequeno Príncipe</div>
+      <nav class="nav"><a href="#/condominio/demo"><span class="ux-nav-icon">⌂</span><span class="ux-nav-label">Resumo</span></a><a href="#/condominio/demo/documentos"><span class="ux-nav-icon">▤</span><span class="ux-nav-label">Documentos</span></a></nav>
+      <div class="sidebar-footer"><small>Sessão atual</small><strong>Thi</strong></div>
+    </aside>
+    <main class="main">
+      <div class="mobile-top">
+        <button class="mobile-nav-toggle" aria-label="Abrir menu">☰</button>
+        <div class="brand"><div class="brand-mark">SG</div><div><strong>Gestão Condominial</strong><span>Portal do Síndico</span></div></div>
+        <button class="icon-btn ux-command-mobile" aria-label="Pesquisar">⌕</button>
+      </div>
+      <div class="ux-contextbar is-workspace">
+        <nav class="ux-breadcrumb"><a href="#/">Início</a><span>›</span><a href="#/condominios">Condomínios</a><span>›</span><strong>Pequeno Príncipe</strong></nav>
+        <label class="ux-condo-switch"><span>Condomínio</span><select><option>Pequeno Príncipe</option></select></label>
+      </div>
+      <header class="topbar">
+        <div><div class="eyebrow">PAINEL DE GESTÃO</div><h1>Visão geral</h1><div class="muted small">Indicadores consolidados da operação.</div></div>
+        <div class="top-actions"><button class="btn btn-primary">+ Novo condomínio</button><button class="icon-btn">🔔</button><div class="avatar">TG</div></div>
+      </header>
+      <section class="metrics">
+        <article class="metric"><div class="metric-top"><div><span>Condomínios</span><strong>4</strong><small>176 unidades</small></div><div class="icon blue">▦</div></div></article>
+        <article class="metric"><div class="metric-top"><div><span>Chamados abertos</span><strong>7</strong><small>1 urgente</small></div><div class="icon orange">◉</div></div></article>
+        <article class="metric"><div class="metric-top"><div><span>Manutenções em 7 dias</span><strong>3</strong><small>1 vencida</small></div><div class="icon red">⚒</div></div></article>
+        <article class="metric"><div class="metric-top"><div><span>Saldo realizado</span><strong>R$ 6,3k</strong><small>Todos autorizados</small></div><div class="icon green">$</div></div></article>
+      </section>
+      <section class="dashboard-insight-strip">
+        <article class="insight-card"><div class="insight-head"><span class="insight-kicker">Pulso operacional</span><h2>O que pede atenção hoje</h2><p>Uma leitura rápida antes de entrar nos módulos.</p></div><div class="pulse-list"><div class="pulse-row"><div class="pulse-meta"><strong>Chamados abertos</strong><span>Operação</span></div><div class="pulse-track"><div class="pulse-fill" style="--pulse:68%"></div></div><div class="pulse-value">7</div></div><div class="pulse-row" data-tone="warning"><div class="pulse-meta"><strong>Manutenções próximas</strong><span>Próximos 7 dias</span></div><div class="pulse-track"><div class="pulse-fill" style="--pulse:42%"></div></div><div class="pulse-value">3</div></div></div></article>
+        <article class="insight-card insight-card--soft"><div class="insight-head"><span class="insight-kicker">Acesso rápido</span><h2>Atalhos</h2></div><div class="quick-action-grid"><a class="quick-action"><span class="quick-action-icon">+</span><strong>Nova tarefa</strong></a><a class="quick-action"><span class="quick-action-icon">⚒</span><strong>Manutenção</strong></a><a class="quick-action"><span class="quick-action-icon">◉</span><strong>Chamados</strong></a><a class="quick-action"><span class="quick-action-icon">▤</span><strong>Documentos</strong></a></div></article>
+      </section>
+      <section class="grid-2">
+        <article class="panel"><div class="panel-head"><div><h2>Condomínios</h2><div class="muted small">Resumo rápido por operação.</div></div></div><div class="panel-body"><div class="condo-grid"><a class="condo-card"><div class="condo-top"><div class="condo-id"><div class="building">▦</div><div><strong>Pequeno Príncipe</strong><small>Lajeado, RS</small></div></div><span class="badge good">Em dia</span></div><div class="mini-stats"><div class="mini"><strong>15</strong><span>Unidades</span></div><div class="mini"><strong>0</strong><span>Chamados</span></div><div class="mini"><strong>2</strong><span>Docs</span></div></div></a></div></div></article>
+        <article class="panel"><div class="panel-head"><div><h2>Atenção necessária</h2><div class="muted small">Prazos e prioridades.</div></div></div><div class="panel-body"><div class="alert-card soon"><strong>Inspeção do elevador</strong><p class="muted small">Pequeno Príncipe, em 2 dias</p></div></div></article>
+      </section>
+    </main>
+  </div>
+  <nav class="mobile-bottom-dock">
+    <a class="mobile-dock-item active"><span class="mobile-dock-icon">⌂</span><span class="mobile-dock-label">Resumo</span></a>
+    <a class="mobile-dock-item"><span class="mobile-dock-icon">⚒</span><span class="mobile-dock-label">Manutenções</span></a>
+    <button class="mobile-dock-item"><span class="mobile-dock-icon">+</span><span class="mobile-dock-label">Criar</span></button>
+    <a class="mobile-dock-item"><span class="mobile-dock-icon">◉</span><span class="mobile-dock-label">Chamados</span></a>
+    <a class="mobile-dock-item mobile-dock-more"><span class="mobile-dock-icon">•••</span><span class="mobile-dock-label">Mais</span></a>
+  </nav>
+</body>
+</html>
