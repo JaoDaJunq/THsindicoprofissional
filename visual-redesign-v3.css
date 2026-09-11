@@ -569,7 +569,7 @@ h2{color:#172033!important;font-weight:650!important;letter-spacing:-.025em!impo
     background:linear-gradient(180deg,#f0f2ff,#e9edff)!important;
     box-shadow:inset 0 0 0 1px rgba(84,100,238,.075)!important;
   }
-  .mobile-dock-label{font-size:8.4px!important}
+  .mobile-dock-label{font-size:.75rem!important}
   .mobile-dock-item.active{color:#4c5bea!important}
   .mobile-dock-item.active .mobile-dock-label{color:#3e4ccb!important}
   .mobile-bottom-dock .ux-quick-create-dock{
@@ -595,7 +595,7 @@ h2{color:#172033!important;font-weight:650!important;letter-spacing:-.025em!impo
   .mobile-top .brand strong{font-size:11.5px!important}
   .mobile-top .brand span{font-size:8.5px!important}
   .mobile-bottom-dock{left:6px!important;right:6px!important;border-radius:18px!important}
-  .mobile-dock-label{font-size:7.8px!important}
+  .mobile-dock-label{font-size:.75rem!important}
   .mobile-bottom-dock .ux-quick-create-dock{top:-36px!important;width:52px!important;height:52px!important}
 }
 
@@ -619,6 +619,7 @@ h2{color:#172033!important;font-weight:650!important;letter-spacing:-.025em!impo
 .sidebar .nav a{font-size:.875rem!important}
 .sidebar .brand span,.sidebar-footer small{font-size:.75rem!important;color:#adb9cc!important}
 .metric-top>div:first-child,.condo-id,.condo-id>div:last-child{min-width:0}
+.metric-top span{overflow-wrap:anywhere}
 .metric strong{font-variant-numeric:tabular-nums;overflow-wrap:anywhere;line-height:1.2!important}
 .metric .icon,.building{flex-shrink:0}
 .condo-top{flex-wrap:wrap}
@@ -628,6 +629,12 @@ h2{color:#172033!important;font-weight:650!important;letter-spacing:-.025em!impo
 .condo-card:hover{transform:none!important}
 .insight-card::after{display:none}
 .panel-head{gap:var(--v3-space-2)!important;flex-wrap:wrap}
+@media(min-width:701px){
+  .grid-2,.dashboard-insight-strip,.finance-insight-grid{gap:var(--v3-space-3)!important}
+  .panel-head{padding:var(--v3-space-3) var(--v3-space-3) var(--v3-space-2)!important}
+  .panel-body{padding:0 var(--v3-space-3) var(--v3-space-3)!important}
+  .top-actions{gap:var(--v3-space-1)!important}
+}
 .panel-head h2{margin:0!important}
 .ux-list-tools,.view-filterbar{box-shadow:none!important;flex-wrap:wrap}
 .view-filterbar input,.view-filterbar select,.ux-search-field{min-width:0!important;max-width:100%}
