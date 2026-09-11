@@ -189,6 +189,17 @@
     root.querySelectorAll?.('.table, .table-wrap > table').forEach(enhanceTable);
   }
 
+  let fieldSequence = 0;
+  function enhanceForms() {
+    document.querySelectorAll('.field').forEach(field => {
+      const label = field.querySelector('label');
+      const input = field.querySelector('input:not([type="hidden"]),select,textarea');
+      if (!label || !input || label.control || label.hasAttribute('for')) return;
+      if (!input.id) input.id = `gc-field-${++fieldSequence}`;
+      label.htmlFor = input.id;
+    });
+  }
+
   function syncResponsiveState() {
     if (window.innerWidth > NAV_BREAKPOINT) closeMenu();
     document.body.classList.toggle('compact-data-cards', window.innerWidth <= TABLE_BREAKPOINT);
@@ -203,6 +214,7 @@
       ensureMobileNavigation();
       ensureBottomDock();
       enhanceTables();
+      enhanceForms();
       syncResponsiveState();
     });
   }

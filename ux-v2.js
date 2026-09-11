@@ -134,21 +134,36 @@
       if (show) visible += 1;
     });
     const count = toolbar.querySelector('.ux-filter-count');
-    if (count) count.textContent = `${visible} resultado${visible === 1 ? '' : 's'}`;
+    if (count) count.textContent = `${visible} de ${items.length} resultado${items.length === 1 ? '' : 's'}`;
+    const emptyState = toolbar.nextElementSibling;
+    if (emptyState?.classList.contains('ux-search-empty')) emptyState.hidden = visible !== 0;
+    const clear = toolbar.querySelector('[data-clear-search]');
+    if (clear) clear.hidden = !query;
   }
 
   function renderGenericSearch() {
     const view = currentView();
     const placeholder = genericSearchRoutes[view];
-    if (!placeholder || document.querySelector('.view-filterbar,[data-ux-search]')) return;
+    if (!placeholder || document.querySelector('.view-filterbar,[data-ux-search],#document-search')) return;
     if (searchableItems(view).length < 2) return;
     const anchor = document.querySelector('.table-wrap,.condo-grid,.resident-grid');
     if (!anchor) return;
     const toolbar = document.createElement('div');
     toolbar.className = 'ux-list-tools';
     toolbar.dataset.uxSearch = view;
-    toolbar.innerHTML = `<label class="ux-search-field"><span>${window.GCNavigation?.icons.search || ''}</span><input type="search" placeholder="${placeholder}" aria-label="${placeholder.replace('...','')}"></label><span class="ux-filter-count"></span>`;
+    toolbar.innerHTML = `<label class="ux-search-field"><span>${window.GCNavigation?.icons.search || ''}</span><input type="search" placeholder="${placeholder}" aria-label="${placeholder.replace('...','')}"></label><button class="btn" type="button" data-clear-search hidden>Limpar busca</button><span class="ux-filter-count" role="status" aria-live="polite" aria-atomic="true"></span>`;
     anchor.insertAdjacentElement('beforebegin', toolbar);
+    const emptyState = document.createElement('div');
+    emptyState.className = 'ux-search-empty';
+    emptyState.hidden = true;
+    emptyState.innerHTML = '<strong>Nenhum resultado encontrado</strong><p>Tente outro termo ou limpe a busca para ver todos os registros.</p>';
+    toolbar.insertAdjacentElement('afterend', emptyState);
+    toolbar.querySelector('[data-clear-search]').addEventListener('click', () => {
+      const input = toolbar.querySelector('input');
+      input.value = '';
+      applyGenericSearch(toolbar, view);
+      input.focus();
+    });
     toolbar.querySelector('input')?.addEventListener('input', () => applyGenericSearch(toolbar, view));
     applyGenericSearch(toolbar, view);
   }
@@ -176,26 +191,38 @@
     return `<div class="ux-state ux-state-error"><div class="ux-state-icon">!</div><strong>${title}</strong><p>${text}</p>${retry ? `<button class="btn" onclick="${retry}">Tentar novamente</button>` : ''}</div>`;
   }
 
+  const escapeText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+
   function confirmDialog({title='Confirmar ação',message='',confirmText='Confirmar',cancelText='Cancelar',danger=false}={}) {
     return new Promise(resolve => {
       const overlay = document.createElement('div');
       overlay.className = 'ux-confirm-overlay';
-      overlay.innerHTML = `<section class="ux-confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="ux-confirm-title"><div class="ux-confirm-icon ${danger?'danger':''}">!</div><h2 id="ux-confirm-title">${title}</h2><p>${message}</p><div class="ux-confirm-actions"><button class="btn" data-confirm-cancel>${cancelText}</button><button class="btn ${danger?'ux-danger':'btn-primary'}" data-confirm-ok>${confirmText}</button></div></section>`;
+      overlay.innerHTML = `<section class="ux-confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="ux-confirm-title"><div class="ux-confirm-icon ${danger?'danger':''}">!</div><h2 id="ux-confirm-title">${escapeText(title)}</h2><p>${escapeText(message)}</p><div class="ux-confirm-actions"><button class="btn" data-confirm-cancel>${escapeText(cancelText)}</button><button class="btn ${danger?'ux-danger':'btn-primary'}" data-confirm-ok>${escapeText(confirmText)}</button></div></section>`;
       let done = false;
-      const escHandler = e => { if (e.key === 'Escape') finish(false); };
+      const opener = document.activeElement;
+      const escHandler = e => {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); finish(false); }
+        if (e.key === 'Tab') {
+          const buttons = [...overlay.querySelectorAll('button')];
+          const first = buttons[0], last = buttons[buttons.length - 1];
+          if (e.shiftKey && (document.activeElement === first || !overlay.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && (document.activeElement === last || !overlay.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
+        }
+      };
       const finish = value => {
         if (done) return;
         done = true;
-        document.removeEventListener('keydown', escHandler);
+        document.removeEventListener('keydown', escHandler, true);
         overlay.remove();
+        if (opener?.isConnected) opener.focus({preventScroll:true});
         resolve(value);
       };
       overlay.querySelector('[data-confirm-cancel]').onclick = () => finish(false);
       overlay.querySelector('[data-confirm-ok]').onclick = () => finish(true);
       overlay.addEventListener('click', e => { if (e.target === overlay) finish(false); });
-      document.addEventListener('keydown', escHandler);
+      document.addEventListener('keydown', escHandler, true);
       document.body.appendChild(overlay);
-      overlay.querySelector('[data-confirm-ok]')?.focus();
+      overlay.querySelector('[data-confirm-cancel]')?.focus();
     });
   }
 

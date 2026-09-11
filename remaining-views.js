@@ -17,7 +17,7 @@
     if (path === 'condominios') return 'condominiums';
     if (path === 'chamados' || /\/chamados$/.test(path)) return 'calls';
     if (/\/documentos$/.test(path)) return 'documents';
-    if (/\/(?:arquivos|base-de-dados)$/.test(path)) return 'files';
+    if (/\/(?:arquivos|base-de-dados)(?:\/|$)/.test(path)) return 'files';
     if (/\/assembleias(?:\/|$)/.test(path)) return 'assemblies';
     if (/\/equipe$/.test(path)) return 'team';
     if (/\/moradores$/.test(path)) return 'residents';
@@ -109,9 +109,12 @@
 
     const statusSelect = toolbar.querySelector('[data-filter-status="calls"]');
     const selected = statusSelect?.value || '';
-    if (statusSelect) {
+    const entries = [...statuses.entries()].sort((a,b) => a[1].localeCompare(b[1], 'pt-BR'));
+    const signature = JSON.stringify(entries);
+    if (statusSelect && statusSelect.dataset.optionsSignature !== signature) {
+      statusSelect.dataset.optionsSignature = signature;
       [...statusSelect.options].slice(1).forEach(item => item.remove());
-      [...statuses.entries()].sort((a,b) => a[1].localeCompare(b[1], 'pt-BR')).forEach(([value,label]) => statusSelect.append(option(value,label)));
+      entries.forEach(([value,label]) => statusSelect.append(option(value,label)));
       if ([...statusSelect.options].some(item => item.value === selected)) statusSelect.value = selected;
     }
     filterCalls();
@@ -134,7 +137,7 @@
       if (show) visible += 1;
     });
     const count = toolbar.querySelector('[data-filter-count="calls"]');
-    if (count) count.textContent = `${visible} chamado${visible === 1 ? '' : 's'}`;
+    updateFilterFeedback(toolbar, count, visible, `${visible} chamado${visible === 1 ? '' : 's'}`, Boolean(query || priority || status));
   }
 
   function ensureFileSearch() {
@@ -179,7 +182,34 @@
       if (show) visible += 1;
     });
     const count = toolbar.querySelector('[data-filter-count="files"]');
-    if (count) count.textContent = visible === 1 ? '1 item' : `${visible} itens`;
+    updateFilterFeedback(toolbar, count, visible, visible === 1 ? '1 item' : `${visible} itens`, Boolean(query));
+  }
+
+  function updateFilterFeedback(toolbar, count, visible, message, active) {
+    // Observers watch childList: do not replace text or options when unchanged.
+    if (count && count.textContent !== message) count.textContent = message;
+    count?.setAttribute('role','status');
+    count?.setAttribute('aria-live','polite');
+    let clear = toolbar.querySelector('[data-clear-filters]');
+    if (!clear) {
+      clear = document.createElement('button');
+      clear.type = 'button'; clear.className = 'btn';
+      clear.dataset.clearFilters = 'true'; clear.textContent = 'Limpar filtros';
+      clear.onclick = () => {
+        toolbar.querySelectorAll('input,select').forEach(input => { input.value = ''; });
+        if (toolbar.dataset.viewFilter === 'calls') filterCalls(); else filterFiles();
+        toolbar.querySelector('input')?.focus();
+      };
+      toolbar.appendChild(clear);
+    }
+    clear.hidden = !active;
+    let empty = toolbar.nextElementSibling;
+    if (!empty?.classList.contains('ux-search-empty')) {
+      empty = document.createElement('div'); empty.className = 'ux-search-empty';
+      empty.innerHTML = '<strong>Nenhum resultado encontrado</strong><p>Ajuste a busca ou limpe os filtros para ver todos os registros.</p>';
+      toolbar.insertAdjacentElement('afterend', empty);
+    }
+    empty.hidden = visible > 0 || !active;
   }
 
   function normalizeLegacyTables() {

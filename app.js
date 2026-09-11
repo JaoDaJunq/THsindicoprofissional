@@ -136,10 +136,57 @@ window.deleteFile=async id=>{if(!confirm('Excluir este arquivo?'))return;const m
 
 window.createMaintenanceRecord=function(mid){const m=data.maintenances.find(x=>x.id===mid);if(!m)return;const rootName=`${m.title} - ${br(m.nextDate)}`;let root=data.folders.find(f=>f.condoId===m.condoId&&f.parentId===null&&f.name===rootName);if(!root){root={id:uid('folder'),condoId:m.condoId,parentId:null,name:rootName,createdAt:iso(new Date())};data.folders.push(root);['Documentos','Fotos','Vídeos'].forEach(name=>data.folders.push({id:uid('folder'),condoId:m.condoId,parentId:root.id,name,createdAt:iso(new Date())}));data.timeline.unshift({id:uid('tl'),condoId:m.condoId,text:`Pasta de registro criada para: ${m.title}.`,date:iso(new Date())});save(data)}location.hash=`#/condominio/${m.condoId}/arquivos/${root.id}`};
 
-function modal(content){$('#modal-content').innerHTML=content;$('#modal').classList.remove('hidden');$('#modal').setAttribute('aria-hidden','false')}
-function closeModal(){$('#modal').classList.add('hidden');$('#modal').setAttribute('aria-hidden','true')}
+let modalOpener = null;
+let modalBackground = [];
+function modal(content){
+  const host = $('#modal');
+  if(host.classList.contains('hidden')) {
+    modalOpener = document.activeElement;
+    modalBackground = [...document.body.children].filter(el => el !== host && !['SCRIPT','STYLE'].includes(el.tagName)).map(el => [el, el.inert]);
+    modalBackground.forEach(([el]) => { el.inert = true; });
+  }
+  $('#modal-content').innerHTML=content;
+  const card = host.querySelector('.modal-card');
+  const heading = card.querySelector('h2,h1,h3');
+  card.tabIndex = -1;
+  if(heading){ heading.id = heading.id || 'modal-title'; card.setAttribute('aria-labelledby',heading.id); card.removeAttribute('aria-label'); }
+  else { card.removeAttribute('aria-labelledby'); card.setAttribute('aria-label','Detalhes'); }
+  host.classList.remove('hidden');
+  host.setAttribute('aria-hidden','false');
+  document.body.classList.add('modal-open');
+  // Focus the title container: mobile users can read the form before the keyboard opens.
+  card.focus({preventScroll:true});
+}
+function closeModal(){
+  const host = $('#modal');
+  if(host.classList.contains('hidden')) return;
+  host.classList.add('hidden'); host.setAttribute('aria-hidden','true');
+  document.body.classList.remove('modal-open');
+  modalBackground.forEach(([el,previous]) => { el.inert = previous; });
+  modalBackground = [];
+  if(modalOpener?.isConnected) modalOpener.focus({preventScroll:true});
+  modalOpener = null;
+}
 document.addEventListener('click',e=>{if(e.target.matches('[data-close-modal]'))closeModal()});
-function flash(msg){const el=document.createElement('div');el.className='flash';el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),2300)}
+document.addEventListener('keydown',e=>{
+  const host = $('#modal');
+  if(!host || host.classList.contains('hidden') || document.querySelector('.ux-confirm-overlay,.ux-command-overlay')) return;
+  if(e.key==='Escape'){e.preventDefault();closeModal();return;}
+  if(e.key!=='Tab') return;
+  const items = [...host.querySelectorAll('button,a[href],input,select,textarea,[tabindex]')].filter(el=>!el.disabled && el.tabIndex>=0 && el.getClientRects().length);
+  const first=items[0],last=items[items.length-1];
+  if(!first){e.preventDefault();return;}
+  if(e.shiftKey && (document.activeElement===first || !items.includes(document.activeElement))){e.preventDefault();last.focus();}
+  else if(!e.shiftKey && (document.activeElement===last || !items.includes(document.activeElement))){e.preventDefault();first.focus();}
+});
+function flash(msg){
+  let region = document.getElementById('app-feedback');
+  if(!region){region=document.createElement('div');region.id='app-feedback';region.setAttribute('role','status');region.setAttribute('aria-live','polite');region.setAttribute('aria-atomic','true');document.body.appendChild(region);}
+  region.inert=false;
+  const el=document.createElement('div');el.className='flash';el.textContent=msg;
+  region.replaceChildren(el);
+  setTimeout(()=>el.remove(),6000);
+}
 
 window.openCondoModal=function(){modal(`<div class="eyebrow">Novo condomínio</div><h2 style="margin-bottom:16px">Adicionar condomínio</h2><form id="modal-condo" class="form-grid"><div class="field full"><label>Nome</label><input name="name" required></div><div class="field full"><label>Endereço</label><input name="address" required></div><div class="field"><label>Unidades</label><input name="units" type="number" min="0" value="0"></div><div class="field"><label>Moradores</label><input name="residents" type="number" min="0" value="0"></div><div class="field full"><button class="btn btn-primary" type="submit">Criar condomínio</button></div></form>`);$('#modal-condo').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),id=uid('condo');data.condos.push({id,name:f.get('name').trim(),address:f.get('address').trim(),units:Number(f.get('units'))||0,residents:Number(f.get('residents'))||0,status:'good',balance:0});data.folders.push({id:uid('folder'),condoId:id,parentId:null,name:'Documentos Gerais',createdAt:iso(new Date())});save(data);closeModal();openRecommendationModal(id)}};
 
