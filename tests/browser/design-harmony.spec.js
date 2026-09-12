@@ -182,18 +182,6 @@ for (const width of [320,390,1280]) {
   });
 }
 
-test('temporary visual review evidence', async ({page}) => {
-  for (const width of [390,1440]) {
-    await openProductionFixture(page, '/tests/browser/visual-redesign-v3-fixture.html', width);
-    console.log('REVIEW_IMAGE:' + width + ':' + (await page.screenshot({type:'jpeg',quality:50})).toString('base64'));
-    await page.unrouteAll();
-  }
-  await openProductionFixture(page, '/tests/browser/command-center-fixture.html#/condominio/c1/tarefas', 390);
-  await page.locator('.ux-command-mobile').click();
-  console.log('REVIEW_IMAGE:palette:' + (await page.screenshot({type:'jpeg',quality:50})).toString('base64'));
-});
-
-
 test('management More sheet traps focus and leaves the draft page usable after closing', async ({page}) => {
   await openProductionFixture(page, '/tests/browser/ux-v2-fixture.html#/condominio/c1/tarefas');
   const opener = page.locator('.mobile-dock-more');

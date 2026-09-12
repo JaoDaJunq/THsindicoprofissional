@@ -113,3 +113,5 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 }
 
 body.resident-more-open{overflow:hidden!important}
+
+.mobile-more-handle:focus-visible{outline:3px solid #4961f2!important;outline-offset:3px!important}

@@ -656,7 +656,7 @@ h2{color:#172033!important;font-weight:650!important;letter-spacing:-.025em!impo
 }
 
 /* Align KPI values across labels of different lengths. Icons are decorative. */
-.metric-top span{display:block;min-height:2.8em}
+.metric-top span{display:block;min-height:3em}
 @media(max-width:700px){
   .metric .icon{display:none!important}
   .metric-top{display:block!important}
