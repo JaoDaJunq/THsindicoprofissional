@@ -90,7 +90,14 @@
     document.querySelector('.mobile-nav-toggle')?.setAttribute('aria-expanded', 'false');
   }
 
+  let sheetOpener = null;
+  let sheetInert = [];
+
   function closeSheet() {
+    sheetInert.forEach(node => { node.inert = false; });
+    sheetInert = [];
+    if (sheetOpener?.isConnected && !sheetOpener.closest('[inert]')) sheetOpener.focus({preventScroll:true});
+    sheetOpener = null;
     document.body.classList.remove('mobile-more-open');
     const sheet = document.querySelector('.mobile-more-sheet');
     sheet?.classList.remove('is-expanded', 'is-dragging');
@@ -222,7 +229,11 @@
   function openSheet(mode = 'extra') {
     const limit = mode === 'all' ? SHEET_BREAKPOINT : DOCK_BREAKPOINT;
     if (window.innerWidth > limit) return;
+    closeSheet();
+    sheetOpener = document.activeElement;
     renderSheet(mode);
+    sheetInert = [...document.body.children].filter(node => node instanceof HTMLElement && !node.inert && !node.matches('.mobile-more-sheet,.mobile-more-backdrop,script,style,link'));
+    sheetInert.forEach(node => { node.inert = true; });
     closeLegacyDrawer();
     document.body.classList.add('mobile-more-open');
     document.querySelector('.mobile-dock-more')?.setAttribute('aria-expanded', String(mode === 'extra'));
@@ -260,7 +271,14 @@
     }, true);
 
     document.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && document.body.classList.contains('mobile-more-open')) closeSheet();
+      if (!document.body.classList.contains('mobile-more-open')) return;
+      if (event.key === 'Escape') closeSheet();
+      if (event.key === 'Tab') {
+        const controls = [...document.querySelectorAll('.mobile-more-sheet button,.mobile-more-sheet a[href],[role="button"].mobile-more-handle')].filter(node => node.getClientRects().length);
+        const first = controls[0], last = controls.at(-1);
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
     });
 
     window.addEventListener('resize', () => {
