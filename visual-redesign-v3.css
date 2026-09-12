@@ -654,3 +654,12 @@ h2{color:#172033!important;font-weight:650!important;letter-spacing:-.025em!impo
   .top-actions{flex-wrap:wrap}
   .metric-top{gap:8px!important;flex-wrap:wrap}
 }
+
+/* Align KPI values across labels of different lengths. Icons are decorative. */
+.metric-top span{display:block;min-height:2.8em}
+@media(max-width:700px){
+  .metric .icon{display:none!important}
+  .metric-top{display:block!important}
+  .metric{min-height:132px!important}
+  .mobile-dock-label{overflow-wrap:normal!important}
+}

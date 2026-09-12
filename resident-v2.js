@@ -2,6 +2,8 @@
   'use strict';
 
   let scheduled = false;
+  let moreOpener = null;
+  let moreInert = [];
   const iconFor = href => {
     const icons = window.GCNavigation?.icons || {};
     if (/announcements/.test(href)) return icons.announcements || '';
@@ -49,12 +51,18 @@
   }
 
   function closeMore() {
+    if (!document.querySelector('.resident-more-overlay')) return;
+    moreInert.forEach(node => { node.inert = false; });
+    moreInert = [];
+    if (moreOpener?.isConnected && !moreOpener.closest('[inert]')) moreOpener.focus({preventScroll:true});
+    moreOpener = null;
     document.body.classList.remove('resident-more-open');
     document.querySelector('.resident-more-overlay')?.remove();
   }
 
   function openMore() {
     closeMore();
+    moreOpener = document.activeElement;
     const all = links();
     const extra = all.filter(item => /calendar|unit|notifications/.test(item.href));
     const overlay = document.createElement('div');
@@ -72,6 +80,15 @@
       a.querySelector('small').textContent = item.href.includes('notifications') && item.count ? `${item.count} não lida${item.count === 1 ? '' : 's'}` : item.href.includes('unit') ? 'Dados do seu vínculo' : 'Eventos do condomínio';
       a.addEventListener('click', closeMore);
       nav.appendChild(a);
+    });
+    moreInert = [...document.body.children].filter(node => node instanceof HTMLElement && !node.inert && !['SCRIPT','STYLE','LINK'].includes(node.tagName));
+    moreInert.forEach(node => { node.inert = true; });
+    overlay.addEventListener('keydown', event => {
+      if (event.key !== 'Tab') return;
+      const controls = [...overlay.querySelectorAll('button,a[href]')].filter(node => node.getClientRects().length);
+      const first = controls[0], last = controls.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
     });
     document.body.appendChild(overlay);
     document.body.classList.add('resident-more-open');
@@ -104,7 +121,9 @@
       a.className = `resident-dock-item${item.active ? ' active' : ''}`;
       if (item.active) a.setAttribute('aria-current','page');
       a.innerHTML = `<span class="resident-dock-icon">${item.icon}</span><span class="resident-dock-label"></span>${item.count ? `<b>${item.count > 9 ? '9+' : item.count}</b>` : ''}`;
-      a.querySelector('.resident-dock-label').textContent = item.label.replace('Meus ', '');
+      a.setAttribute('aria-label', item.label);
+      a.title = item.label;
+      a.querySelector('.resident-dock-label').textContent = ({'Comunicados':'Avisos','Documentos':'Docs'})[item.label] || item.label.replace('Meus ', '');
       dock.appendChild(a);
     });
     const more = document.createElement('button');

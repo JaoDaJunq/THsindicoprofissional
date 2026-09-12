@@ -192,3 +192,38 @@ test('temporary visual review evidence', async ({page}) => {
   await page.locator('.ux-command-mobile').click();
   console.log('REVIEW_IMAGE:palette:' + (await page.screenshot({type:'jpeg',quality:50})).toString('base64'));
 });
+
+
+test('management More sheet traps focus and leaves the draft page usable after closing', async ({page}) => {
+  await openProductionFixture(page, '/tests/browser/ux-v2-fixture.html#/condominio/c1/tarefas');
+  const opener = page.locator('.mobile-dock-more');
+  await opener.click();
+  await expect(page.locator('#app')).toHaveAttribute('inert','');
+  await page.locator('.mobile-more-handle').focus();
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.locator('.mobile-more-sheet a').last()).toBeFocused();
+  await page.keyboard.press('Control+K');
+  await expect(page.locator('.ux-command-overlay')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(opener).toBeFocused();
+  await expect(page.locator('#app')).not.toHaveAttribute('inert');
+});
+
+test('resident More sheet traps focus and restores its opener', async ({page}) => {
+  await openProductionFixture(page, '/tests/browser/resident-v2-fixture.html#/morador/home');
+  const opener = page.locator('.resident-dock-more');
+  await opener.click();
+  await expect(page.locator('#app')).toHaveAttribute('inert','');
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.locator('.resident-more-sheet a').last()).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(opener).toBeFocused();
+  await expect(page.locator('#app')).not.toHaveAttribute('inert');
+});
+
+test('compact dock labels retain complete accessible navigation names', async ({page}) => {
+  await openProductionFixture(page, '/tests/browser/ux-v2-fixture.html#/');
+  const dock = page.locator('.mobile-bottom-dock');
+  await expect(dock.getByRole('link',{name:'Condomínios',exact:true})).toContainText('Condom.');
+  await expect(dock.getByRole('link',{name:'Manutenções',exact:true})).toContainText('Manut.');
+});

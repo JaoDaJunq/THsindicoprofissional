@@ -230,7 +230,7 @@
 
   function buildOverlay(mode='search') {
     // Keep an in-progress form or another modal as the only active dialog.
-    if (document.querySelector('.modal:not(.hidden), .ux-confirm-overlay, .mobile-more-overlay, .resident-more-overlay')) return;
+    if (document.querySelector('.modal:not(.hidden), .ux-confirm-overlay, body.mobile-more-open, .resident-more-overlay')) return;
     close();
     opener = document.activeElement;
     overlay = document.createElement('div');

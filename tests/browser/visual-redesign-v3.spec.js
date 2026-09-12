@@ -35,7 +35,7 @@ test.describe('visual redesign v3', () => {
     await expect(page.locator('.ux-condo-switch')).toHaveCount(0);
     await expect(page.locator('.sidebar .workspace-label')).toHaveCount(0);
     const labels = await page.locator('.mobile-bottom-dock .mobile-dock-label').allTextContents();
-    expect(labels).toEqual(['Visão geral', 'Condomínios', 'Manutenções', 'Chamados', 'Mais']);
+    expect(labels).toEqual(['Visão geral', 'Condom.', 'Manut.', 'Chamados', 'Mais']);
   });
 
   test('desktop applies the new product language without changing the shell contract', async ({ page }) => {

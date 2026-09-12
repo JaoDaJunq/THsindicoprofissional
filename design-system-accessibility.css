@@ -111,3 +111,5 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   .resident-dock-item{min-height:66px!important;color:#566274}
   .resident-v2-active .resident-main{padding-bottom:calc(128px + env(safe-area-inset-bottom))!important}
 }
+
+body.resident-more-open{overflow:hidden!important}
