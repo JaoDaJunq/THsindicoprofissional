@@ -202,6 +202,7 @@ test('resident More sheet traps focus and restores its opener', async ({page}) =
   const opener = page.locator('.resident-dock-more');
   await opener.click();
   await expect(page.locator('#app')).toHaveAttribute('inert','');
+  await expect(page.locator('.resident-more-sheet header button')).toBeFocused();
   await page.keyboard.press('Shift+Tab');
   await expect(page.locator('.resident-more-sheet a').last()).toBeFocused();
   await page.keyboard.press('Escape');
