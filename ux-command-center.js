@@ -3,6 +3,8 @@
 
   let scheduled = false;
   let overlay = null;
+  let opener = null;
+  let inertSiblings = [];
   let activeIndex = 0;
   let currentResults = [];
 
@@ -159,7 +161,12 @@
   }
 
   function close() {
-    overlay?.remove();
+    if (!overlay) return;
+    overlay.remove();
+    inertSiblings.forEach(node => { node.inert = false; });
+    inertSiblings = [];
+    if (opener?.isConnected && !opener.closest('[inert]')) opener.focus({preventScroll:true});
+    opener = null;
     overlay = null;
     currentResults = [];
     activeIndex = 0;
@@ -222,7 +229,10 @@
   }
 
   function buildOverlay(mode='search') {
+    // Keep an in-progress form or another modal as the only active dialog.
+    if (document.querySelector('.modal:not(.hidden), .ux-confirm-overlay, .mobile-more-overlay, .resident-more-overlay')) return;
     close();
+    opener = document.activeElement;
     overlay = document.createElement('div');
     overlay.className = 'ux-command-overlay';
     overlay.innerHTML = `
@@ -230,19 +240,23 @@
         <div class="ux-command-search">
           <span class="ux-command-search-icon">${icon('search')}</span>
           <input type="search" autocomplete="off" spellcheck="false" placeholder="Buscar no sistema..." aria-label="Buscar no sistema">
-          <kbd>ESC</kbd>
+          <button type="button" class="ux-command-close" aria-label="Fechar busca e ações rápidas">×</button>
         </div>
         <div class="ux-command-create" hidden>
           <div class="ux-command-section-head"><strong>Criar rapidamente</strong><small></small></div>
           <div class="ux-command-actions"></div>
         </div>
-        <div class="ux-command-section-head ux-command-results-head"><strong>Resultados</strong><small class="ux-command-meta"></small></div>
+        <div class="ux-command-section-head ux-command-results-head"><strong>Resultados</strong><small class="ux-command-meta" role="status" aria-live="polite" aria-atomic="true"></small></div>
         <div class="ux-command-results"></div>
         <footer class="ux-command-footer"><span><kbd>↑</kbd><kbd>↓</kbd> navegar</span><span><kbd>↵</kbd> abrir</span><span class="ux-command-shortcut">Ctrl K</span></footer>
       </section>`;
 
     overlay.addEventListener('mousedown', event => { if (event.target === overlay) close(); });
+    inertSiblings = [...document.body.children].filter(node =>
+      node instanceof HTMLElement && !node.inert && !['SCRIPT','STYLE','LINK'].includes(node.tagName));
+    inertSiblings.forEach(node => { node.inert = true; });
     document.body.appendChild(overlay);
+    overlay.querySelector('.ux-command-close').addEventListener('click', close);
     document.body.classList.add('ux-command-open');
 
     const actions = availableCreateActions();
@@ -274,9 +288,9 @@
 
     if (mode === 'create' && actions.length) {
       overlay.querySelector('.ux-command-panel').classList.add('prefer-create');
-      requestAnimationFrame(() => actionGrid.querySelector('button')?.focus({preventScroll:true}));
+      requestAnimationFrame(() => { if (actionGrid.isConnected) actionGrid.querySelector('button')?.focus({preventScroll:true}); });
     } else {
-      requestAnimationFrame(() => input.focus({preventScroll:true}));
+      requestAnimationFrame(() => { if (input.isConnected) input.focus({preventScroll:true}); });
     }
   }
 
@@ -286,6 +300,7 @@
       const search = document.createElement('button');
       search.type = 'button';
       search.className = 'btn btn-soft ux-command-trigger';
+      search.setAttribute('aria-label', 'Buscar no sistema');
       search.innerHTML = `${icon('search')}<span>Buscar</span><kbd>Ctrl K</kbd>`;
       search.addEventListener('click', () => buildOverlay('search'));
       topActions.prepend(search);
@@ -346,7 +361,21 @@
       buildOverlay('search');
       return;
     }
-    if (event.key === 'Escape' && overlay) close();
+    if (event.key === 'Escape' && overlay) {
+      event.preventDefault();
+      close();
+      return;
+    }
+    if (event.key === 'Tab' && overlay) {
+      const controls = [...overlay.querySelectorAll('button:not(:disabled), input:not(:disabled), [tabindex="0"]')]
+        .filter(node => node.getClientRects().length);
+      const first = controls[0], last = controls.at(-1);
+      if (event.shiftKey && (document.activeElement === first || !overlay.contains(document.activeElement))) {
+        event.preventDefault(); last?.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !overlay.contains(document.activeElement))) {
+        event.preventDefault(); first?.focus();
+      }
+    }
   });
 
   window.addEventListener('hashchange', close, {passive:true});

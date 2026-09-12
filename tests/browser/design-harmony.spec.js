@@ -103,3 +103,92 @@ test('destructive confirmation stays distinct and Escape cancels without executi
   await expect.poll(() => page.evaluate(() => window.confirmResult)).toBe(false);
   await expect(page.locator('.ux-confirm-overlay')).toHaveCount(0);
 });
+
+
+test('palette contains Tab focus, restores the trigger and preserves existing inert elements', async ({ page }) => {
+  await openProductionFixture(page, '/tests/browser/command-center-fixture.html#/condominio/c1/tarefas', 1440);
+  await page.evaluate(() => { const node = document.createElement('aside'); node.id = 'already-inert'; node.inert = true; document.body.appendChild(node); });
+  const trigger = page.locator('.ux-command-trigger');
+  await trigger.click();
+  const input = page.getByRole('searchbox', { name: 'Buscar no sistema' });
+  await expect(input).toBeFocused();
+  await expect(page.locator('#app')).toHaveAttribute('inert', '');
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.locator('.ux-command-result').last()).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(input).toBeFocused();
+  await page.getByRole('button', { name: 'Fechar busca e ações rápidas' }).click();
+  await expect(trigger).toBeFocused();
+  await expect(page.locator('#app')).not.toHaveAttribute('inert');
+  await expect(page.locator('#already-inert')).toHaveAttribute('inert', '');
+});
+
+test('search shortcut preserves an in-progress modal form', async ({ page }) => {
+  await openProductionFixture(page, '/tests/browser/command-center-fixture.html#/condominio/c1/tarefas');
+  await page.evaluate(() => {
+    const dialog = document.createElement('div'); dialog.className = 'modal';
+    dialog.innerHTML = '<section class="modal-card" role="dialog" aria-label="Editar tarefa"><label for="draft">Título</label><input id="draft" value="Rascunho não salvo"></section>';
+    document.body.appendChild(dialog);
+  });
+  await page.getByLabel('Título').focus();
+  await page.keyboard.press('Control+K');
+  await expect(page.locator('.ux-command-overlay')).toHaveCount(0);
+  await expect(page.getByLabel('Título')).toBeFocused();
+  await expect(page.getByLabel('Título')).toHaveValue('Rascunho não salvo');
+});
+
+test('palette results remain reachable on a short screen with enlarged text', async ({ page }) => {
+  await openProductionFixture(page, '/tests/browser/command-center-fixture.html#/condominio/c1/tarefas', 320);
+  await page.setViewportSize({width:320,height:480});
+  await page.addStyleTag({content:'html{font-size:200%}'});
+  await page.locator('.ux-command-mobile').click();
+  await page.getByRole('searchbox').fill('portão');
+  await expect(page.locator('.ux-command-meta')).toHaveText('1 resultado');
+  const result = page.locator('.ux-command-result');
+  await result.scrollIntoViewIfNeeded();
+  const box = await result.boundingBox();
+  expect(box.y).toBeGreaterThanOrEqual(0);
+  expect(box.y + box.height).toBeLessThanOrEqual(481);
+  await noOverflow(page);
+  await result.click();
+  await expect(page.locator('.ux-command-overlay')).toHaveCount(0);
+});
+
+for (const mode of ['files','assemblies','integrations']) {
+  test(`production cascade preserves ${mode} at desktop and phone widths`, async ({ page }) => {
+    await openProductionFixture(page, `/tests/browser/remaining-views-fixture.html?mode=${mode}`, 1440);
+    await noOverflow(page);
+    await page.setViewportSize({width:320,height:700});
+    await noOverflow(page);
+    await page.screenshot({path:`test-results/plus-${mode}-320.png`,fullPage:true});
+  });
+}
+
+for (const width of [320,390,1280]) {
+  test(`resident portal stays readable with the complete production cascade at ${width}px`, async ({ page }) => {
+    await openProductionFixture(page, '/tests/browser/resident-v2-fixture.html#/morador/home', width);
+    await expect(page.locator('.resident-card').first()).toBeVisible();
+    expect(await page.locator('.resident-card strong').first().evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(14);
+    await noOverflow(page);
+    if (width < 700) {
+      expect(await page.locator('.resident-dock-label').first().evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(12);
+      await page.locator('.resident-dock-more').click();
+      await page.getByRole('link', {name:/Minha unidade/}).click();
+      await expect(page).toHaveURL(/#\/morador\/unit$/);
+    } else {
+      await expect(page.locator('.resident-nav a.active')).toHaveCSS('color','rgb(255, 255, 255)');
+    }
+    await page.screenshot({path:`test-results/plus-resident-${width}.png`,fullPage:true});
+  });
+}
+
+test('temporary visual review evidence', async ({page}) => {
+  for (const width of [390,1440]) {
+    await openProductionFixture(page, '/tests/browser/visual-redesign-v3-fixture.html', width);
+    console.log('REVIEW_IMAGE:' + width + ':' + (await page.screenshot({type:'jpeg',quality:50})).toString('base64'));
+    await page.unrouteAll();
+  }
+  await openProductionFixture(page, '/tests/browser/command-center-fixture.html#/condominio/c1/tarefas', 390);
+  await page.locator('.ux-command-mobile').click();
+  console.log('REVIEW_IMAGE:palette:' + (await page.screenshot({type:'jpeg',quality:50})).toString('base64'));
+});
