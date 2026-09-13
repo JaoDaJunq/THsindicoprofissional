@@ -10,7 +10,6 @@
   const initials = value => String(value || 'U').trim().split(/\s+/).slice(0,2).map(part => part[0]?.toUpperCase() || '').join('') || 'U';
   const escHtml = value => String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[ch]));
   const notify = message => typeof window.flash === 'function' ? window.flash(message) : window.alert(message);
-  const appBase = () => `${location.origin}${location.pathname}`;
 
   async function getContext() {
     const { data: sessionData } = await sb.auth.getSession();
@@ -65,7 +64,7 @@
           <div class="uc-identity">
             <div class="uc-avatar-wrap">
               ${avatarMarkup(ctx)}
-              <label class="uc-avatar-action" for="uc-avatar-input" title="Alterar foto">✎</label>
+              <label class="uc-avatar-action" for="uc-avatar-input" title="Alterar foto" tabindex="0">✎</label>
               <input id="uc-avatar-input" class="sr-only" type="file" accept="image/jpeg,image/png,image/webp">
             </div>
             <div>
@@ -113,12 +112,16 @@
           </section>
 
           <section class="panel uc-section">
-            <div class="panel-head"><div><div class="eyebrow">SEGURANÇA</div><h2>Acesso e sessão</h2><p class="muted small">Gerencie sua senha quando o acesso por senha estiver disponível.</p></div></div>
+            <div class="panel-head"><div><div class="eyebrow">SEGURANÇA</div><h2>Acesso e sessão</h2><p class="muted small">Defina uma nova senha ou encerre todas as sessões abertas.</p></div></div>
+            <form id="uc-password-form" class="uc-form uc-password-form">
+              <div class="field"><label for="uc-password">Nova senha</label><input id="uc-password" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="Mínimo de 8 caracteres"></div>
+              <div class="field"><label for="uc-password-confirm">Confirmar nova senha</label><input id="uc-password-confirm" name="confirm" type="password" autocomplete="new-password" minlength="8" required></div>
+              <button class="btn" type="submit">Atualizar senha</button>
+            </form>
             <div class="uc-security-actions">
-              <button class="btn" id="uc-password-reset" type="button">Enviar redefinição de senha</button>
               <button class="btn btn-danger-outline" id="uc-signout-all" type="button">Sair de todos os dispositivos</button>
             </div>
-            <p class="uc-security-note">A redefinição será enviada para <strong>${escHtml(ctx.user.email || '')}</strong>.</p>
+            <p class="uc-security-note">Ao trocar a senha, seu login atual continua ativo. O botão acima encerra todas as sessões da conta.</p>
           </section>
         </div>
       </div>
@@ -140,12 +143,9 @@
 
     const { error } = await sb.from('profiles').update({ full_name: fullName, phone: phone || null, updated_at: new Date().toISOString() }).eq('id', ctx.user.id);
     if (error) return notify(`Não foi possível salvar: ${error.message}`);
-    await sb.auth.updateUser({ data: { ...ctx.user.user_metadata, full_name: fullName } });
-    if (window.data?.user) {
-      window.data.user.name = fullName;
-      window.data.user.initials = initials(fullName);
-      try { window.save?.(window.data); } catch (_) {}
-    }
+    const { error: authError } = await sb.auth.updateUser({ data: { ...ctx.user.user_metadata, full_name: fullName } });
+    if (authError) console.warn('[user-center] metadata', authError);
+    document.querySelectorAll('.sidebar-footer strong').forEach(node => { node.textContent = fullName; });
     notify('Perfil atualizado.');
     await userCenterPage();
   }
@@ -182,16 +182,25 @@
     const avatarUrl = `${publicData.publicUrl}?v=${Date.now()}`;
     const { error } = await sb.from('profiles').update({ avatar_url: avatarUrl, updated_at: new Date().toISOString() }).eq('id', ctx.user.id);
     if (error) return notify(`A foto foi enviada, mas o perfil não atualizou: ${error.message}`);
-    await sb.auth.updateUser({ data: { ...ctx.user.user_metadata, avatar_url: avatarUrl } });
+    const { error: authError } = await sb.auth.updateUser({ data: { ...ctx.user.user_metadata, avatar_url: avatarUrl } });
+    if (authError) console.warn('[user-center] avatar metadata', authError);
     notify('Foto de perfil atualizada.');
     await userCenterPage();
   }
 
-  async function sendPasswordReset(ctx) {
-    if (!ctx.user.email) return notify('Sua conta não possui e-mail disponível.');
-    const { error } = await sb.auth.resetPasswordForEmail(ctx.user.email, { redirectTo: appBase() });
-    if (error) return notify(`Não foi possível enviar o e-mail: ${error.message}`);
-    notify('E-mail de redefinição enviado.');
+  async function updatePassword(form) {
+    const fd = new FormData(form);
+    const password = String(fd.get('password') || '');
+    const confirm = String(fd.get('confirm') || '');
+    if (password.length < 8) return notify('Use uma senha com pelo menos 8 caracteres.');
+    if (password !== confirm) return notify('As senhas não conferem.');
+    const button = form.querySelector('button[type="submit"]');
+    if (button) { button.disabled = true; button.textContent = 'Atualizando...'; }
+    const { error } = await sb.auth.updateUser({ password });
+    if (button) { button.disabled = false; button.textContent = 'Atualizar senha'; }
+    if (error) return notify(`Não foi possível atualizar a senha: ${error.message}`);
+    form.reset();
+    notify('Senha atualizada com sucesso.');
   }
 
   async function signOutAll() {
@@ -206,8 +215,14 @@
   function bindEvents(ctx) {
     document.querySelector('#uc-profile-form')?.addEventListener('submit', event => { event.preventDefault(); saveProfile(ctx, event.currentTarget); });
     document.querySelector('#uc-prefs-form')?.addEventListener('submit', event => { event.preventDefault(); savePreferences(ctx, event.currentTarget); });
+    document.querySelector('#uc-password-form')?.addEventListener('submit', event => { event.preventDefault(); updatePassword(event.currentTarget); });
     document.querySelector('#uc-avatar-input')?.addEventListener('change', event => uploadAvatar(ctx, event.target.files?.[0]));
-    document.querySelector('#uc-password-reset')?.addEventListener('click', () => sendPasswordReset(ctx));
+    document.querySelector('.uc-avatar-action')?.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        document.querySelector('#uc-avatar-input')?.click();
+      }
+    });
     document.querySelector('#uc-signout-all')?.addEventListener('click', signOutAll);
     document.querySelector('#uc-signout')?.addEventListener('click', async () => {
       await sb.auth.signOut();
