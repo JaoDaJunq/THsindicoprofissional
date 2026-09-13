@@ -38,8 +38,9 @@
     // hash entry bypass the login/resident decision just because the page
     // function exists. RLS remains the backend boundary; this is the UI boundary.
     if (isManagementOnlyRoute(p) && !hasManagementAccess()) return previousRoute();
-    if (p[0] === 'morador' && !hasAuthenticatedAccessSnapshot()) return previousRoute();
+    if ((p[0] === 'morador' || p[0] === 'conta') && !hasAuthenticatedAccessSnapshot()) return previousRoute();
 
+    if (p[0] === 'conta' && typeof window.userCenterPage === 'function') return window.userCenterPage();
     if (p[0] === 'nao-migrado' && typeof window.legacyMigrationPage === 'function') return window.legacyMigrationPage();
     if (p[0] === 'auditoria' && typeof window.auditPage === 'function') return window.auditPage();
     if (p[0] === 'relatorios' && typeof window.managementReportsPage === 'function') return window.managementReportsPage(null,rp.start||undefined,rp.end||undefined);
