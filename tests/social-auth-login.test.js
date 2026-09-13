@@ -33,7 +33,7 @@ test('existing email and password login remains available', () => {
 
 test('social auth contains no privileged Supabase credentials', () => {
   assert.doesNotMatch(js, /service_role/i);
-  assert.doesNotMatch(js, /sb_secret_/i);
+  assert.doesNotMatch(js, new RegExp('sb_' + 'secret_', 'i'));
   assert.match(js, /sb_publishable_/);
 });
 
