@@ -4,8 +4,17 @@
   const SUPABASE_URL = 'https://tckvzlizcqdxzgavjwie.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_MRtiWP-ErwVKXqNbGFrW_g_FwEHsob3';
 
+  function reportAccessError(err) {
+    console.warn('[foundation-access]', err);
+    try {
+      window.dispatchEvent(new CustomEvent('condo-access-error', {
+        detail: { message: 'Não foi possível validar sua sessão. Verifique a conexão e tente novamente.' }
+      }));
+    } catch (_) {}
+  }
+
   if (!window.supabase) {
-    console.warn('[foundation-access] Supabase SDK indisponível.');
+    reportAccessError(new Error('Supabase SDK indisponível.'));
     return;
   }
 
@@ -161,8 +170,8 @@
   });
 
   client.auth.onAuthStateChange(() => {
-    setTimeout(() => refresh().catch(err => console.warn('[foundation-access]', err)), 0);
+    setTimeout(() => refresh().catch(reportAccessError), 0);
   });
 
-  refresh().catch(err => console.warn('[foundation-access]', err));
+  refresh().catch(reportAccessError);
 })();

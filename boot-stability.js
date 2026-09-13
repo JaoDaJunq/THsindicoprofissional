@@ -16,6 +16,32 @@
   const app = document.querySelector('#app');
   body?.classList.add('gc-booting');
 
+  async function hardRetry(button) {
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Recarregando...';
+    }
+    try {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations
+          .filter(reg => String(reg.scope || '').includes('/THsindicoprofissional/'))
+          .map(reg => reg.unregister()));
+      }
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys
+          .filter(key => key.startsWith('gestao-condominial-shell-'))
+          .map(key => caches.delete(key)));
+      }
+      const cleanPath = `${location.origin}${location.pathname}`;
+      location.replace(`${cleanPath}?reload=${Date.now()}${location.hash || ''}`);
+    } catch (err) {
+      console.warn('[boot-stability] hard retry', err);
+      location.reload();
+    }
+  }
+
   function ensureScreen() {
     let screen = document.querySelector('#gc-boot-screen');
     if (screen) return screen;
@@ -32,7 +58,8 @@
         <button type="button" class="gc-boot-retry">Tentar novamente</button>
       </div>`;
     document.body.appendChild(screen);
-    screen.querySelector('.gc-boot-retry')?.addEventListener('click', () => location.reload());
+    const retry = screen.querySelector('.gc-boot-retry');
+    retry?.addEventListener('click', () => hardRetry(retry));
     return screen;
   }
 
@@ -73,11 +100,7 @@
     const snap = accessSnapshot();
     if (!snap?.loadedAt || !app) return false;
 
-    // No authenticated session: the login screen is authoritative.
     if (!snap.user) return Boolean(app.querySelector('#cloud-login, .auth-page'));
-
-    // Auth can lag a few milliseconds behind FoundationAccess. If the access
-    // snapshot already has a user, never reveal a transient login form.
     if (app.querySelector('#cloud-login')) return false;
 
     const memberships = Array.isArray(snap.memberships) ? snap.memberships : [];
@@ -161,13 +184,19 @@
     maybeRelease();
   });
 
+  window.addEventListener('condo-access-error', event => {
+    const screen = ensureScreen();
+    screen.classList.add('is-error');
+    const message = screen.querySelector('[data-gc-boot-message]');
+    if (message) message.textContent = event.detail?.message || 'Não foi possível validar sua sessão. Tente novamente.';
+  });
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', markScriptsReady, { once: true });
   } else {
     queueMicrotask(markScriptsReady);
   }
 
-  // Access may have completed before this listener was installed.
   queueMicrotask(() => {
     if (snapshotReady()) {
       state.accessReady = true;
@@ -175,19 +204,26 @@
     }
   });
 
-  // Never expose a potentially stale legacy screen if startup fails. Keep the
-  // neutral gate visible and offer an explicit retry instead.
+  setTimeout(() => {
+    if (state.released || window.supabase) return;
+    const screen = ensureScreen();
+    screen.classList.add('is-error');
+    const message = screen.querySelector('[data-gc-boot-message]');
+    if (message) message.textContent = 'O componente de conexão não carregou. Toque em Tentar novamente para limpar o cache deste site e recarregar.';
+  }, 4500);
+
   setTimeout(() => {
     if (state.released) return;
     const screen = ensureScreen();
     screen.classList.add('is-error');
     const message = screen.querySelector('[data-gc-boot-message]');
-    if (message) message.textContent = 'A inicialização está demorando mais que o esperado. Verifique a conexão e tente novamente.';
+    if (message && window.supabase) message.textContent = 'A inicialização está demorando mais que o esperado. Toque em Tentar novamente para limpar o cache deste site e recarregar.';
   }, 12000);
 
   window.__GC_BOOT_STABILITY__ = Object.freeze({
     getState: () => ({ ...state }),
     maybeRelease,
-    screenMatchesAccess
+    screenMatchesAccess,
+    hardRetry
   });
 })();
