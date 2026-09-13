@@ -1,0 +1,89 @@
+.auth-card--social{
+  width:min(440px,100%)!important;
+}
+
+.google-signin-button{
+  width:100%;
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:11px;
+  margin-top:20px;
+  border:1px solid #d9dee8;
+  border-radius:12px;
+  background:#fff;
+  color:#202124;
+  font:inherit;
+  font-size:14px;
+  font-weight:650;
+  cursor:pointer;
+  box-shadow:0 2px 5px rgba(16,24,40,.04);
+  transition:border-color .16s ease,box-shadow .16s ease,background .16s ease;
+}
+
+.google-signin-button:hover{
+  border-color:#c7ceda;
+  background:#fbfcff;
+  box-shadow:0 7px 18px rgba(16,24,40,.07);
+}
+
+.google-signin-button:focus-visible{
+  outline:3px solid rgba(79,95,246,.2);
+  outline-offset:2px;
+}
+
+.google-signin-button:disabled{
+  opacity:.72;
+  cursor:wait;
+}
+
+.google-signin-icon{
+  width:20px;
+  height:20px;
+  display:grid;
+  place-items:center;
+  flex:0 0 20px;
+}
+
+.google-signin-icon svg{
+  width:18px;
+  height:18px;
+  display:block;
+}
+
+.auth-divider--social{
+  margin:16px 0 4px!important;
+}
+
+.auth-card--social .auth-form{
+  margin-top:12px!important;
+}
+
+.social-auth-message[data-kind="error"]{
+  background:#fff3f3!important;
+  border-color:#f0c9cd!important;
+  color:#a12d35!important;
+}
+
+.social-auth-spinner{
+  width:16px;
+  height:16px;
+  border:2px solid #d5dae4;
+  border-top-color:#4285f4;
+  border-radius:50%;
+  animation:socialAuthSpin .8s linear infinite;
+}
+
+@keyframes socialAuthSpin{to{transform:rotate(360deg)}}
+
+@media(max-width:520px){
+  .auth-page{padding:16px!important}
+  .auth-card--social{padding:24px 20px!important;border-radius:20px!important}
+  .google-signin-button{min-height:50px;font-size:14px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .google-signin-button{transition:none}
+  .social-auth-spinner{animation:none}
+}
