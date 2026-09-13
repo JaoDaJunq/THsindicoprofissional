@@ -42,6 +42,11 @@
     </section>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.4"></script>
+  <script>
+    if (!window.supabase) {
+      document.write('<script src="https://unpkg.com/@supabase/supabase-js@2.112.4"><\\/script>');
+    }
+  </script>
   <script src="./runtime-stability.js"></script>
   <script src="./boot-stability.js"></script>
   <script src="./legacy-browser-rescue.js"></script>
