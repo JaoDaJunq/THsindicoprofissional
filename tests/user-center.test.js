@@ -38,11 +38,11 @@ test('avatar upload is scoped to user folder and validates type and size', () =>
   assert.match(js, /3 \* 1024 \* 1024/);
 });
 
-test('notification preferences and global sign out are implemented', () => {
+test('notification preferences, password update and global sign out are implemented', () => {
   assert.match(js, /push_preferences/);
   assert.match(js, /upsert\(payload/);
+  assert.match(js, /updateUser\(\{ password \}\)/);
   assert.match(js, /scope:\s*['"]global['"]/);
-  assert.match(js, /resetPasswordForEmail/);
 });
 
 test('mobile account layout has narrow viewport rules and keyboard focus treatment', () => {
