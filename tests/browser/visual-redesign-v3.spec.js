@@ -24,7 +24,8 @@ test.describe('visual redesign v3', () => {
     }));
     const liveStyles = await productionStyles(page);
     expect(fixtureStyles).toEqual(liveStyles);
-    expect(fixtureStyles.at(-2)).toBe('visual-redesign-v3.css');
+    expect(fixtureStyles.at(-3)).toBe('visual-redesign-v3.css');
+    expect(fixtureStyles.at(-2)).toBe('design-harmony-final-polish.css');
     expect(fixtureStyles.at(-1)).toBe('design-system-accessibility.css');
   });
 
@@ -87,7 +88,7 @@ test.describe('visual redesign v3', () => {
     await page.screenshot({ path: 'test-results/redesign-v3-mobile.png', fullPage: true });
   });
 
-  test('very narrow mobile remains overflow-safe with quick create inside viewport', async ({ page }) => {
+  test('very narrow mobile keeps condominium mini stats readable and overflow-safe', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 700 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(fixture);
@@ -97,6 +98,16 @@ test.describe('visual redesign v3', () => {
     const createBox = await page.locator('.ux-quick-create-dock').boundingBox();
     expect(createBox.x).toBeGreaterThanOrEqual(0);
     expect(createBox.x + createBox.width).toBeLessThanOrEqual(320);
+
+    const miniLabels = page.locator('.condo-card .mini span');
+    await expect(miniLabels).toHaveCount(3);
+    for (let i = 0; i < await miniLabels.count(); i++) {
+      const label = miniLabels.nth(i);
+      await expect(label).toHaveCSS('white-space', 'nowrap');
+      const metrics = await label.evaluate(el => ({ clientWidth: el.clientWidth, scrollWidth: el.scrollWidth }));
+      expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
+    }
+
     await page.screenshot({ path: 'test-results/redesign-v3-mobile-320.png', fullPage: true });
   });
 });
