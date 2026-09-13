@@ -24,9 +24,10 @@ test.describe('visual redesign v3', () => {
     }));
     const liveStyles = await productionStyles(page);
     expect(fixtureStyles).toEqual(liveStyles);
-    expect(fixtureStyles.at(-4)).toBe('visual-redesign-v3.css');
-    expect(fixtureStyles.at(-3)).toBe('design-harmony-final-polish.css');
-    expect(fixtureStyles.at(-2)).toBe('social-auth-login.css');
+    expect(fixtureStyles.at(-5)).toBe('visual-redesign-v3.css');
+    expect(fixtureStyles.at(-4)).toBe('design-harmony-final-polish.css');
+    expect(fixtureStyles.at(-3)).toBe('social-auth-login.css');
+    expect(fixtureStyles.at(-2)).toBe('user-center.css');
     expect(fixtureStyles.at(-1)).toBe('design-system-accessibility.css');
   });
 
