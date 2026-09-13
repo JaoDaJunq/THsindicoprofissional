@@ -1,0 +1,27 @@
+/* Final micro-polish for the design-harmony review.
+   Keep accessibility.css as the final cascade layer. */
+
+@media (max-width:350px){
+  /* Preserve the three quick condominium facts without breaking words such as
+     "Unidades" or "Chamados" on 320px devices. */
+  .condo-card .mini-stats{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:4px!important;
+  }
+  .condo-card .mini{
+    min-width:0!important;
+    padding:10px 2px!important;
+    text-align:center!important;
+  }
+  .condo-card .mini span{
+    display:block!important;
+    white-space:nowrap!important;
+    overflow-wrap:normal!important;
+    word-break:normal!important;
+    letter-spacing:-.02em!important;
+  }
+  .condo-card .mini strong{
+    display:block!important;
+    margin-bottom:2px!important;
+  }
+}
