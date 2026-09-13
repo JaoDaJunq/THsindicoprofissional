@@ -71,7 +71,8 @@ test.describe('responsive design system', () => {
 
     const activeDockItem = dock.locator('.mobile-dock-item.active');
     await expect(activeDockItem).toHaveCount(1);
-    await expect(activeDockItem).toContainText('Manutenções');
+    await expect(activeDockItem).toHaveAccessibleName('Manutenções');
+    await expect(activeDockItem).toContainText('Manut.');
     await expect(activeDockItem).toHaveAttribute('aria-current', 'page');
 
     const toggleBox = await toggle.boundingBox();

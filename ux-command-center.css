@@ -16,3 +16,21 @@ body.ux-command-open{overflow:hidden!important}
 }
 @media(max-width:360px){.ux-command-actions{grid-template-columns:1fr}.ux-command-panel{max-height:91dvh}}
 @media(prefers-reduced-motion:reduce){.ux-command-overlay,.ux-command-panel,.ux-quick-create-dock{transition:none!important}}
+
+/* Let the complete palette scroll on short screens and above a virtual keyboard. */
+.ux-command-panel{overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:1rem}
+.ux-command-results{overflow:visible;flex-shrink:0}
+.ux-command-search{position:sticky;top:0;z-index:1;flex-shrink:0;background:#fff}
+.ux-command-close{display:grid;place-items:center;min-width:44px;min-height:44px;border:1px solid #dce2eb;border-radius:10px;background:#fff;color:#354257;font-size:24px;line-height:1}
+.ux-command-action strong,.ux-command-result-copy strong{font-size:.875rem;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+.ux-command-action small,.ux-command-result-copy small,.ux-command-section-head strong,
+.ux-command-section-head small,.ux-command-result-type,.ux-command-footer,
+.ux-command-empty p{font-size:.75rem;line-height:1.5;color:#566274}
+.ux-command-action small,.ux-command-result-copy small{white-space:normal;overflow-wrap:anywhere}
+.ux-command-section-head strong{text-transform:none;letter-spacing:normal}
+.ux-command-empty{padding:1rem}
+@media(max-width:700px){
+  .ux-command-panel{max-height:calc(100dvh - 12px)}
+  .ux-command-action{grid-template-columns:32px minmax(0,1fr)}
+  .ux-command-action>span:first-child{width:32px;height:32px}
+}

@@ -146,7 +146,10 @@
         const item = document.createElement('a');
         item.className = 'mobile-dock-item';
         item.href = link.href;
-        item.innerHTML = `<span class="mobile-dock-icon" aria-hidden="true">${link.icon}</span><span class="mobile-dock-label">${link.label}</span>`;
+        item.setAttribute('aria-label', link.label);
+        item.title = link.label;
+        const dockLabel = ({'Condomínios':'Condom.', 'Manutenções':'Manut.', 'Documentos':'Docs', 'Financeiro':'Finanças'})[link.label] || link.label;
+        item.innerHTML = `<span class="mobile-dock-icon" aria-hidden="true">${link.icon}</span><span class="mobile-dock-label">${dockLabel}</span>`;
         item.addEventListener('click', closeMenu);
         dock.appendChild(item);
       });
