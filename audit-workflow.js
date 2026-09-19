@@ -6,7 +6,7 @@
   const safe=s=>typeof esc==='function'?esc(s):String(s??'');
   const fmt=v=>v?new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short'}).format(new Date(v)):'—';
   const actionLabel={insert:'Criou',update:'Alterou',delete:'Excluiu'};
-  const entityLabel={condominiums:'Condomínio',units:'Unidade',condominium_members:'Acesso / vínculo',service_requests:'Chamado',maintenances:'Manutenção',documents:'Documento',announcements:'Comunicado',finance_categories:'Categoria financeira',finance_transactions:'Lançamento financeiro',assemblies:'Assembleia',assembly_agenda_items:'Pauta',assembly_attendance:'Presença',assembly_votes:'Voto'};
+  const entityLabel={condominiums:'Condomínio',units:'Unidade',condominium_members:'Acesso / vínculo',service_requests:'Chamado',maintenances:'Manutenção',tasks:'Tarefa',gas_controls:'Controle de gás',documents:'Documento',announcements:'Comunicado',finance_categories:'Categoria financeira',finance_transactions:'Lançamento financeiro',assemblies:'Assembleia',assembly_agenda_items:'Pauta',assembly_attendance:'Presença',assembly_votes:'Voto'};
   const sensitivityLabel={operational:'Operação',financial:'Financeiro',governance:'Governança',access:'Acessos',document:'Documentos',communication:'Comunicação'};
   const ids=()=>[...new Set((window.CondoAccess?.getSnapshot()?.memberships||[]).map(x=>x.condominium_id).filter(Boolean))];
 
