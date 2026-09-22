@@ -17,6 +17,25 @@
   const statusPt = s => ({ pending:'Pendente', in_progress:'Em andamento', done:'Concluída', cancelled:'Cancelada' })[s] || s || 'Pendente';
   const recurrencePt = r => ({ none:'Única', weekly:'Semanal', monthly:'Mensal', bimonthly:'Bimestral', quarterly:'Trimestral', semiannual:'Semestral', annual:'Anual' })[r] || r || 'Única';
 
+  const taskStyle = document.createElement('style');
+  taskStyle.textContent = `
+    .task-list-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+    .task-list-toolbar input{min-width:220px;flex:1 1 240px}.task-list-toolbar select{min-width:170px}
+    .task-list-count{font-size:10px;color:var(--muted);margin-left:auto;white-space:nowrap}
+    .task-row--done td{background:#f5fbf7!important;color:#65756b}.task-row--done td:first-child{box-shadow:inset 3px 0 0 #53a66e}
+    .task-row--done td strong{color:#3f7250}.task-row--done .list-sub{color:#7a8a80}
+    .task-row--late td:first-child{box-shadow:inset 3px 0 0 #d84d58}
+    .task-status-badge{display:inline-flex;align-items:center;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:800;white-space:nowrap}
+    .task-status-badge.done{background:#e6f6eb;color:#2c7a47}.task-status-badge.in_progress{background:#eaf0ff;color:#3b57b7}
+    .task-status-badge.pending{background:#fff4d8;color:#8a6500}.task-status-badge.cancelled{background:#f0f2f5;color:#707784}
+    .task-section-divider td{padding:14px 8px 7px!important;background:transparent!important;border-bottom:0!important}
+    .task-section-divider span{display:inline-flex;align-items:center;gap:7px;color:#4d7259;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+    .task-section-divider span::before{content:'✓';width:19px;height:19px;border-radius:50%;display:grid;place-items:center;background:#e6f6eb;color:#2c7a47;font-size:11px}
+    .task-row[hidden],.task-section-divider[hidden]{display:none!important}
+    @media(max-width:700px){.task-list-toolbar{align-items:stretch}.task-list-toolbar input,.task-list-toolbar select{width:100%;min-width:0}.task-list-count{width:100%;margin-left:0}.task-row--done td:first-child,.task-row--late td:first-child{box-shadow:none}}
+  `;
+  document.head.appendChild(taskStyle);
+
   function localDateDiff(value) {
     if (!value) return null;
     const today = new Date();
@@ -29,6 +48,73 @@
   function taskById(id) {
     return (state()?.tasks || []).find(task => String(task.id) === String(id)) || null;
   }
+
+  function taskSortRank(task) {
+    const days = localDateDiff(task?.dueDate);
+    if (!['done','cancelled'].includes(task?.status) && days !== null && days < 0) return 0;
+    if (task?.status === 'in_progress') return 1;
+    if (task?.status === 'pending') return 2;
+    if (task?.status === 'cancelled') return 3;
+    if (task?.status === 'done') return 4;
+    return 2;
+  }
+
+  function compareTasks(a,b) {
+    const rank = taskSortRank(a) - taskSortRank(b);
+    if (rank) return rank;
+    if (a.status === 'done' && b.status === 'done') {
+      const aDone = a.completedAt || a.dueDate || '';
+      const bDone = b.completedAt || b.dueDate || '';
+      return String(bDone).localeCompare(String(aDone));
+    }
+    return String(a.dueDate || '9999-12-31').localeCompare(String(b.dueDate || '9999-12-31'));
+  }
+
+  function taskStatusBadge(status) {
+    const cls = ['done','in_progress','pending','cancelled'].includes(status) ? status : 'pending';
+    return `<span class="task-status-badge ${safe(cls)}">${safe(statusPt(status))}</span>`;
+  }
+
+  function normalizeTaskSearch(value) {
+    return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  }
+
+  window.filterTaskList = function(rootId='task-list-shell') {
+    const root = document.getElementById(rootId);
+    if (!root) return;
+    const query = normalizeTaskSearch(root.querySelector('[data-task-search]')?.value);
+    const status = root.querySelector('[data-task-status-filter]')?.value || '';
+    const rows = [...root.querySelectorAll('tr.task-row')];
+    let visible = 0;
+    let visibleDone = 0;
+    rows.forEach(row => {
+      const textMatch = !query || normalizeTaskSearch(row.textContent).includes(query);
+      const rowStatus = row.dataset.taskStatus || '';
+      const rowLate = row.dataset.taskLate === 'true';
+      const statusMatch = !status || (status === 'late' ? rowLate : rowStatus === status);
+      const show = textMatch && statusMatch;
+      row.hidden = !show;
+      if (show) {
+        visible += 1;
+        if (rowStatus === 'done') visibleDone += 1;
+      }
+    });
+    const divider = root.querySelector('.task-section-divider');
+    if (divider) divider.hidden = visibleDone === 0;
+    const count = root.querySelector('[data-task-count]');
+    if (count) count.textContent = `${visible} tarefa${visible === 1 ? '' : 's'} exibida${visible === 1 ? '' : 's'}`;
+  };
+
+  window.clearTaskListFilters = function(rootId='task-list-shell') {
+    const root = document.getElementById(rootId);
+    if (!root) return;
+    const search = root.querySelector('[data-task-search]');
+    const status = root.querySelector('[data-task-status-filter]');
+    if (search) search.value = '';
+    if (status) status.value = '';
+    window.filterTaskList(rootId);
+    search?.focus();
+  };
 
   function option(value, label, selected) {
     return `<option value="${safe(value)}" ${String(value) === String(selected) ? 'selected' : ''}>${safe(label)}</option>`;
@@ -145,15 +231,24 @@
   if (typeof tasksTable === 'function') {
     tasksTable = function(list) {
       if (!list.length) return '<div class="empty">Nenhuma tarefa cadastrada.</div>';
-      return `<div class="table-wrap"><table class="table"><thead><tr><th>Pendência / tarefa</th><th>Condomínio</th><th>Responsável</th><th>Prazo</th><th>Prioridade</th><th>Status</th><th>Ações</th></tr></thead><tbody>${list.map(task => {
+      const ordered = [...list].sort(compareTasks);
+      let dividerInserted = false;
+      const rows = ordered.map(task => {
         const days = localDateDiff(task.dueDate);
         const late = days !== null && days < 0 && !['done','cancelled'].includes(task.status);
         const manage = canOperate(task.condoId);
         const edit = manage ? `<button class="btn btn-soft" onclick="openTaskQuickEdit('${safe(task.id)}')">Editar</button>` : '';
-        const complete = manage && task.status !== 'done' ? `<button class="btn" onclick="completeTask('${safe(task.id)}')">Concluir</button>` : '';
+        const complete = manage && task.status !== 'done' && task.status !== 'cancelled' ? `<button class="btn" onclick="completeTask('${safe(task.id)}')">Concluir</button>` : '';
         const actions = edit || complete ? `<div class="row-actions">${edit}${complete}</div>` : '<span class="muted small">Somente leitura</span>';
-        return `<tr><td><strong>${safe(task.title)}</strong><div class="list-sub">${safe((task.description || '').split('\n')[0])}</div>${task.sourceLabel ? '<div class="migration-note">Importado da planilha anterior</div>' : ''}</td><td>${safe(condoName(task.condoId))}</td><td>${safe(task.responsible || 'Síndico')}</td><td>${dateText(task.dueDate)} ${late ? '<span class="badge bad">Atrasada</span>' : ''}</td><td>${safe(priorityPt(task.priority))}</td><td>${safe(statusPt(task.status))}</td><td>${actions}</td></tr>`;
-      }).join('')}</tbody></table></div>`;
+        const row = `<tr class="task-row ${task.status === 'done' ? 'task-row--done' : ''} ${late ? 'task-row--late' : ''}" data-task-id="${safe(task.id)}" data-task-status="${safe(task.status || 'pending')}" data-task-late="${late ? 'true' : 'false'}"><td><strong>${safe(task.title)}</strong><div class="list-sub">${safe((task.description || '').split('\n')[0])}</div>${task.sourceLabel ? '<div class="migration-note">Importado da planilha anterior</div>' : ''}</td><td>${safe(condoName(task.condoId))}</td><td>${safe(task.responsible || 'Síndico')}</td><td>${dateText(task.dueDate)} ${late ? '<span class="badge bad">Atrasada</span>' : ''}</td><td>${safe(priorityPt(task.priority))}</td><td>${taskStatusBadge(task.status)}</td><td>${actions}</td></tr>`;
+        if (task.status === 'done' && !dividerInserted) {
+          dividerInserted = true;
+          return `<tr class="task-section-divider"><td colspan="7"><span>Concluídas</span></td></tr>${row}`;
+        }
+        return row;
+      }).join('');
+
+      return `<div id="task-list-shell" class="task-list-shell"><div class="task-list-toolbar"><input type="search" data-task-search placeholder="Buscar tarefa, condomínio ou responsável..." aria-label="Buscar tarefas" oninput="filterTaskList()"><select data-task-status-filter aria-label="Filtrar tarefas por status" onchange="filterTaskList()"><option value="">Todos os status</option><option value="late">Atrasadas</option><option value="in_progress">Em andamento</option><option value="pending">Pendentes</option><option value="done">Concluídas</option><option value="cancelled">Canceladas</option></select><button type="button" class="btn btn-soft" onclick="clearTaskListFilters()">Limpar</button><span class="task-list-count" data-task-count>${ordered.length} tarefas exibidas</span></div><div class="table-wrap"><table class="table"><thead><tr><th>Pendência / tarefa</th><th>Condomínio</th><th>Responsável</th><th>Prazo</th><th>Prioridade</th><th>Status</th><th>Ações</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
     };
   }
 })();
