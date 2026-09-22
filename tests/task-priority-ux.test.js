@@ -17,7 +17,7 @@ test('completed tasks are visually separated and highlighted', () => {
   assert.match(source,/task-row--done/);
   assert.match(source,/task-section-divider/);
   assert.match(source,/Concluídas/);
-  assert.match(source,/task-status-badge done/);
+  assert.match(source,/task-status-badge \\${safe\\(cls\\)}/);\n  assert.match(source,/\\.task-status-badge\\.done\\{background:#e6f6eb;color:#2c7a47\\}/);
 });
 
 test('task list keeps search and status filters', () => {
