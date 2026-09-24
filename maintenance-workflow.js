@@ -58,7 +58,10 @@
 
   function maintenanceRow(m) {
     const u = typeof urgency === 'function' ? urgency(m) : { level: 'good', label: m.status };
-    return `<tr><td><strong>${esc(m.title)}</strong><div class="list-sub">${esc(m.category || 'Sem categoria')}</div>${m.isIncomplete ? `<div class="list-sub">⚠ ${esc(m.incompleteReason || 'Cadastro incompleto')}</div>` : ''}</td><td>${esc(condo(m.condoId)?.name || '—')}</td><td>${fmt(m.nextDate)}</td><td>${esc(recurrenceLabel(m.recurrence))}${m.recurrence === 'custom' && m.recurrenceMonths ? ` (${m.recurrenceMonths} meses)` : ''}</td><td>${esc(priorityLabel(m.priority))}</td><td><span class="badge ${u.level}">${esc(u.label)}</span></td><td><div class="row-actions"><button class="btn btn-soft" onclick="openMaintenanceHistory('${m.id}')">Histórico</button>${canManage(m.condoId) ? `<button class="btn btn-primary" onclick="openCompleteMaintenance('${m.id}')">Concluir</button>` : ''}</div></td></tr>`;
+    const manageActions = canManage(m.condoId)
+      ? `<button class="btn btn-soft" onclick="openMaintenanceEdit('${m.id}','${m.condoId}')">Editar</button><button class="btn btn-primary" onclick="openCompleteMaintenance('${m.id}')">Concluir</button>`
+      : '';
+    return `<tr><td><strong>${esc(m.title)}</strong><div class="list-sub">${esc(m.category || 'Sem categoria')}</div>${m.isIncomplete ? `<div class="list-sub">⚠ ${esc(m.incompleteReason || 'Cadastro incompleto')}</div>` : ''}</td><td>${esc(condo(m.condoId)?.name || '—')}</td><td>${fmt(m.nextDate)}</td><td>${esc(recurrenceLabel(m.recurrence))}${m.recurrence === 'custom' && m.recurrenceMonths ? ` (${m.recurrenceMonths} meses)` : ''}</td><td>${esc(priorityLabel(m.priority))}</td><td><span class="badge ${u.level}">${esc(u.label)}</span></td><td><div class="row-actions"><button class="btn btn-soft" onclick="openMaintenanceHistory('${m.id}')">Histórico</button>${manageActions}</div></td></tr>`;
   }
 
   function enhancedMaintenancesPage(cid = null) {
