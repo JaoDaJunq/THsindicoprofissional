@@ -24,11 +24,12 @@ test.describe('visual redesign v3', () => {
     }));
     const liveStyles = await productionStyles(page);
     expect(fixtureStyles).toEqual(liveStyles);
-    expect(fixtureStyles.at(-6)).toBe('visual-redesign-v3.css');
-    expect(fixtureStyles.at(-5)).toBe('design-harmony-final-polish.css');
-    expect(fixtureStyles.at(-4)).toBe('social-auth-login.css');
-    expect(fixtureStyles.at(-3)).toBe('user-center.css');
-    expect(fixtureStyles.at(-2)).toBe('activity-gas-enhancements.css');
+    expect(fixtureStyles.at(-7)).toBe('visual-redesign-v3.css');
+    expect(fixtureStyles.at(-6)).toBe('design-harmony-final-polish.css');
+    expect(fixtureStyles.at(-5)).toBe('social-auth-login.css');
+    expect(fixtureStyles.at(-4)).toBe('user-center.css');
+    expect(fixtureStyles.at(-3)).toBe('activity-gas-enhancements.css');
+    expect(fixtureStyles.at(-2)).toBe('visual-context-refresh.css');
     expect(fixtureStyles.at(-1)).toBe('design-system-accessibility.css');
   });
 

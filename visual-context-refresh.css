@@ -1,0 +1,307 @@
+/* Visual Context Refresh
+   CSS-only layer for the consolidated management view and condominium workspace.
+   It intentionally leaves markup, routes, data access and interaction code untouched. */
+
+:root {
+  --ctx-ink: #111b35;
+  --ctx-muted: #71809a;
+  --ctx-line: #e6eaf3;
+  --ctx-surface: #ffffff;
+  --ctx-canvas: #f5f7fb;
+  --ctx-indigo: #5262f5;
+  --ctx-indigo-dark: #18243d;
+  --ctx-lilac: #f0f1ff;
+  --ctx-mint: #eaf8f2;
+  --ctx-amber: #fff5df;
+  --ctx-coral: #fff0ef;
+  --ctx-radius: 18px;
+}
+
+html,
+body {
+  background: var(--ctx-canvas) !important;
+}
+
+.app-shell {
+  grid-template-columns: 248px minmax(0, 1fr) !important;
+}
+
+.sidebar {
+  background: linear-gradient(180deg, #14213a 0%, #0d1628 100%) !important;
+  border-right: 0 !important;
+  box-shadow: 12px 0 36px rgba(20, 33, 58, .08) !important;
+}
+
+.sidebar .brand {
+  padding: 7px 6px 22px !important;
+  margin-bottom: 20px !important;
+}
+
+.brand-mark {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(145deg, #5967ff, #654ff0) !important;
+  box-shadow: 0 10px 22px rgba(82, 98, 245, .3) !important;
+}
+
+.sidebar .nav a {
+  min-height: 46px !important;
+  border-radius: 13px !important;
+  color: #aab7cd !important;
+  font-size: 13px !important;
+}
+
+.sidebar .nav a.active {
+  background: linear-gradient(90deg, #5362f5 0%, #6256ec 100%) !important;
+  border-color: transparent !important;
+  box-shadow: 0 10px 22px rgba(82, 98, 245, .24) !important;
+}
+
+.sidebar-footer {
+  background: rgba(255, 255, 255, .055) !important;
+  border: 1px solid rgba(255, 255, 255, .07) !important;
+}
+
+.main {
+  padding: 28px 34px 80px !important;
+  background: var(--ctx-canvas) !important;
+}
+
+.ux-contextbar.is-global,
+.ux-contextbar.is-workspace {
+  max-width: 1500px;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.ux-contextbar.is-global {
+  padding: 0 0 13px !important;
+  border-bottom: 1px solid var(--ctx-line) !important;
+}
+
+.ux-contextbar.is-workspace {
+  background: linear-gradient(100deg, rgba(255,255,255,.94), rgba(241,243,255,.9)) !important;
+  border: 1px solid #dde3f5 !important;
+  box-shadow: 0 8px 22px rgba(45, 61, 104, .05) !important;
+}
+
+.topbar {
+  max-width: 1500px;
+  margin: 0 auto 24px !important;
+  padding: 2px 0 19px !important;
+  border-bottom: 0 !important;
+}
+
+.topbar h1 {
+  color: var(--ctx-ink) !important;
+  font-size: clamp(25px, 2.3vw, 34px) !important;
+  letter-spacing: -.045em !important;
+}
+
+.topbar .muted.small {
+  color: var(--ctx-muted) !important;
+  font-size: 13px !important;
+}
+
+.topbar::after {
+  width: 52px !important;
+  height: 3px !important;
+  background: linear-gradient(90deg, var(--ctx-indigo), #7659f5) !important;
+}
+
+.top-actions .btn,
+.top-actions .icon-btn,
+.panel-head .btn,
+.workspace-hero .btn {
+  min-height: 42px !important;
+  border-radius: 12px !important;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #5262f5, #6757ed) !important;
+  box-shadow: 0 9px 20px rgba(82, 98, 245, .22) !important;
+}
+
+.metrics {
+  max-width: 1500px;
+  margin: 0 auto 22px !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+.metric {
+  min-height: 132px !important;
+  padding: 18px 19px !important;
+  border: 1px solid var(--ctx-line) !important;
+  border-radius: var(--ctx-radius) !important;
+  box-shadow: 0 5px 18px rgba(33, 48, 85, .045) !important;
+}
+
+.metric:nth-child(4n + 1) { background: linear-gradient(135deg, #f5f5ff, #fff) !important; }
+.metric:nth-child(4n + 2) { background: linear-gradient(135deg, #effbf6, #fff) !important; }
+.metric:nth-child(4n + 3) { background: linear-gradient(135deg, #fff2f1, #fff) !important; }
+.metric:nth-child(4n + 4) { background: linear-gradient(135deg, #f3f1ff, #fff) !important; }
+
+.metric strong {
+  color: var(--ctx-ink) !important;
+  font-size: 30px !important;
+}
+
+.metric span,
+.metric small { color: var(--ctx-muted) !important; }
+
+.grid-2 {
+  max-width: 1500px;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 20px !important;
+}
+
+.panel,
+.calendar-card,
+.card {
+  border-radius: 20px !important;
+}
+
+.condo-card,
+.alert-card {
+  border: 1px solid var(--ctx-line) !important;
+  border-radius: var(--ctx-radius) !important;
+  box-shadow: 0 6px 22px rgba(33, 48, 85, .045) !important;
+}
+
+.panel-head {
+  padding: 19px 21px 14px !important;
+}
+
+.panel-head h2 {
+  color: var(--ctx-ink) !important;
+  font-size: 17px !important;
+}
+
+.panel-body { padding: 0 21px 21px !important; }
+
+.condo-grid {
+  gap: 14px !important;
+}
+
+.condo-card {
+  background: #fff !important;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease !important;
+}
+
+.condo-card:hover {
+  border-color: #bfc8ff !important;
+  box-shadow: 0 12px 28px rgba(54, 72, 141, .12) !important;
+  transform: translateY(-2px) !important;
+}
+
+.workspace-hero {
+  border: 1px solid #dfe4f7 !important;
+  border-radius: 20px !important;
+  background: linear-gradient(110deg, #eef0ff 0%, #fff 68%) !important;
+  box-shadow: 0 8px 24px rgba(45, 61, 104, .055) !important;
+}
+
+.workspace-hero h2 { color: var(--ctx-ink) !important; }
+
+.kpi-strip {
+  gap: 12px !important;
+}
+
+.kpi-pill {
+  border: 1px solid var(--ctx-line) !important;
+  border-radius: 15px !important;
+  background: #fff !important;
+  box-shadow: 0 4px 14px rgba(33, 48, 85, .04) !important;
+}
+
+.alert-card,
+.list-row {
+  transition: background .16s ease, border-color .16s ease, transform .16s ease !important;
+}
+
+.alert-card:hover,
+.list-row:hover {
+  border-color: #c8d0fa !important;
+  background: #fafaff !important;
+  transform: translateY(-1px) !important;
+}
+
+@media (max-width: 1100px) and (min-width: 701px) {
+  .main { padding-left: 24px !important; padding-right: 24px !important; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
+@media (max-width: 700px) {
+  .app-shell { display: block !important; }
+  .main { padding: 15px 14px 156px !important; }
+  .topbar { margin-bottom: 16px !important; padding-bottom: 13px !important; }
+  .topbar h1 { font-size: 27px !important; }
+  .topbar .muted.small { font-size: 12px !important; }
+
+  .metrics {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory;
+    gap: 10px !important;
+    padding: 2px 2px 8px !important;
+    margin-bottom: 14px !important;
+    scrollbar-width: none;
+  }
+
+  .metrics::-webkit-scrollbar { display: none; }
+  .metric {
+    flex: 0 0 min(82vw, 280px) !important;
+    min-height: 116px !important;
+    scroll-snap-align: start;
+    padding: 15px !important;
+  }
+  .metric strong { font-size: 27px !important; }
+
+  .grid-2 { grid-template-columns: 1fr !important; gap: 14px !important; }
+  .panel-head { padding: 16px 15px 12px !important; }
+  .panel-body { padding: 0 15px 16px !important; }
+  .panel, .calendar-card, .card { border-radius: 17px !important; }
+
+  .condo-grid {
+    display: flex !important;
+    overflow-x: auto !important;
+    gap: 10px !important;
+    padding-bottom: 5px !important;
+    scrollbar-width: none;
+  }
+  .condo-grid::-webkit-scrollbar { display: none; }
+  .condo-grid .condo-card {
+    flex: 0 0 min(76vw, 260px) !important;
+  }
+
+  .workspace-hero {
+    padding: 17px !important;
+    border-radius: 18px !important;
+  }
+
+  .kpi-strip {
+    display: flex !important;
+    overflow-x: auto !important;
+    scrollbar-width: none;
+    padding-bottom: 5px !important;
+  }
+  .kpi-strip::-webkit-scrollbar { display: none; }
+  .kpi-pill { flex: 0 0 145px !important; }
+
+  body.has-mobile-dock .main { padding-bottom: 156px !important; }
+  .mobile-bottom-dock {
+    border: 1px solid #e1e5f2 !important;
+    box-shadow: 0 14px 34px rgba(27, 42, 76, .16) !important;
+    background: rgba(255,255,255,.96) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+  }
+  .mobile-dock-item.active { color: var(--ctx-indigo) !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .condo-card, .alert-card, .list-row { transition: none !important; }
+}
