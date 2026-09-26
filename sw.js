@@ -1,9 +1,11 @@
-const CACHE_NAME='gestao-condominial-shell-v3';
+const CACHE_NAME='gestao-condominial-shell-v4';
 const APP_SHELL=[
   './',
   './index.html',
   './styles.css',
   './ui-refresh.css',
+  './visual-context-refresh.css',
+  './app.js',
   './mobile-fixes.css',
   './favicon.svg',
   './manifest.webmanifest'
