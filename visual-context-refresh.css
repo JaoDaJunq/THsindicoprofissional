@@ -302,6 +302,109 @@ body {
   .mobile-dock-item.active { color: var(--ctx-indigo) !important; }
 }
 
+/* Approved composition: management context bar and stronger card hierarchy. */
+.ux-contextbar {
+  max-width: 1500px;
+  margin: -4px auto 22px;
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 296px minmax(260px, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  border-bottom: 1px solid #e3e8f2;
+}
+
+.ux-contextbar.is-workspace {
+  padding: 8px 12px;
+  border: 1px solid #dfe4f7;
+  border-radius: 17px;
+  background: linear-gradient(100deg, #f0f2ff, #fff 74%);
+}
+
+.context-switcher {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 7px 12px;
+  border: 1px solid #dce3f1;
+  border-radius: 13px;
+  background: #fff;
+  color: #1b2744;
+  font-weight: 800;
+  text-align: left;
+  box-shadow: 0 4px 14px rgba(27, 39, 68, .04);
+}
+
+.context-icon {
+  width: 29px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #eef0ff;
+  color: #5262f5;
+  font-size: 16px;
+}
+
+.context-chevron { margin-left: auto; color: #70809b; font-size: 18px; }
+
+.context-search {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 14px;
+  border: 1px solid #e1e6f0;
+  border-radius: 13px;
+  background: #fff;
+  color: #64728d;
+}
+
+.context-search span { font-size: 22px; line-height: 1; }
+.context-search input { width: 100%; border: 0; outline: 0; background: transparent; color: #1b2744; }
+.context-search input::placeholder { color: #8490a7; }
+.context-meta { display: flex; align-items: center; gap: 20px; color: #172340; }
+.context-bell { position: relative; border: 0; background: transparent; color: #18243d; font-size: 23px; cursor: pointer; }
+.context-bell b { position: absolute; top: -7px; right: -8px; min-width: 18px; height: 18px; padding: 0 4px; display: grid; place-items: center; border-radius: 99px; background: #f05b5b; color: #fff; font: 700 10px/1 system-ui; }
+.context-date { padding-left: 20px; border-left: 1px solid #e0e5ef; font-size: 12px; font-weight: 800; line-height: 1.35; white-space: nowrap; }
+.context-date small { color: #7a88a1; font-size: 12px; font-weight: 500; }
+.context-sun { padding-left: 20px; border-left: 1px solid #e0e5ef; font-size: 25px; }
+
+.topbar { margin-bottom: 22px !important; }
+.topbar h1 { font-size: clamp(28px, 2.8vw, 38px) !important; }
+.topbar .eyebrow { letter-spacing: .14em; }
+
+.metrics .metric { position: relative; overflow: hidden; min-height: 142px !important; }
+.metrics .metric::after { content: ''; position: absolute; right: 17px; bottom: 20px; width: 38px; height: 32px; opacity: .35; background: linear-gradient(90deg, transparent 0 8%, currentColor 8% 22%, transparent 22% 30%, currentColor 30% 53%, transparent 53% 61%, currentColor 61% 100%); clip-path: polygon(0 100%, 0 65%, 20% 65%, 20% 42%, 42% 42%, 42% 23%, 64% 23%, 64% 0, 100% 0, 100% 100%); color: #7183ee; }
+.metrics .metric:nth-child(2)::after { color: #27b987; }
+.metrics .metric:nth-child(3)::after { color: #ef7777; }
+.metrics .metric:nth-child(4)::after { color: #736ff2; }
+.metric-top > div:first-child span { font-weight: 800; color: #243252 !important; }
+.metric strong { font-size: 32px !important; letter-spacing: -.04em; }
+
+.condo-grid .condo-card { position: relative; overflow: hidden; padding-top: 70px !important; }
+.condo-grid .condo-card::before { content: '▥'; position: absolute; inset: 0 0 auto; height: 55px; display: grid; place-items: center; background: linear-gradient(135deg, #b9cff2 0%, #e6edfb 48%, #a9c3ed 100%); color: rgba(53, 77, 139, .48); font-size: 38px; letter-spacing: 12px; }
+.condo-grid .condo-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #5262f5, #8b7cf8); }
+.condo-grid .condo-card > * { position: relative; z-index: 1; }
+
+@media (max-width: 900px) {
+  .ux-contextbar { grid-template-columns: 1fr auto; gap: 10px; }
+  .context-search { grid-column: 1 / -1; grid-row: 2; }
+  .context-meta { gap: 8px; }
+  .context-date, .context-sun { display: none; }
+}
+
+@media (max-width: 700px) {
+  .ux-contextbar { margin: -3px 0 16px; display: flex; flex-wrap: wrap; border-bottom: 0; min-height: auto; }
+  .ux-contextbar.is-workspace { padding: 8px; }
+  .context-switcher { flex: 1 1 230px; }
+  .context-meta { margin-left: auto; }
+  .context-search { order: 3; flex: 1 1 100%; width: 100%; }
+  .topbar h1 { font-size: 27px !important; }
+  .metrics .metric { min-height: 124px !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .condo-card, .alert-card, .list-row { transition: none !important; }
 }
