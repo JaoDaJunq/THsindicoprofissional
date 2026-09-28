@@ -582,3 +582,40 @@ body {
     transition: none;
   }
 }
+
+
+.condo-delete-certainty {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #ead3d6;
+  border-radius: 12px;
+  background: #fffafa;
+  cursor: pointer;
+}
+.condo-delete-certainty input {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  accent-color: #b73543;
+  flex: 0 0 auto;
+}
+.condo-delete-certainty span {
+  display: grid;
+  gap: 3px;
+}
+.condo-delete-certainty strong {
+  color: #7f2631;
+  font-size: 11px;
+}
+.condo-delete-certainty small {
+  color: #7d6a6d;
+  font-size: 9px;
+  line-height: 1.45;
+}
+.condo-danger-button:disabled {
+  opacity: .48 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
