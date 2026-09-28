@@ -106,7 +106,7 @@
   route = function(){
     if(!authUser) return authScreen();
     if(mode==='resident') return residentScreen();
-    if(!data.condos.length) return cloudOnboarding();
+    if(!data.condos.length && !(data.archivedCondos||[]).length) return cloudOnboarding();
     document.body.classList.remove('auth-body','onboarding-body');
     const p=(location.hash||'#/').replace(/^#\//,'').split('/').filter(Boolean);
     if(!p.length)return dashboard(); if(p[0]==='condominios')return condosPage(); if(p[0]==='calendario')return calendarPage(); if(p[0]==='manutencoes')return maintenancesPage(); if(p[0]==='tarefas')return tasksPage(); if(p[0]==='chamados')return callsPage();
