@@ -144,6 +144,11 @@
     return `<article class="condo-card-shell is-archived"><div class="condo-card condo-card-static"><div class="condo-top"><div class="condo-id"><div class="building">🏢</div><div><strong>${safe(c.name)}</strong><small>${safe(c.address || 'Sem endereço')}</small></div></div><span class="badge">Arquivado</span></div><div class="condo-archived-note">Arquivado${date ? ` em ${date}` : ''}. Os dados permanecem preservados.</div></div>${actions}</article>`;
   }
 
+  window.addEventListener('condo-access-ready', () => {
+    const path = (location.hash || '#/').replace(/^#\//, '').split('/').filter(Boolean);
+    if (path[0] === 'condominios' && typeof window.condosPage === 'function') window.condosPage();
+  });
+
   window.condosPage = function lifecycleCondosPage() {
     const active = data.condos || [];
     const archived = archivedList();
