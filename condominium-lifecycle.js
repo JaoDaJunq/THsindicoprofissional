@@ -83,35 +83,55 @@
     modal(`
       <div class="eyebrow">Exclusão permanente</div>
       <h2 style="margin-bottom:6px">Excluir ${safe(item.name)}?</h2>
-      <p class="muted" style="margin-bottom:14px">A exclusão só será permitida se o condomínio não tiver unidades, moradores ou registros operacionais vinculados. Caso tenha dados, use Arquivar.</p>
+      <p class="muted" style="margin-bottom:14px">Isso apagará permanentemente o condomínio e os dados vinculados a ele no sistema. Se quiser apenas tirá-lo da operação sem perder histórico, use Arquivar.</p>
       <div class="condo-delete-warning">Esta ação não pode ser desfeita.</div>
       <form id="condo-delete-form" class="form-grid" style="margin-top:14px">
         <div class="field full">
           <label>Digite o nome do condomínio para confirmar</label>
           <input name="confirmation" autocomplete="off" required placeholder="${safe(item.name)}">
         </div>
+        <label class="condo-delete-certainty full">
+          <input type="checkbox" name="certainty" value="yes">
+          <span><strong>Sim, tenho certeza.</strong><small>Entendo que o condomínio e os dados vinculados serão excluídos permanentemente.</small></span>
+        </label>
         <div class="field full">
-          <button class="btn condo-danger-button" type="submit">Excluir permanentemente</button>
+          <button class="btn condo-danger-button" type="submit" disabled>Excluir permanentemente</button>
         </div>
       </form>
     `);
 
     const form = document.querySelector('#condo-delete-form');
     if (!form) return;
+    const confirmationInput = form.querySelector('input[name="confirmation"]');
+    const certaintyInput = form.querySelector('input[name="certainty"]');
+    const button = form.querySelector('button[type="submit"]');
+    const syncDeleteState = () => {
+      const nameMatches = String(confirmationInput?.value || '').trim() === item.name;
+      button.disabled = !(nameMatches && certaintyInput?.checked);
+    };
+    confirmationInput?.addEventListener('input', syncDeleteState);
+    certaintyInput?.addEventListener('change', syncDeleteState);
+    syncDeleteState();
+
     form.onsubmit = async event => {
       event.preventDefault();
-      const confirmation = String(new FormData(form).get('confirmation') || '').trim();
+      const formData = new FormData(form);
+      const confirmation = String(formData.get('confirmation') || '').trim();
+      const confirmed = formData.get('certainty') === 'yes';
       if (confirmation !== item.name) return flash('O nome digitado não corresponde ao condomínio.');
-      const button = form.querySelector('button[type="submit"]');
+      if (!confirmed) return flash('Marque a confirmação de que deseja excluir permanentemente.');
       button.disabled = true;
-      button.textContent = 'Verificando...';
+      button.textContent = 'Excluindo...';
 
-      const { error } = await client.rpc('delete_condominium_if_empty', { p_condominium_id: cid });
+      const { error } = await client.rpc('delete_condominium_permanently', {
+        p_condominium_id: cid,
+        p_confirmed: true
+      });
       if (error) {
         button.disabled = false;
         button.textContent = 'Excluir permanentemente';
-        if (String(error.message || '').includes('condominium_has_linked_data')) {
-          return flash('Este condomínio possui dados vinculados. Arquive-o para preservar o histórico.');
+        if (String(error.message || '').includes('confirmation_required')) {
+          return flash('Confirme que deseja realizar a exclusão permanente.');
         }
         return flash(error.message || 'Não foi possível excluir o condomínio.');
       }
@@ -119,7 +139,7 @@
       removeLocal(cid);
       await window.CondoAccess?.refresh?.();
       closeModal();
-      flash('Condomínio excluído permanentemente.');
+      flash('Condomínio e dados vinculados excluídos permanentemente.');
       condosPage();
     };
   };
