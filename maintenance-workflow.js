@@ -11,6 +11,16 @@
     none: 'Única', weekly: 'Semanal', monthly: 'Mensal', bimonthly: 'Bimestral',
     quarterly: 'Trimestral', semiannual: 'Semestral', annual: 'Anual', custom: 'Personalizada'
   })[value] || value;
+  const recurrenceDisplay = maintenance => {
+    if (maintenance?.recurrence !== 'custom') return recurrenceLabel(maintenance?.recurrence);
+    const months = Number(maintenance?.recurrenceMonths || 0);
+    if (!months) return 'Personalizada';
+    if (months % 12 === 0) {
+      const years = months / 12;
+      return `A cada ${years} ano${years === 1 ? '' : 's'}`;
+    }
+    return `A cada ${months} ${months === 1 ? 'mês' : 'meses'}`;
+  };
 
   const priorityLabel = value => ({ low: 'Baixa', normal: 'Normal', high: 'Alta', urgent: 'Urgente' })[value] || value;
   const canManage = cid => Boolean(window.CondoAccess?.can('operations.manage', cid));
@@ -61,7 +71,7 @@
     const manageActions = canManage(m.condoId)
       ? `<button class="btn btn-soft" onclick="openMaintenanceEdit('${m.id}','${m.condoId}')">Editar</button><button class="btn btn-primary" onclick="openCompleteMaintenance('${m.id}')">Concluir</button>`
       : '';
-    return `<tr><td><strong>${esc(m.title)}</strong><div class="list-sub">${esc(m.category || 'Sem categoria')}</div>${m.isIncomplete ? `<div class="list-sub">⚠ ${esc(m.incompleteReason || 'Cadastro incompleto')}</div>` : ''}</td><td>${esc(condo(m.condoId)?.name || '—')}</td><td>${fmt(m.nextDate)}</td><td>${esc(recurrenceLabel(m.recurrence))}${m.recurrence === 'custom' && m.recurrenceMonths ? ` (${m.recurrenceMonths} meses)` : ''}</td><td>${esc(priorityLabel(m.priority))}</td><td><span class="badge ${u.level}">${esc(u.label)}</span></td><td><div class="row-actions"><button class="btn btn-soft" onclick="openMaintenanceHistory('${m.id}')">Histórico</button>${manageActions}</div></td></tr>`;
+    return `<tr><td><strong>${esc(m.title)}</strong><div class="list-sub">${esc(m.category || 'Sem categoria')}</div>${m.isIncomplete ? `<div class="list-sub">⚠ ${esc(m.incompleteReason || 'Cadastro incompleto')}</div>` : ''}</td><td>${esc(condo(m.condoId)?.name || '—')}</td><td>${fmt(m.nextDate)}</td><td>${esc(recurrenceDisplay(m))}</td><td>${esc(priorityLabel(m.priority))}</td><td><span class="badge ${u.level}">${esc(u.label)}</span></td><td><div class="row-actions"><button class="btn btn-soft" onclick="openMaintenanceHistory('${m.id}')">Histórico</button>${manageActions}</div></td></tr>`;
   }
 
   function enhancedMaintenancesPage(cid = null) {
@@ -91,7 +101,7 @@
   window.openCompleteMaintenance = function(id) {
     const m = data.maintenances.find(x => x.id === id);
     if (!m || !canManage(m.condoId)) return flash('Acesso não autorizado.');
-    modal(`<div class="eyebrow">Concluir manutenção</div><h2 style="margin-bottom:6px">${esc(m.title)}</h2><p class="muted" style="margin-bottom:16px">Prevista para ${fmt(m.nextDate)} • ${esc(recurrenceLabel(m.recurrence))}</p><form id="maintenance-complete-form" class="form-grid"><div class="field full"><label>Observações da execução</label><textarea name="notes" placeholder="Ex.: inspeção realizada, item substituído, fornecedor presente..."></textarea></div><div class="field full"><button class="btn btn-primary">Concluir e avançar agenda</button></div></form>`);
+    modal(`<div class="eyebrow">Concluir manutenção</div><h2 style="margin-bottom:6px">${esc(m.title)}</h2><p class="muted" style="margin-bottom:16px">Prevista para ${fmt(m.nextDate)} • ${esc(recurrenceDisplay(m))}</p><form id="maintenance-complete-form" class="form-grid"><div class="field full"><label>Observações da execução</label><textarea name="notes" placeholder="Ex.: inspeção realizada, item substituído, fornecedor presente..."></textarea></div><div class="field full"><button class="btn btn-primary">Concluir e avançar agenda</button></div></form>`);
     $('#maintenance-complete-form').onsubmit = async event => {
       event.preventDefault();
       const button = event.target.querySelector('button');
