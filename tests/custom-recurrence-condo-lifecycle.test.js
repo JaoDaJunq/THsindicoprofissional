@@ -29,6 +29,7 @@ test('archived condominiums are separated from active operational state', () => 
   assert.match(auth,/activeVisible=visible\.filter\(c=>!c\.archived_at\)/);
   assert.match(auth,/archivedVisible=visible\.filter\(c=>Boolean\(c\.archived_at\)\)/);
   assert.match(auth,/data\.archivedCondos=archivedVisible\.map\(mapCondo\)/);
+  assert.match(auth,/!data\.condos\.length && !\(data\.archivedCondos\|\|\[\]\)\.length/);
 });
 
 test('condominium lifecycle uses reversible archive and guarded delete RPC', () => {
