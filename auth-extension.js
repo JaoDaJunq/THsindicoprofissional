@@ -50,15 +50,19 @@
     const [{data:profile},{data:memberRows},{data:condos,error}] = await Promise.all([
       sb.from('profiles').select('id,full_name').eq('id',authUser.id).maybeSingle(),
       sb.from('condominium_members').select('condominium_id,role,unit_id,is_active').eq('user_id',authUser.id).eq('is_active',true),
-      sb.from('condominiums').select('id,name,cnpj,address_line,city,state,phone,email,units_count,created_by,created_at').order('created_at',{ascending:true})
+      sb.from('condominiums').select('id,name,cnpj,address_line,city,state,phone,email,units_count,created_by,created_at,archived_at').order('created_at',{ascending:true})
     ]);
     if(error) console.warn(error);
     memberships=memberRows||[];
     const ids=new Set(memberships.map(x=>x.condominium_id));
     const visible=(condos||[]).filter(c=>ids.has(c.id)||c.created_by===authUser.id);
+    const activeVisible=visible.filter(c=>!c.archived_at);
+    const archivedVisible=visible.filter(c=>Boolean(c.archived_at));
+    const mapCondo=c=>({id:c.id,name:c.name,address:[c.address_line,c.city,c.state].filter(Boolean).join(' • '),cnpj:c.cnpj||'',phone:c.phone||'',email:c.email||'',units:Number(c.units_count)||0,residents:0,status:'good',balance:0,archivedAt:c.archived_at||null});
     const name=profile?.full_name||authUser.user_metadata?.full_name||authUser.email?.split('@')[0]||'Usuário';
     data.user={name,initials:initials2(name)};
-    data.condos=visible.map(c=>({id:c.id,name:c.name,address:[c.address_line,c.city,c.state].filter(Boolean).join(' • '),cnpj:c.cnpj||'',phone:c.phone||'',email:c.email||'',units:Number(c.units_count)||0,residents:0,status:'good',balance:0}));
+    data.condos=activeVisible.map(mapCondo);
+    data.archivedCondos=archivedVisible.map(mapCondo);
     const allowed=new Set(data.condos.map(c=>c.id));
     data.maintenances=data.maintenances.filter(x=>allowed.has(x.condoId));
     data.tasks=data.tasks.filter(x=>allowed.has(x.condoId));
@@ -68,7 +72,7 @@
     data.folders=data.folders.filter(x=>allowed.has(x.condoId));
     data.files=data.files.filter(x=>allowed.has(x.condoId));
     mode=memberships.some(x=>x.role==='syndic')||visible.some(c=>(condos||[]).find(r=>r.id===c.id)?.created_by===authUser.id)||memberships.length===0?'syndic':'resident';
-    data.onboardingComplete=data.condos.length>0;
+    data.onboardingComplete=visible.length>0;
     save(data);
   }
 
@@ -77,7 +81,7 @@
     if(error) throw error;
     const {error:me}=await sb.from('condominium_members').insert({condominium_id:c.id,user_id:authUser.id,role:'syndic',created_by:authUser.id});
     if(me) throw me;
-    const local={id:c.id,name:c.name,address:c.address_line||'',cnpj:c.cnpj||'',phone:c.phone||'',email:c.email||'',units:Number(c.units_count)||0,residents:Number(values.residents)||0,status:'good',balance:0};
+    const local={id:c.id,name:c.name,address:c.address_line||'',cnpj:c.cnpj||'',phone:c.phone||'',email:c.email||'',units:Number(c.units_count)||0,residents:Number(values.residents)||0,status:'good',balance:0,archivedAt:null};
     data.condos.push(local); data.folders.push({id:uid('folder'),condoId:c.id,parentId:null,name:'Documentos Gerais',createdAt:iso(new Date())}); data.onboardingComplete=true; save(data); return local;
   }
 
@@ -102,7 +106,7 @@
   route = function(){
     if(!authUser) return authScreen();
     if(mode==='resident') return residentScreen();
-    if(!data.condos.length) return cloudOnboarding();
+    if(!data.condos.length && !(data.archivedCondos||[]).length) return cloudOnboarding();
     document.body.classList.remove('auth-body','onboarding-body');
     const p=(location.hash||'#/').replace(/^#\//,'').split('/').filter(Boolean);
     if(!p.length)return dashboard(); if(p[0]==='condominios')return condosPage(); if(p[0]==='calendario')return calendarPage(); if(p[0]==='manutencoes')return maintenancesPage(); if(p[0]==='tarefas')return tasksPage(); if(p[0]==='chamados')return callsPage();
