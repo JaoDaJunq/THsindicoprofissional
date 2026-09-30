@@ -13,9 +13,19 @@ test('maintenance edit action remains available after enhanced workflow takes ov
   assert.match(maintenance,/Concluir/);
 });
 
-test('maintenance edit and completion stay permission-gated', () => {
+test('maintenance edit, delete and completion stay permission-gated', () => {
   assert.match(maintenance,/const manageActions = canManage\(m\.condoId\)/);
+  assert.match(maintenance,/openDeleteMaintenance/);
   assert.match(maintenance,/openCompleteMaintenance/);
+});
+
+test('maintenance deletion requires explicit confirmation and deletes through Supabase', () => {
+  assert.match(maintenance,/Sim, quero excluir esta manutenção/);
+  assert.match(maintenance,/button\.disabled = !certainty\?\.checked/);
+  assert.match(maintenance,/\.from\('maintenances'\)/);
+  assert.match(maintenance,/\.delete\(\)/);
+  assert.match(maintenance,/\.eq\('condominium_id', m\.condoId\)/);
+  assert.match(maintenance,/histórico de execuções vinculado/);
 });
 
 test('enhanced maintenance workflow loads after transition UI', () => {
