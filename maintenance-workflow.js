@@ -69,7 +69,7 @@
   function maintenanceRow(m) {
     const u = typeof urgency === 'function' ? urgency(m) : { level: 'good', label: m.status };
     const manageActions = canManage(m.condoId)
-      ? `<button class="btn btn-soft" onclick="openMaintenanceEdit('${m.id}','${m.condoId}')">Editar</button><button class="btn btn-primary" onclick="openCompleteMaintenance('${m.id}')">Concluir</button>`
+      ? `<button class="btn btn-soft" onclick="openMaintenanceEdit('${m.id}','${m.condoId}')">Editar</button><button class="btn btn-soft maintenance-delete-btn" onclick="openDeleteMaintenance('${m.id}')">Excluir</button><button class="btn btn-primary" onclick="openCompleteMaintenance('${m.id}')">Concluir</button>`
       : '';
     return `<tr><td><strong>${esc(m.title)}</strong><div class="list-sub">${esc(m.category || 'Sem categoria')}</div>${m.isIncomplete ? `<div class="list-sub">⚠ ${esc(m.incompleteReason || 'Cadastro incompleto')}</div>` : ''}</td><td>${esc(condo(m.condoId)?.name || '—')}</td><td>${fmt(m.nextDate)}</td><td>${esc(recurrenceDisplay(m))}</td><td>${esc(priorityLabel(m.priority))}</td><td><span class="badge ${u.level}">${esc(u.label)}</span></td><td><div class="row-actions"><button class="btn btn-soft" onclick="openMaintenanceHistory('${m.id}')">Histórico</button>${manageActions}</div></td></tr>`;
   }
@@ -96,6 +96,50 @@
     } catch (err) {
       flash(err.message || 'Não foi possível carregar o histórico.');
     }
+  };
+
+  window.openDeleteMaintenance = function(id) {
+    const m = data.maintenances.find(x => String(x.id) === String(id));
+    if (!m || !canManage(m.condoId)) return flash('Acesso não autorizado.');
+
+    modal(`<div class="eyebrow">Excluir manutenção</div><h2 style="margin-bottom:6px">${esc(m.title)}</h2><p class="muted" style="margin-bottom:14px">${esc(condo(m.condoId)?.name || '')}</p><div class="maintenance-delete-warning"><strong>Esta ação não pode ser desfeita.</strong><span>A manutenção será removida da agenda e o histórico de execuções vinculado a ela também será excluído.</span></div><form id="maintenance-delete-form" class="form-grid" style="margin-top:14px"><label class="maintenance-delete-certainty full"><input type="checkbox" name="certainty" value="yes"><span><strong>Sim, quero excluir esta manutenção.</strong><small>Entendo que os registros vinculados a ela também serão removidos.</small></span></label><div class="field full"><button class="btn maintenance-delete-confirm" type="submit" disabled>Excluir permanentemente</button></div></form>`);
+
+    const form = document.querySelector('#maintenance-delete-form');
+    if (!form) return;
+    const certainty = form.querySelector('input[name="certainty"]');
+    const button = form.querySelector('button[type="submit"]');
+    const syncState = () => { button.disabled = !certainty?.checked; };
+    certainty?.addEventListener('change', syncState);
+    syncState();
+
+    form.onsubmit = async event => {
+      event.preventDefault();
+      if (!certainty?.checked) return flash('Confirme que deseja excluir esta manutenção.');
+      button.disabled = true;
+      button.textContent = 'Excluindo...';
+
+      const { error } = await client
+        .from('maintenances')
+        .delete()
+        .eq('id', m.id)
+        .eq('condominium_id', m.condoId);
+
+      if (error) {
+        button.disabled = false;
+        button.textContent = 'Excluir permanentemente';
+        return flash(error.message || 'Não foi possível excluir a manutenção.');
+      }
+
+      try {
+        await refreshLocal();
+        closeModal();
+        flash('Manutenção excluída.');
+        enhancedMaintenancesPage(m.condoId);
+      } catch (err) {
+        closeModal();
+        flash('Manutenção excluída. Atualize a tela para recarregar os dados.');
+      }
+    };
   };
 
   window.openCompleteMaintenance = function(id) {
