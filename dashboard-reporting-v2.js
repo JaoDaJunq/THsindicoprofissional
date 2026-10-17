@@ -21,14 +21,18 @@
   }
   async function condos(ids){
     if(!ids.length)return [];
-    const {data,error}=await client.from('condominiums').select('id,name,address_line,city,state').in('id',ids);
+    const {data,error}=await client.from('condominiums')
+      .select('id,name,address_line,city,state,archived_at')
+      .in('id',ids)
+      .is('archived_at',null);
     if(error)throw error;return data||[];
   }
   async function scope(cid=null){
-    const ids=cid?[cid]:accessIds();
+    const requestedIds=cid?[cid]:accessIds();
+    const c=await condos(requestedIds);
+    const ids=c.map(x=>x.id);
     const financeIds=ids.filter(canFinance);
-    const [c,calls,maint,occ,docs,assemblies,ann,units,finance]=await Promise.all([
-      condos(ids),
+    const [calls,maint,occ,docs,assemblies,ann,units,finance]=await Promise.all([
       rows('service_requests','id,condominium_id,title,priority,status,created_at,updated_at',ids),
       rows('maintenances','id,condominium_id,title,next_date,status,priority,last_completed_at',ids),
       rows('maintenance_occurrences','id,condominium_id,maintenance_id,scheduled_for,completed_at,completion_type',ids),

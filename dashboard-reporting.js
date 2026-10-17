@@ -28,10 +28,18 @@
   }
 
   async function loadScope(cid=null) {
-    const ids = cid ? [cid] : accessIds();
+    const requestedIds = cid ? [cid] : accessIds();
+    if (!requestedIds.length) return {ids:[],financeIds:[],condos:[],calls:[],maint:[],occ:[],docs:[],assemblies:[],ann:[],units:[],finance:[]};
+
+    const {data:condos,error:condoError}=await client.from('condominiums')
+      .select('id,name,address_line,city,state,archived_at')
+      .in('id',requestedIds)
+      .is('archived_at',null);
+    if(condoError) throw condoError;
+
+    const ids=(condos||[]).map(x=>x.id);
     const financeIds = ids.filter(canFinance);
     const base = await Promise.all([
-      queryAll('condominiums','id,name,address_line,city,state',ids),
       queryAll('service_requests','id,condominium_id,title,category,priority,status,created_at,updated_at',ids),
       queryAll('maintenances','id,condominium_id,title,category,next_date,status,priority,supplier,last_completed_at,is_incomplete',ids),
       queryAll('maintenance_occurrences','id,condominium_id,maintenance_id,scheduled_for,completed_at,completion_type,notes',ids),
@@ -42,7 +50,7 @@
     ]);
     let finance=[];
     if(financeIds.length) finance=await queryAll('finance_transactions','id,condominium_id,kind,description,due_date,competence_month,expected_amount_cents,paid_amount_cents,status,paid_date,counterparty',financeIds);
-    return {ids,financeIds,condos:base[0],calls:base[1],maint:base[2],occ:base[3],docs:base[4],assemblies:base[5],ann:base[6],units:base[7],finance};
+    return {ids,financeIds,condos:condos||[],calls:base[0],maint:base[1],occ:base[2],docs:base[3],assemblies:base[4],ann:base[5],units:base[6],finance};
   }
 
   function financeStats(rows) {
