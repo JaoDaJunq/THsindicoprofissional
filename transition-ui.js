@@ -176,7 +176,18 @@
     if(w){await transitionDb.from('data_quality_warnings').update({message:count?`${count} unidades ainda estão sem datas completas de medidor/válvula de gás.`:'Todas as datas de gás foram revisadas.',resolved_at:count?null:new Date().toISOString()}).eq('id',w.id)}
   }
 
-  function gasSituation(next){const n=dateDiff(next);if(n===null)return{label:'Sem data',cls:'muted'};if(n<0)return{label:'Vencido',cls:'bad'};if(n<=365)return{label:'Vence em até 12 meses',cls:'warn'};return{label:'Em dia',cls:'good'}}
+  function gasSituation(next){
+    const n=dateDiff(next);
+    if(n===null)return{label:'Sem data',cls:'muted'};
+    if(n<0){
+      const overdue=Math.abs(n);
+      return{label:`Vencido há ${overdue} dia${overdue===1?'':'s'}`,cls:'bad'};
+    }
+    if(n===0)return{label:'Hoje',cls:'bad'};
+    if(n===1)return{label:'Amanhã',cls:'bad'};
+    if(n<=7)return{label:`Em ${n} dias`,cls:'warn'};
+    return{label:`Em ${n} dias`,cls:'good'};
+  }
   window.gasPage=async function(cid){
     const c=condo(cid);if(!c)return location.hash='#/';
     const {data:rows,error}=await transitionDb.from('gas_controls').select('*').eq('condominium_id',cid).order('unit_label');if(error)return flash(error.message);
