@@ -1,0 +1,4 @@
+
+* text=auto eol=lf
+runs/**/history.ndjson merge=union
+*.webm binary
