@@ -2,6 +2,7 @@
   if (!window.supabase) return;
   const sbResident = window.supabase.createClient('https://tckvzlizcqdxzgavjwie.supabase.co','sb_publishable_MRtiWP-ErwVKXqNbGFrW_g_FwEHsob3');
   const safe=s=>typeof esc==='function'?esc(s):String(s??'');
+  const rich=value=>window.GCRichText?.render(value)??safe(value);
   const fmt=v=>v?new Intl.DateTimeFormat('pt-BR',{dateStyle:'medium',timeStyle:'short'}).format(new Date(v)):'Sem data';
   const first=n=>(n||'').trim().split(/\s+/)[0]||'Morador';
   const initials=n=>(n||'M').trim().split(/\s+/).slice(0,2).map(x=>x[0]?.toUpperCase()||'').join('');
@@ -43,7 +44,7 @@
     }
     if(section==='announcements'){
       const {data:rows}=await sbResident.from('announcements').select('*').eq('condominium_id',c.member.condominium_id).order('published_at',{ascending:false});
-      $('#app').innerHTML=shellResident(c,`<section>${(rows||[]).length?(rows||[]).map(x=>`<article class="card" style="margin-bottom:12px"><div class="eyebrow">${fmt(x.published_at)}</div><h2 style="margin:6px 0 8px">${safe(x.title)}</h2><p>${safe(x.body)}</p></article>`).join(''):'<div class="empty">Nenhum comunicado disponível.</div>'}</section>`,'announcements',count);return;
+      $('#app').innerHTML=shellResident(c,`<section>${(rows||[]).length?(rows||[]).map(x=>`<article class="card" style="margin-bottom:12px"><div class="eyebrow">${fmt(x.published_at)}</div><h2 style="margin:6px 0 8px">${safe(x.title)}</h2><div class="gc-rich-output">${rich(x.body)}</div></article>`).join(''):'<div class="empty">Nenhum comunicado disponível.</div>'}</section>`,'announcements',count);return;
     }
     if(section==='calls'){
       const {data:rows}=await sbResident.from('service_requests').select('*').eq('created_by',c.user.id).order('created_at',{ascending:false});
