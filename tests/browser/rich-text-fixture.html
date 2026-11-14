@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="../../rich-text-editor.css">
+  <style>body{font-family:Arial,sans-serif;padding:24px;max-width:680px;margin:auto}.field{margin-bottom:18px}label{display:block;margin-bottom:6px}</style>
+</head>
+<body>
+  <form id="fixture-form">
+    <div class="field">
+      <label>Mensagem</label>
+      <textarea name="body" data-rich-text required>Texto inicial</textarea>
+    </div>
+    <button type="submit">Salvar</button>
+  </form>
+  <div id="render-target"></div>
+  <script src="../../rich-text-editor.js"></script>
+  <script>
+    document.querySelector('#fixture-form').addEventListener('submit', event => {
+      event.preventDefault();
+      const value = new FormData(event.currentTarget).get('body');
+      document.querySelector('#render-target').innerHTML = window.GCRichText.render(value);
+    });
+  </script>
+</body>
+</html>

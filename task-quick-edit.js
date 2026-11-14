@@ -9,6 +9,7 @@
   );
 
   const safe = value => typeof esc === 'function' ? esc(value) : String(value ?? '');
+  const plainRich = value => window.GCRichText?.plainText(value) ?? String(value ?? '');
   const state = () => typeof data !== 'undefined' ? data : null;
   const canOperate = cid => Boolean(window.CondoAccess?.can('operations.manage', cid));
   const condoName = cid => (state()?.condos || []).find(c => String(c.id) === String(cid))?.name || 'Condomínio';
@@ -166,7 +167,7 @@
       <form id="task-quick-edit-form" class="form-grid">
         <div class="field full"><label>Condomínio</label><input value="${safe(condoName(task.condoId))}" disabled></div>
         <div class="field full"><label>Tarefa</label><input name="title" required maxlength="240" value="${safe(task.title)}"></div>
-        <div class="field full"><label>Descrição</label><textarea name="description" rows="4" placeholder="Detalhes, orientação ou contexto da tarefa">${safe(task.description || '')}</textarea></div>
+        <div class="field full"><label>Descrição</label><textarea name="description" rows="4" data-rich-text placeholder="Detalhes, orientação ou contexto da tarefa">${safe(task.description || '')}</textarea></div>
         <div class="field"><label>Responsável</label><input name="responsible" maxlength="160" value="${safe(task.responsible || '')}" placeholder="Ex.: Síndico"></div>
         <div class="field"><label>Prazo</label><input name="dueDate" type="date" required value="${safe(task.dueDate || '')}"></div>
         <div class="field"><label>Recorrência</label><select name="recurrence">${recurrenceOptions(task.recurrence || 'none')}</select></div>
@@ -240,7 +241,7 @@
         const edit = manage ? `<button class="btn btn-soft" onclick="openTaskQuickEdit('${safe(task.id)}')">Editar</button>` : '';
         const complete = manage && task.status !== 'done' && task.status !== 'cancelled' ? `<button class="btn" onclick="completeTask('${safe(task.id)}')">Concluir</button>` : '';
         const actions = edit || complete ? `<div class="row-actions">${edit}${complete}</div>` : '<span class="muted small">Somente leitura</span>';
-        const row = `<tr class="task-row ${task.status === 'done' ? 'task-row--done' : ''} ${late ? 'task-row--late' : ''}" data-task-id="${safe(task.id)}" data-task-status="${safe(task.status || 'pending')}" data-task-late="${late ? 'true' : 'false'}"><td><strong>${safe(task.title)}</strong><div class="list-sub">${safe((task.description || '').split('\n')[0])}</div>${task.sourceLabel ? '<div class="migration-note">Importado da planilha anterior</div>' : ''}</td><td>${safe(condoName(task.condoId))}</td><td>${safe(task.responsible || 'Síndico')}</td><td>${dateText(task.dueDate)} ${late ? '<span class="badge bad">Atrasada</span>' : ''}</td><td>${safe(priorityPt(task.priority))}</td><td>${taskStatusBadge(task.status)}</td><td>${actions}</td></tr>`;
+        const row = `<tr class="task-row ${task.status === 'done' ? 'task-row--done' : ''} ${late ? 'task-row--late' : ''}" data-task-id="${safe(task.id)}" data-task-status="${safe(task.status || 'pending')}" data-task-late="${late ? 'true' : 'false'}"><td><strong>${safe(task.title)}</strong><div class="list-sub">${safe(plainRich(task.description).split('\n')[0])}</div>${task.sourceLabel ? '<div class="migration-note">Importado da planilha anterior</div>' : ''}</td><td>${safe(condoName(task.condoId))}</td><td>${safe(task.responsible || 'Síndico')}</td><td>${dateText(task.dueDate)} ${late ? '<span class="badge bad">Atrasada</span>' : ''}</td><td>${safe(priorityPt(task.priority))}</td><td>${taskStatusBadge(task.status)}</td><td>${actions}</td></tr>`;
         if (task.status === 'done' && !dividerInserted) {
           dividerInserted = true;
           return `<tr class="task-section-divider"><td colspan="7"><span>Concluídas</span></td></tr>${row}`;

@@ -23,6 +23,7 @@
   };
 
   const priorityLabel = value => ({ low: 'Baixa', normal: 'Normal', high: 'Alta', urgent: 'Urgente' })[value] || value;
+  const rich = value => window.GCRichText?.render(value) ?? (typeof esc === 'function' ? esc(value) : String(value ?? ''));
   const canManage = cid => Boolean(window.CondoAccess?.can('operations.manage', cid));
   const canReview = cid => Boolean(window.CondoAccess?.can('operations.review', cid));
   const fmt = value => value ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(new Date(`${String(value).slice(0,10)}T12:00:00`)) : 'Sem data';
@@ -91,7 +92,7 @@
     if (!m || !canReview(m.condoId)) return flash('Acesso não autorizado.');
     try {
       const rows = await loadOccurrences(id);
-      const history = rows.length ? rows.map(x => `<div class="timeline-item"><strong>Manutenção concluída</strong><p>${fmtDateTime(x.completed_at)}${x.scheduled_for ? ` • prevista para ${fmt(x.scheduled_for)}` : ''}</p>${x.notes ? `<p>${esc(x.notes)}</p>` : ''}${x.next_date_after ? `<p>Próxima: ${fmt(x.next_date_after)}</p>` : ''}</div>`).join('') : '<div class="empty">Nenhuma execução detalhada registrada ainda.</div>';
+      const history = rows.length ? rows.map(x => `<div class="timeline-item"><strong>Manutenção concluída</strong><p>${fmtDateTime(x.completed_at)}${x.scheduled_for ? ` • prevista para ${fmt(x.scheduled_for)}` : ''}</p>${x.notes ? `<div class="gc-rich-output">${rich(x.notes)}</div>` : ''}${x.next_date_after ? `<p>Próxima: ${fmt(x.next_date_after)}</p>` : ''}</div>`).join('') : '<div class="empty">Nenhuma execução detalhada registrada ainda.</div>';
       modal(`<div class="eyebrow">Histórico de manutenção</div><h2 style="margin-bottom:6px">${esc(m.title)}</h2><p class="muted" style="margin-bottom:16px">${esc(condo(m.condoId)?.name || '')}</p><div class="kpi-strip" style="margin-bottom:16px"><div class="kpi-pill"><strong>${fmt(m.lastCompletedAt)}</strong><span>Última conclusão conhecida</span></div><div class="kpi-pill"><strong>${fmt(m.nextDate)}</strong><span>Próxima execução</span></div><div class="kpi-pill"><strong>${rows.length}</strong><span>Execuções detalhadas</span></div></div><div class="timeline">${history}</div>`);
     } catch (err) {
       flash(err.message || 'Não foi possível carregar o histórico.');
@@ -145,7 +146,7 @@
   window.openCompleteMaintenance = function(id) {
     const m = data.maintenances.find(x => x.id === id);
     if (!m || !canManage(m.condoId)) return flash('Acesso não autorizado.');
-    modal(`<div class="eyebrow">Concluir manutenção</div><h2 style="margin-bottom:6px">${esc(m.title)}</h2><p class="muted" style="margin-bottom:16px">Prevista para ${fmt(m.nextDate)} • ${esc(recurrenceDisplay(m))}</p><form id="maintenance-complete-form" class="form-grid"><div class="field full"><label>Observações da execução</label><textarea name="notes" placeholder="Ex.: inspeção realizada, item substituído, fornecedor presente..."></textarea></div><div class="field full"><button class="btn btn-primary">Concluir e avançar agenda</button></div></form>`);
+    modal(`<div class="eyebrow">Concluir manutenção</div><h2 style="margin-bottom:6px">${esc(m.title)}</h2><p class="muted" style="margin-bottom:16px">Prevista para ${fmt(m.nextDate)} • ${esc(recurrenceDisplay(m))}</p><form id="maintenance-complete-form" class="form-grid"><div class="field full"><label>Observações da execução</label><textarea name="notes" data-rich-text placeholder="Ex.: inspeção realizada, item substituído, fornecedor presente..."></textarea></div><div class="field full"><button class="btn btn-primary">Concluir e avançar agenda</button></div></form>`);
     $('#maintenance-complete-form').onsubmit = async event => {
       event.preventDefault();
       const button = event.target.querySelector('button');

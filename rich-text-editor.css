@@ -1,0 +1,106 @@
+.gc-rich-text{
+  border:1px solid var(--line,#dfe4ee);
+  border-radius:12px;
+  background:#fff;
+  overflow:hidden;
+  transition:border-color .16s ease,box-shadow .16s ease;
+}
+.gc-rich-text:focus-within{
+  border-color:#7888f4;
+  box-shadow:0 0 0 3px rgba(82,98,245,.12);
+}
+.gc-rich-text.has-error{
+  border-color:#c83d4b;
+  box-shadow:0 0 0 3px rgba(200,61,75,.1);
+}
+.gc-rich-toolbar{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:4px;
+  padding:7px;
+  border-bottom:1px solid var(--line,#e6e9f0);
+  background:#f7f8fb;
+}
+.gc-rich-btn{
+  min-width:32px;
+  height:32px;
+  padding:0 8px;
+  display:inline-grid;
+  place-items:center;
+  border:1px solid transparent;
+  border-radius:8px;
+  background:transparent;
+  color:#4f5d73;
+  font:inherit;
+  font-size:11px;
+  cursor:pointer;
+}
+.gc-rich-btn:hover,.gc-rich-btn.is-active{
+  border-color:#d8ddf3;
+  background:#fff;
+  color:#3f51d7;
+}
+.gc-rich-btn:focus-visible{
+  outline:3px solid rgba(82,98,245,.22);
+  outline-offset:1px;
+}
+.gc-rich-separator{
+  width:1px;
+  height:22px;
+  margin:0 2px;
+  background:#dde2eb;
+}
+.gc-rich-editor{
+  min-height:120px;
+  max-height:340px;
+  overflow:auto;
+  padding:12px 13px;
+  color:var(--text,#202633);
+  font-size:14px;
+  line-height:1.55;
+  outline:none;
+  white-space:normal;
+}
+.gc-rich-editor:empty::before{
+  content:attr(data-placeholder);
+  color:#98a1b2;
+  pointer-events:none;
+}
+.gc-rich-editor p{margin:0 0 8px}
+.gc-rich-editor p:last-child{margin-bottom:0}
+.gc-rich-editor ul,.gc-rich-editor ol,.gc-rich-output ul,.gc-rich-output ol{padding-left:22px;margin:7px 0}
+.gc-rich-editor blockquote,.gc-rich-output blockquote{
+  margin:8px 0;
+  padding:7px 10px;
+  border-left:3px solid #aeb7df;
+  background:#f7f8fc;
+  color:#58647a;
+}
+.gc-rich-editor a,.gc-rich-output a{
+  color:#4054d9;
+  text-decoration:underline;
+  overflow-wrap:anywhere;
+}
+.gc-rich-source{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  opacity:0!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+}
+.gc-rich-output{
+  line-height:1.55;
+  overflow-wrap:anywhere;
+}
+.gc-rich-output p{margin:0 0 8px}
+.gc-rich-output p:last-child{margin-bottom:0}
+@media(max-width:600px){
+  .gc-rich-toolbar{gap:3px;padding:6px}
+  .gc-rich-btn{min-width:30px;height:30px;padding:0 6px;font-size:10px}
+  .gc-rich-separator{display:none}
+  .gc-rich-editor{min-height:110px;font-size:16px}
+}
