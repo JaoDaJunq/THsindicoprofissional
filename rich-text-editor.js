@@ -50,8 +50,8 @@
   function sanitizeHtml(value) {
     const raw = String(value || '');
     const parser = new DOMParser();
-    const parsed = parser.parseFromString('<div id="gc-rich-root">' + raw + '</div>', 'text/html');
-    const source = parsed.querySelector('#gc-rich-root');
+    const parsed = parser.parseFromString(raw, 'text/html');
+    const source = parsed.body;
     const holder = document.createElement('div');
     [...(source?.childNodes || [])].forEach(node => {
       const clean = sanitizeNode(node, document);
@@ -80,7 +80,9 @@
   function plainText(value) {
     const div = document.createElement('div');
     div.innerHTML = render(value);
-    return (div.textContent || '').replace(/\u00a0/g, ' ').trim();
+    div.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+    div.querySelectorAll('p,li,blockquote').forEach(block => block.append('\n'));
+    return (div.textContent || '').replace(/\u00a0/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
   }
 
   function commandButton(command, label, title, extra='') {
@@ -153,11 +155,6 @@
 
     if (hasSelection) {
       document.execCommand('createLink', false, href);
-      const anchor = editor.querySelector('a[href="' + CSS.escape(href) + '"]');
-      if (anchor) {
-        anchor.target = '_blank';
-        anchor.rel = 'noopener noreferrer';
-      }
     } else {
       const safeHref = escapeHtml(href);
       document.execCommand('insertHTML', false, '<a href="' + safeHref + '" target="_blank" rel="noopener noreferrer">' + safeHref + '</a>');
