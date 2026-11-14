@@ -8,6 +8,7 @@
   );
 
   const safe = s => typeof esc === 'function' ? esc(s) : String(s ?? '');
+  const rich = value => window.GCRichText?.render(value) ?? safe(value);
   const fmt = v => v ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(v)) : 'Sem data';
   const priorityLabel = { low: 'Baixa', normal: 'Normal', high: 'Alta', urgent: 'Urgente' };
   const visibilityLabel = { residents: 'Moradores', management: 'Gestão', all: 'Todos' };
