@@ -48,6 +48,12 @@
     .finance-contact-empty{padding:12px;border:1px dashed #dfe3ea;border-radius:10px;color:#7d8798;font-size:10px}
     .finance-delinquency-kpi{border-color:#f0d5d8!important;background:#fffafa!important}
     .finance-unit-hint{margin-top:5px;font-size:9px;color:#7c8799}
+    .finance-delinquency-completed-panel{margin-bottom:18px;border:1px solid #cfe8d7;background:linear-gradient(180deg,#f4fbf6,#fff)}
+    .finance-delinquency-completed-panel .panel-head{border-bottom-color:#dcefe2}
+    .finance-completed-row{background:#f3fbf5!important;box-shadow:inset 3px 0 0 #58b674}
+    .finance-completed-row td{background:transparent!important}
+    .finance-completed-row strong{color:#2f7145}
+    .finance-completed-badge{background:#e3f6e9!important;color:#2f7948!important;border-color:#ccebd6!important}
     @media(max-width:700px){
       .finance-contact-head{align-items:flex-start;flex-direction:column}
       .finance-contact-date{white-space:normal}
@@ -70,6 +76,9 @@
 
   function statusBadge(t) {
     const status = computedStatus(t);
+    if (t.is_delinquency && status === 'paid') {
+      return '<span class="badge good finance-completed-badge">Concluída</span>';
+    }
     const map = {
       paid:['good','Pago'],
       partial:['warn','Parcial'],
@@ -178,7 +187,8 @@
         : (t.counterparty || catMap.get(t.category_id) || '');
       const search = [t.description,t.counterparty,t.reference_number,catMap.get(t.category_id),unitText].filter(Boolean).join(' ').toLowerCase();
       const type = t.is_delinquency ? '<span class="badge bad">Inadimplência</span>' : (t.kind === 'income' ? 'Receita' : 'Despesa');
-      return `<tr data-search="${safe(search)}">
+      const completedClass = t.is_delinquency && t.status === 'paid' ? ' class="finance-completed-row"' : '';
+      return `<tr${completedClass} data-search="${safe(search)}">
         <td><strong>${safe(t.description)}</strong><div class="list-sub">${safe(subtitle)}</div></td>
         <td>${type}</td>
         <td>${safe(catMap.get(t.category_id) || 'Sem categoria')}</td>
@@ -201,6 +211,21 @@
         <td>${date(t.competence_month)}</td>
         <td>${date(t.due_date)}</td>
         <td><strong class="finance-delinquency-total">${brl(remaining)}</strong></td>
+        <td>${statusBadge(t)}</td>
+        <td>${safe(t.notes ? (window.GCRichText?.plainText(t.notes) || '').slice(0,80) : '—')}</td>
+        <td><div class="row-actions">${transactionActions(t,cid,month,manage)}</div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function completedDelinquencyRows(items, cid, month, unitMap, manage) {
+    return items.map(t => {
+      const unitText = t.reference_number || unitLabel(unitMap.get(t.unit_id)) || 'Sem unidade';
+      return `<tr class="finance-completed-row">
+        <td><strong>${safe(unitText)}</strong><div class="list-sub">${safe(t.counterparty || 'Morador não informado')}</div></td>
+        <td>${date(t.competence_month)}</td>
+        <td>${date(t.paid_date)}</td>
+        <td><strong>${brl(t.paid_amount_cents)}</strong></td>
         <td>${statusBadge(t)}</td>
         <td>${safe(t.notes ? (window.GCRichText?.plainText(t.notes) || '').slice(0,80) : '—')}</td>
         <td><div class="row-actions">${transactionActions(t,cid,month,manage)}</div></td>
@@ -237,6 +262,8 @@
 
       const monthlyRows = transactionRows(tx,cid,month,catMap,unitMap,attCount,manage);
       const delinquencyTable = delinquencyRows(openDelinquencies,cid,month,unitMap,manage);
+      const completedDelinquencies = tx.filter(t => t.is_delinquency && t.status === 'paid');
+      const completedDelinquencyTable = completedDelinquencyRows(completedDelinquencies,cid,month,unitMap,manage);
 
       $('#app').innerHTML = shell(`
         ${topbar('Financeiro',`${safe(condoData.name)} • receitas, despesas, inadimplência e vencimentos.`,'Gestão',add)}
@@ -255,6 +282,15 @@
             <tbody>${delinquencyTable}</tbody>
           </table></div></div>
         </article>
+
+        ${completedDelinquencies.length ? `
+        <article class="panel finance-delinquency-completed-panel">
+          <div class="panel-head"><div><h2>✓ Concluídas</h2><div class="muted small">Inadimplências desta competência que já foram totalmente baixadas.</div></div></div>
+          <div class="panel-body"><div class="table-wrap"><table class="table">
+            <thead><tr><th>Unidade / morador</th><th>Competência</th><th>Baixada em</th><th>Valor pago</th><th>Status</th><th>Observação</th><th>Ações</th></tr></thead>
+            <tbody>${completedDelinquencyTable}</tbody>
+          </table></div></div>
+        </article>` : ''}
 
         <article class="panel">
           <div class="panel-head">
