@@ -66,3 +66,18 @@ test('standard income form cannot accidentally classify a normal income as delin
   assert.match(base,/toLowerCase\(\)!=='inadimplência'/);
   assert.match(feature,/ensureDelinquencyCategory/);
 });
+
+
+test('paid delinquency is shown as completed and visually green', () => {
+  assert.match(feature,/finance-completed-row/);
+  assert.match(feature,/finance-completed-badge/);
+  assert.match(feature,/>Concluída<\/span>/);
+  assert.match(feature,/✓ Concluídas/);
+  assert.match(feature,/t\.is_delinquency && t\.status === 'paid'/);
+});
+
+test('completed delinquency remains editable and does not offer another payment action', () => {
+  assert.match(feature,/openFinanceEditModal/);
+  assert.match(feature,/const pay = t\.status !== 'paid'/);
+  assert.match(feature,/completedDelinquencyRows/);
+});
