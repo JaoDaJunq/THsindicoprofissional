@@ -297,8 +297,8 @@
       <p class="muted small" style="margin-bottom:16px">Registrada como receita a receber, sem inflar as despesas do condomínio.</p>
       <form id="finance-delinquency-form" class="form-grid">
         <div class="field"><label>Unidade cadastrada</label><select name="unitId"><option value="">Sem vínculo / informar manualmente</option>${options}</select></div>
-        <div class="field"><label>Apartamento / unidade</label><input name="unitRef" required placeholder="Ex.: Apto 302"></div>
-        <div class="field full"><label>Morador / responsável</label><input name="resident" required placeholder="Nome da pessoa responsável"></div>
+        <div class="field"><label>Apartamento / unidade</label><input name="unitRef" maxlength="120" required placeholder="Ex.: Apto 302"></div>
+        <div class="field full"><label>Morador / responsável</label><input name="resident" maxlength="160" required placeholder="Nome da pessoa responsável"></div>
         <div class="field"><label>Competência</label><input type="month" name="competence" value="${safe(month)}" required></div>
         <div class="field"><label>Vencimento</label><input type="date" name="due" value="${todayValue()}" required></div>
         <div class="field full"><label>Valor devido</label><input name="amount" inputmode="decimal" required placeholder="0,00"></div>
@@ -372,7 +372,7 @@
     ]);
     if (error || !t) return flash(error?.message || 'Lançamento não encontrado.');
 
-    const correctCats = t.kind === 'income' ? cats : await categories(cid,'expense');
+    const correctCats = (t.kind === 'income' ? cats : await categories(cid,'expense')).filter(item => t.is_delinquency || String(item.name||'').trim().toLowerCase() !== 'inadimplência');
     const unitOptions = units.map(unit => `<option value="${unit.id}" ${String(unit.id)===String(t.unit_id||'')?'selected':''}>${safe(unitLabel(unit))}</option>`).join('');
     const catOptions = correctCats.map(item => `<option value="${item.id}" ${String(item.id)===String(t.category_id||'')?'selected':''}>${safe(item.name)}</option>`).join('');
     const amount = String((Number(t.expected_amount_cents || 0)/100).toFixed(2)).replace('.',',');
@@ -508,7 +508,8 @@
       const user = await currentUser();
       if (!user) return flash('Sessão expirada.');
       const note = String(values.get('note') || '').trim();
-      if (!window.GCRichText?.plainText(note) && !note) return flash('Registre o que aconteceu no contato.');
+      const plainNote = window.GCRichText?.plainText(note) ?? note;
+      if (!String(plainNote).trim()) return flash('Registre o que aconteceu no contato.');
 
       const button = form.querySelector('button[type="submit"]');
       button.disabled = true;
